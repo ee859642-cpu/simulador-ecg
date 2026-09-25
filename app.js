@@ -1,6 +1,5 @@
 // URL base de la API FastAPI
-const API_URL = "http://127.0.0.1:8001";
-
+const API_URL = "https://simulador-ecg.onrender.com";
 // Identificador del usuario/estudiante
 const JUGADOR_ID = "medico_estudiante_1";
 
