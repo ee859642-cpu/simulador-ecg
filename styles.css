@@ -194,6 +194,82 @@ button:hover {
     height: 100%;
 }
 
+/* CAJA DE DECISIÓN DE LA IA ORIGINAL (ESQUINA DERECHA DEL MONITOR) */
+.decision-box {
+    position: absolute;
+    right: 15px;
+    bottom: 15px;
+    width: 280px;
+    background: rgba(15, 23, 42, 0.92);
+    border: 1px solid rgba(56, 189, 248, 0.4);
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    z-index: 30;
+}
+
+.ai-suggestion-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.ai-title-row {
+    display: flex;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.ai-label {
+    color: #f8fafc;
+}
+
+.ai-diagnosis-val {
+    color: #38bdf8;
+}
+
+.ai-confidence-val {
+    font-size: 11px;
+    color: #0284c7;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.btn-trust-ai {
+    background: #22c55e !important;
+    color: #ffffff !important;
+    border: none !important;
+    padding: 8px 12px !important;
+    border-radius: 6px !important;
+    font-size: 12px !important;
+    font-weight: bold !important;
+    cursor: pointer;
+    text-align: center;
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
+}
+
+.btn-trust-ai:hover {
+    background: #16a34a !important;
+}
+
+.btn-manual-analysis {
+    background: rgba(30, 41, 59, 0.9) !important;
+    color: #e2e8f0 !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    padding: 8px 12px !important;
+    border-radius: 6px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    cursor: pointer;
+    text-align: center;
+}
+
+.btn-manual-analysis:hover {
+    background: #334155 !important;
+    border-color: #38bdf8 !important;
+}
+
 /* MODALES FLOTANTES */
 .modal-overlay {
     position: fixed;
