@@ -1,5 +1,4 @@
 const API_URL = "https://simulador-ecg.onrender.com";
-const JUGADOR_ID = "medico_estudiante_1";
 
 let casoActualId = 1;
 let nivelActual = 1;
@@ -30,8 +29,6 @@ function actualizarBannerNivel(numeroNivel, tituloNivel) {
     if (title) title.innerText = tituloNivel;
 }
 
-// --- FLUJO DE NIVELES ---
-
 function comenzarNivel1() {
     nivelActual = 1;
     document.getElementById("modal-nivel1")?.classList.add("hidden");
@@ -51,14 +48,9 @@ async function comenzarNivel2() {
     
     document.getElementById("modal-nivel2")?.classList.add("hidden");
     document.getElementById("monitor-panel")?.classList.remove("hidden");
-    document.getElementById("decision-box")?.classList.add("hidden"); // Mantener oculto la IA en Nivel 2
 
     await cargarDatosCaso();
-    // SE ELIMINÓ EL TEMPORIZADOR AUTOMÁTICO AL NIVEL 3.
-    // El usuario permanece en Nivel 2 analizando la señal indefinidamente.
 }
-
-// --- CARGA DE CASO Y ECG ---
 
 async function cargarDatosCaso() {
     try {
@@ -74,10 +66,45 @@ async function cargarDatosCaso() {
     }
 }
 
+function actualizarInterfazCaso(datos) {
+    const elPatientInfo = document.getElementById("patient-info");
+    const elBpm = document.getElementById("bpm-display");
+    const elAiDiag = document.getElementById("ai-diagnosis-text");
+    const elAiConf = document.getElementById("ai-confidence-text");
+
+    if (elPatientInfo) elPatientInfo.innerText = `Paciente: ID ${datos.paciente} (${datos.edad} años)`;
+    if (elBpm) elBpm.innerText = `BPM: ${datos.frecuencia_cardiaca_bpm}`;
+    
+    if (elAiDiag) elAiDiag.innerText = datos.prediccion_ia || "Sinus Rhythm";
+    if (elAiConf) elAiConf.innerText = `Confianza: ${datos.confianza_ia || 98}%`;
+
+    ajustarTamanoCanvas();
+    iniciarTrazadoECG(datos.ritmo_patologia_real);
+}
+
+function tomarDecisionIA(confiaEnIA) {
+    if (confiaEnIA) {
+        alert(`Has aceptado el diagnóstico de la IA: ${datosCasoActual?.prediccion_ia || "Sinus Rhythm"}`);
+    }
+}
+
+function mostrarDiagnosticoManual() {
+    const seleccion = prompt(
+        "Ingresa tu diagnóstico manual (Ej: Sinus Rhythm, Sinus Bradycardia, Atrial Fibrillation):"
+    );
+    if (seleccion) {
+        const ritmoReal = datosCasoActual?.ritmo_patologia_real || "Sinus Rhythm";
+        if (seleccion.trim().toLowerCase() === ritmoReal.toLowerCase()) {
+            alert("¡Correcto! Tu análisis manual es atinado.");
+        } else {
+            alert(`Diagnóstico incorrecto. El ritmo real del paciente era: ${ritmoReal}`);
+        }
+    }
+}
+
 function iniciarNuevoCaso() {
     reiniciarElectrodos();
     document.getElementById("monitor-panel")?.classList.add("hidden");
-    document.getElementById("decision-box")?.classList.add("hidden");
     comenzarNivel1();
 }
 
@@ -86,11 +113,7 @@ function reiniciarElectrodos() {
     const zonasDrop = document.querySelectorAll(".dropzone");
     zonasDrop.forEach(zona => {
         zona.classList.remove("occupied");
-        zona.style.backgroundColor = "";
-        zona.style.borderColor = "";
-        zona.style.color = "";
-        const lead = zona.dataset.target;
-        zona.innerText = lead;
+        zona.innerText = zona.dataset.target;
     });
 
     const electrodos = document.querySelectorAll(".electrode");
@@ -98,17 +121,6 @@ function reiniciarElectrodos() {
         el.style.opacity = "1";
         el.style.pointerEvents = "auto";
     });
-}
-
-function actualizarInterfazCaso(datos) {
-    const elPatientInfo = document.getElementById("patient-info");
-    const elBpm = document.getElementById("bpm-display");
-
-    if (elPatientInfo) elPatientInfo.innerText = `Paciente: ID ${datos.paciente} (${datos.edad} años)`;
-    if (elBpm) elBpm.innerText = `BPM: ${datos.frecuencia_cardiaca_bpm}`;
-
-    ajustarTamanoCanvas();
-    iniciarTrazadoECG(datos.ritmo_patologia_real);
 }
 
 function ajustarTamanoCanvas() {
@@ -186,8 +198,6 @@ function dibujarCuadricula() {
     }
 }
 
-// --- DRAG AND DROP ---
-
 function inicializarDragAndDrop() {
     const electrodos = document.querySelectorAll(".electrode");
     const zonasDrop = document.querySelectorAll(".dropzone");
@@ -205,20 +215,11 @@ function inicializarDragAndDrop() {
     });
 
     zonasDrop.forEach(zona => {
-        zona.addEventListener("dragover", (e) => {
-            e.preventDefault();
-            zona.classList.add("hover");
-        });
-        zona.addEventListener("dragleave", () => {
-            zona.classList.remove("hover");
-        });
+        zona.addEventListener("dragover", (e) => e.preventDefault());
         zona.addEventListener("drop", (e) => {
             e.preventDefault();
-            zona.classList.remove("hover");
             const lead = e.dataTransfer.getData("text/plain");
-            if (zona.dataset.target === lead) {
-                colocarElectrodo(lead);
-            }
+            if (zona.dataset.target === lead) colocarElectrodo(lead);
         });
         zona.addEventListener("click", () => {
             const lead = zona.dataset.target;
