@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simulador Clínico ECG & IA</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=3">
 </head>
 <body>
 
@@ -30,24 +30,41 @@
             <div class="electrode" data-lead="V6">V6</div>
         </div>
 
-        <!-- ÁREA CENTRAL (TORSO Y DROPZONES) -->
+        <!-- ÁREA CENTRAL (TORSO ANATÓMICO Y DROPZONES) -->
         <div class="viewport-3d">
             <div class="torso-container">
-                <!-- SILUETA SVG DEL TORSO Y CORAZÓN -->
-                <svg class="torso-svg" viewBox="0 0 300 450" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M150 20 C220 20 250 80 250 150 C250 260 210 370 150 430 C90 370 50 260 50 150 C50 80 80 20 150 20 Z" 
-                          stroke="#38bdf8" stroke-width="3" fill="rgba(15, 23, 42, 0.4)" />
-                    <path d="M130 110 C120 90 90 90 80 110 C70 130 90 160 130 190 C170 160 190 130 180 110 C170 90 140 90 130 110 Z" 
-                          fill="rgba(225, 29, 72, 0.35)" stroke="#e11d48" stroke-width="1.5" />
+                <!-- SILUETA ANATÓMICA SVG (TORSO CON PARRILLA COSTAL) -->
+                <svg class="torso-svg" viewBox="0 0 350 420" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Contorno Torso -->
+                    <path d="M40 80 C80 20 270 20 310 80 C330 140 320 280 280 390 C200 420 150 420 70 390 C30 280 20 140 40 80 Z" 
+                          stroke="#38bdf8" stroke-width="2.5" fill="rgba(15, 23, 42, 0.6)" />
+                    <!-- Esternón Central -->
+                    <rect x="168" y="100" width="14" height="150" rx="6" fill="rgba(248, 250, 252, 0.15)" stroke="#64748b" stroke-width="1.5"/>
+                    <!-- Costillas Lado Derecho (Izquierda en pantalla) -->
+                    <path d="M165 120 C120 115 80 130 60 160" stroke="rgba(248, 250, 252, 0.2)" stroke-width="3" stroke-linecap="round"/>
+                    <path d="M165 145 C120 140 80 160 62 190" stroke="rgba(248, 250, 252, 0.2)" stroke-width="3" stroke-linecap="round"/>
+                    <path d="M165 170 C120 168 85 190 65 220" stroke="rgba(248, 250, 252, 0.2)" stroke-width="3" stroke-linecap="round"/>
+                    <path d="M165 195 C120 195 90 220 70 250" stroke="rgba(248, 250, 252, 0.2)" stroke-width="3" stroke-linecap="round"/>
+                    <!-- Costillas Lado Izquierdo del Paciente (Derecha en pantalla) -->
+                    <path d="M185 120 C230 115 270 130 290 160" stroke="rgba(248, 250, 252, 0.2)" stroke-width="3" stroke-linecap="round"/>
+                    <path d="M185 145 C230 140 270 160 288 190" stroke="rgba(248, 250, 252, 0.2)" stroke-width="3" stroke-linecap="round"/>
+                    <path d="M185 170 C230 168 265 190 285 220" stroke="rgba(248, 250, 252, 0.2)" stroke-width="3" stroke-linecap="round"/>
+                    <path d="M185 195 C230 195 260 220 280 250" stroke="rgba(248, 250, 252, 0.2)" stroke-width="3" stroke-linecap="round"/>
                 </svg>
 
-                <!-- ZONAS DE SOLTADO CON ATRIBUTO DATA-TARGET -->
-                <div class="dropzone" data-target="V1" style="top: 32%; left: 42%;">V1</div>
-                <div class="dropzone" data-target="V2" style="top: 32%; left: 58%;">V2</div>
-                <div class="dropzone" data-target="V3" style="top: 42%; left: 50%;">V3</div>
-                <div class="dropzone" data-target="V4" style="top: 50%; left: 42%;">V4</div>
-                <div class="dropzone" data-target="V5" style="top: 50%; left: 32%;">V5</div>
-                <div class="dropzone" data-target="V6" style="top: 50%; left: 22%;">V6</div>
+                <!-- ZONAS DE SOLTADO CORREGIDAS (LADO IZQUIERDO DEL PACIENTE = DERECHA DE LA PANTALLA) -->
+                <!-- V1: 4º Espacio Intercostal Derecho (Izquierda en pantalla) -->
+                <div class="dropzone" data-target="V1" style="top: 42%; left: 41%;">V1</div>
+                <!-- V2: 4º Espacio Intercostal Izquierdo (Derecha en pantalla) -->
+                <div class="dropzone" data-target="V2" style="top: 42%; left: 59%;">V2</div>
+                <!-- V3: Entre V2 y V4 -->
+                <div class="dropzone" data-target="V3" style="top: 48%; left: 65%;">V3</div>
+                <!-- V4: 5º Espacio Intercostal Izquierdo, Línea Medio-clavicular -->
+                <div class="dropzone" data-target="V4" style="top: 55%; left: 70%;">V4</div>
+                <!-- V5: Línea Axilar Anterior -->
+                <div class="dropzone" data-target="V5" style="top: 57%; left: 78%;">V5</div>
+                <!-- V6: Línea Axilar Media -->
+                <div class="dropzone" data-target="V6" style="top: 56%; left: 86%;">V6</div>
             </div>
         </div>
 
@@ -55,7 +72,7 @@
         <button class="btn-bottom-left" onclick="abrirModal('metricas')">🧠 Modelo IA & Bias</button>
         <button class="btn-bottom-right" onclick="iniciarNuevoCaso()">🚑 Nuevo Paciente</button>
 
-        <!-- MONITOR DE ECG INFERIOR (INICIALMENTE OCULTO HASTA EL NIVEL 2) -->
+        <!-- MONITOR DE ECG INFERIOR -->
         <div id="monitor-panel" class="monitor-panel hidden">
             <div class="patient-bar">
                 <span id="patient-info">Paciente: Cargando...</span>
@@ -67,7 +84,7 @@
                     <canvas id="ecg-wave"></canvas>
                 </div>
 
-                <!-- PANEL DE DECISIÓN (OCULTO HASTA EL NIVEL 3) -->
+                <!-- PANEL DE DECISIÓN (NIVEL 3 - PAUSADO) -->
                 <div id="decision-box" class="decision-box hidden">
                     <div class="ai-suggestion">
                         <div id="ai-text">Sugerencia IA: Analizando...</div>
@@ -83,96 +100,31 @@
 
     </div>
 
-    <!-- MODAL NIVEL 1: INSTRUCCIONES -->
+    <!-- MODALES DE NIVELES -->
     <div id="modal-nivel1" class="modal-overlay">
         <div class="modal-content text-center">
-            <h2>🫀 Nivel 1: Posicionamiento de Electrodos</h2>
-            <p class="modal-description">Arrastra o haz clic en los electrodos precordiales para posicionarlos en el torso del paciente:</p>
+            <h2>🫀 Nivel 1: Posicionamiento Anatómico</h2>
+            <p class="modal-description">Coloca los electrodos V1 a V6 en el tórax del paciente según las referencias anatómicas:</p>
             <div class="instructions-list">
-                <p>• <strong>V1:</strong> 4º Espacio intercostal derecho</p>
-                <p>• <strong>V2:</strong> 4º Espacio intercostal izquierdo</p>
-                <p>• <strong>V3:</strong> Entre V2 y V4</p>
+                <p>• <strong>V1:</strong> 4º Espacio intercostal derecho (Lado izquierdo en pantalla)</p>
+                <p>• <strong>V2:</strong> 4º Espacio intercostal izquierdo (Lado derecho en pantalla)</p>
+                <p>• <strong>V3:</strong> Equidistante entre V2 y V4</p>
                 <p>• <strong>V4:</strong> 5º Espacio intercostal izquierdo, línea medioclavicular</p>
-                <p>• <strong>V5:</strong> Línea axilar anterior, mismo nivel que V4</p>
-                <p>• <strong>V6:</strong> Línea axilar media, mismo nivel que V4</p>
+                <p>• <strong>V5:</strong> 5º Espacio intercostal, línea axilar anterior</p>
+                <p>• <strong>V6:</strong> 5º Espacio intercostal, línea axilar media</p>
             </div>
             <button class="btn-confirm" onclick="comenzarNivel1()">Comenzar Posicionamiento</button>
         </div>
     </div>
 
-    <!-- MODAL TRANSICIÓN A NIVEL 2 -->
     <div id="modal-nivel2" class="modal-overlay hidden">
         <div class="modal-content text-center">
             <h2>📈 Nivel 2: Interpretación de Señal ECG</h2>
-            <p class="modal-description">Electrodos colocados correctamente. A continuación, analiza la morfología y el ritmo del electrocardiograma sin la interferencia del asistente de IA.</p>
+            <p class="modal-description">Electrodos colocados correctamente. Analiza la morfología y el ritmo de la señal en el monitor.</p>
             <button class="btn-confirm" onclick="comenzarNivel2()">Iniciar Monitor ECG</button>
         </div>
     </div>
 
-    <!-- MODAL TRANSICIÓN A NIVEL 3 -->
-    <div id="modal-nivel3" class="modal-overlay hidden">
-        <div class="modal-content text-center">
-            <h2>🧠 Nivel 3: Asistencia de IA & Decisión Clínica</h2>
-            <p class="modal-description">Se ha habilitado la sugerencia de la IA. Compara la lectura del algoritmo con tu criterio médico previo y toma la decisión final.</p>
-            <button class="btn-confirm" onclick="comenzarNivel3()">Ver Sugerencia e Intervenir</button>
-        </div>
-    </div>
-
-    <!-- MODAL SELECTOR MANUAL -->
-    <div id="modal-selector" class="modal-overlay hidden">
-        <div class="modal-content">
-            <h3>Seleccionar Diagnóstico Clínico</h3>
-            <select id="select-patologia" class="select-pathology">
-                <option value="Sinus Rhythm">Sinus Rhythm (Ritmo Sinusal Normal)</option>
-                <option value="Sinus Bradycardia">Sinus Bradycardia (Bradicardia Sinusal)</option>
-                <option value="Sinus Tachycardia">Sinus Tachycardia (Taquicardia Sinusal)</option>
-                <option value="Atrial Fibrillation">Atrial Fibrillation (Fibrilación Auricular)</option>
-                <option value="Atrial Flutter">Atrial Flutter (Aleteo Auricular)</option>
-                <option value="ST Elevation Myocardial Infarction">STEMI (Infarto con elevación del ST)</option>
-            </select>
-            <div class="modal-actions">
-                <button class="btn-cancel" onclick="cerrarSelectorManual()">Cancelar</button>
-                <button class="btn-confirm" onclick="confirmarDecisionManual()">Confirmar Diagnóstico</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL FEEDBACK Y RESULTADOS -->
-    <div id="modal-feedback" class="modal-overlay hidden">
-        <div class="modal-feedback-card">
-            <div class="feedback-header">
-                <span id="feedback-badge" class="badge">--</span>
-                <h3 id="feedback-title">Resultado Evaluativo</h3>
-            </div>
-            <div class="feedback-body">
-                <p id="feedback-message" class="feedback-text">--</p>
-                <div class="feedback-details">
-                    <div class="detail-item">
-                        <span class="detail-label">Diagnóstico Real:</span>
-                        <span id="feedback-real-diag" class="detail-val">--</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Índice Sesgo IA Acumulado:</span>
-                        <span id="feedback-bias-val" class="detail-val">--%</span>
-                    </div>
-                </div>
-            </div>
-            <div class="feedback-footer">
-                <button class="btn-feedback-action" onclick="cerrarFeedbackModal(); iniciarNuevoCaso();">Siguiente Paciente ➔</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL GENÉRICO INFORMATIVO -->
-    <div id="modal-overlay" class="modal-overlay hidden">
-        <div class="modal-content">
-            <div id="modal-body"></div>
-            <div class="modal-actions" style="margin-top: 15px;">
-                <button class="btn-close" onclick="cerrarModal()">Cerrar</button>
-            </div>
-        </div>
-    </div>
-
-    <script src="app.js"></script>
+    <script src="app.js?v=3"></script>
 </body>
 </html>
