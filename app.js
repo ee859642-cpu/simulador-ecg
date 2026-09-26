@@ -5,16 +5,18 @@ const JUGADOR_ID = "medico_estudiante_1";
 
 // Estado local de la aplicación
 let casoActualId = 1;
+let nivelActual = 1;
 let canvas, ctx;
 let animacionId = null;
 let offsetOnda = 0;
+let datosCasoActual = null;
 
-// Configuración de electrodos requeridos
+// Configuración de electrodos requeridos (Nivel 1)
 const ELECTRODOS_REQUERIDOS = ["V1", "V2", "V3", "V4", "V5", "V6"];
 let electrodosColocados = new Set();
 
 document.addEventListener("DOMContentLoaded", () => {
-    // Vincular el canvas del ECG mediante su ID
+    // Inicializar Canvas del ECG
     canvas = document.getElementById("ecg-wave");
     if (canvas) {
         ctx = canvas.getContext("2d");
@@ -23,113 +25,72 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     inicializarDragAndDrop();
+    actualizarBannerNivel(1, "Posicionamiento Anatómico de Electrodos");
 });
 
-// Función para cerrar el modal de bienvenida e iniciar el Nivel 1
+// Actualiza la etiqueta del banner superior
+function actualizarBannerNivel(numeroNivel, tituloNivel) {
+    const badge = document.getElementById("level-badge");
+    const title = document.getElementById("level-title");
+    if (badge) badge.innerText = `NIVEL ${numeroNivel}`;
+    if (title) title.innerText = tituloNivel;
+}
+
+// --- FLUJO DE NIVELES Y TRANSICIONES ---
+
+// Nivel 1: Cierre del modal inicial de bienvenida
 function comenzarNivel1() {
+    nivelActual = 1;
     const modalNivel1 = document.getElementById("modal-nivel1");
-    if (modalNivel1) {
-        modalNivel1.classList.add("hidden");
-    }
+    if (modalNivel1) modalNivel1.classList.add("hidden");
 }
 
-function ajustarTamanoCanvas() {
-    if (!canvas || !canvas.parentElement) return;
-    canvas.width = canvas.parentElement.clientWidth;
-    canvas.height = canvas.parentElement.clientHeight;
-}
-
-// Configuración de arrastre (drag & drop) y clic directo
-function inicializarDragAndDrop() {
-    const electrodos = document.querySelectorAll(".electrode");
-    const zonasDrop = document.querySelectorAll(".dropzone");
-
-    electrodos.forEach(el => {
-        el.setAttribute("draggable", "true");
-
-        el.addEventListener("dragstart", (e) => {
-            const lead = el.dataset.lead || el.innerText.trim();
-            e.dataTransfer.setData("text/plain", lead);
-            e.dataTransfer.effectAllowed = "move";
-        });
-
-        // Opción alternativa: Clic directo sobre la paleta izquierda
-        el.addEventListener("click", () => {
-            const lead = el.dataset.lead || el.innerText.trim();
-            colocarElectrodo(lead);
-        });
-    });
-
-    zonasDrop.forEach(zona => {
-        zona.addEventListener("dragover", (e) => {
-            e.preventDefault();
-            e.dataTransfer.dropEffect = "move";
-            zona.classList.add("hover");
-        });
-
-        zona.addEventListener("dragleave", () => {
-            zona.classList.remove("hover");
-        });
-
-        zona.addEventListener("drop", (e) => {
-            e.preventDefault();
-            zona.classList.remove("hover");
-            const lead = e.dataTransfer.getData("text/plain");
-            
-            if (zona.dataset.target === lead || zona.innerText.includes(lead)) {
-                colocarElectrodo(lead);
-            }
-        });
-
-        // Opción alternativa: Clic directo sobre el punto objetivo en el torso
-        zona.addEventListener("click", () => {
-            const lead = zona.dataset.target || zona.innerText.trim();
-            if (lead) colocarElectrodo(lead);
-        });
-    });
-}
-
-function colocarElectrodo(lead) {
-    if (!ELECTRODOS_REQUERIDOS.includes(lead)) return;
-
-    const zona = document.querySelector(`.dropzone[data-target="${lead}"]`);
-    const elOrigen = document.querySelector(`.electrode[data-lead="${lead}"]`);
-
-    if (zona) {
-        zona.classList.add("occupied");
-        zona.style.backgroundColor = "#22c55e"; // Color verde al ser colocado
-        zona.style.borderColor = "#ffffff";
-        zona.style.color = "#ffffff";
-        zona.innerText = `✓ ${lead}`;
-    }
-
-    if (elOrigen) {
-        elOrigen.style.opacity = "0.2";
-        elOrigen.style.pointerEvents = "none";
-    }
-
-    electrodosColocados.add(lead);
-    verificarElectrodosCompletos();
-}
-
-// Transición del Nivel 1 al Nivel 2 al completar la colocación de electrodos
+// Transición del Nivel 1 al Nivel 2
 function verificarElectrodosCompletos() {
     if (electrodosColocados.size === ELECTRODOS_REQUERIDOS.length) {
         setTimeout(() => {
-            alert("🎉 ¡Nivel 1 Completado! Electrodos colocados en posición anatómica. Pasando al Nivel 2: Análisis de Señal ECG.");
-            iniciarNuevoCaso();
-        }, 300);
+            const modalNivel2 = document.getElementById("modal-nivel2");
+            if (modalNivel2) modalNivel2.classList.remove("hidden");
+        }, 400);
     }
 }
 
-// Iniciar nuevo caso obteniendo información de FastAPI (Render)
-async function iniciarNuevoCaso() {
+// Nivel 2: Iniciar visualización de ECG sin sugerencia de IA
+async function comenzarNivel2() {
+    nivelActual = 2;
+    actualizarBannerNivel(2, "Análisis de Señales e Interpretación de ECG");
+    
+    document.getElementById("modal-nivel2")?.classList.add("hidden");
+    document.getElementById("monitor-panel")?.classList.remove("hidden");
+    document.getElementById("decision-box")?.classList.add("hidden"); // Ocultar IA aún
+
+    await cargarDatosCaso();
+
+    // Luego de 4 segundos analizando la señal, avanzar automáticamente al Nivel 3
+    setTimeout(() => {
+        const modalNivel3 = document.getElementById("modal-nivel3");
+        if (modalNivel3) modalNivel3.classList.remove("hidden");
+    }, 4000);
+}
+
+// Nivel 3: Habilitar diagnóstico asistido por IA y toma de decisión
+function comenzarNivel3() {
+    nivelActual = 3;
+    actualizarBannerNivel(3, "Evaluación de IA & Toma de Decisión Clínica");
+
+    document.getElementById("modal-nivel3")?.classList.add("hidden");
+    document.getElementById("decision-box")?.classList.remove("hidden"); // Revelar sugerencia de IA
+}
+
+// --- CARGA DE DATOS DESDE RENDER ---
+
+async function cargarDatosCaso() {
     try {
         const respuesta = await fetch(`${API_URL}/obtener_caso/${casoActualId}`);
         if (!respuesta.ok) throw new Error("Error al conectar con la API");
 
-        const datos = await respuesta.json();
-        actualizarInterfaz(datos);
+        datosCasoActual = await respuesta.json();
+        actualizarInterfazCaso(datosCasoActual);
 
         casoActualId = (casoActualId % 3) + 1;
     } catch (error) {
@@ -138,8 +99,35 @@ async function iniciarNuevoCaso() {
     }
 }
 
-// Actualizar los elementos visuales de la interfaz
-function actualizarInterfaz(datos) {
+function iniciarNuevoCaso() {
+    reiniciarElectrodos();
+    document.getElementById("monitor-panel")?.classList.add("hidden");
+    document.getElementById("decision-box")?.classList.add("hidden");
+    comenzarNivel1();
+}
+
+function reiniciarElectrodos() {
+    electrodosColocados.clear();
+    const zonasDrop = document.querySelectorAll(".dropzone");
+    zonasDrop.forEach(zona => {
+        zona.classList.remove("occupied");
+        zona.style.backgroundColor = "";
+        zona.style.borderColor = "";
+        zona.style.color = "";
+        const lead = zona.dataset.target;
+        zona.innerText = lead;
+    });
+
+    const electrodos = document.querySelectorAll(".electrode");
+    electrodos.forEach(el => {
+        el.style.opacity = "1";
+        el.style.pointerEvents = "auto";
+    });
+}
+
+// --- ACTUALIZACIÓN VISUAL Y CANVAS DE ECG ---
+
+function actualizarInterfazCaso(datos) {
     const elPatientInfo = document.getElementById("patient-info");
     const elBpm = document.getElementById("bpm-display");
     const elAiText = document.getElementById("ai-text");
@@ -148,12 +136,18 @@ function actualizarInterfaz(datos) {
     if (elPatientInfo) elPatientInfo.innerText = `Paciente: ID ${datos.paciente} (${datos.edad} años)`;
     if (elBpm) elBpm.innerText = `BPM: ${datos.frecuencia_cardiaca_bpm}`;
     if (elAiText) elAiText.innerText = `Sugerencia IA: ${datos.ia_sugerencia}`;
-    if (elAiConf) elAiConf.innerText = `Confianza: ${datos.ia_confianza_porcentaje}%`;
+    if (elAiConf) elAiConf.innerText = `Confianza IA: ${datos.ia_confianza_porcentaje}%`;
 
+    ajustarTamanoCanvas();
     iniciarTrazadoECG(datos.ritmo_patologia_real);
 }
 
-// Renderizar el monitor y trazado ECG en el Canvas
+function ajustarTamanoCanvas() {
+    if (!canvas || !canvas.parentElement) return;
+    canvas.width = canvas.parentElement.clientWidth;
+    canvas.height = canvas.parentElement.clientHeight;
+}
+
 function iniciarTrazadoECG(ritmo) {
     if (!canvas || !ctx) return;
     if (animacionId) cancelAnimationFrame(animacionId);
@@ -231,7 +225,80 @@ function dibujarCuadricula() {
     }
 }
 
-// Evaluar la decisión tomada por el usuario
+// --- LÓGICA DE DRAG & DROP E INTERACCIÓN ---
+
+function inicializarDragAndDrop() {
+    const electrodos = document.querySelectorAll(".electrode");
+    const zonasDrop = document.querySelectorAll(".dropzone");
+
+    electrodos.forEach(el => {
+        el.setAttribute("draggable", "true");
+
+        el.addEventListener("dragstart", (e) => {
+            const lead = el.dataset.lead || el.innerText.trim();
+            e.dataTransfer.setData("text/plain", lead);
+            e.dataTransfer.effectAllowed = "move";
+        });
+
+        el.addEventListener("click", () => {
+            const lead = el.dataset.lead || el.innerText.trim();
+            colocarElectrodo(lead);
+        });
+    });
+
+    zonasDrop.forEach(zona => {
+        zona.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = "move";
+            zona.classList.add("hover");
+        });
+
+        zona.addEventListener("dragleave", () => {
+            zona.classList.remove("hover");
+        });
+
+        zona.addEventListener("drop", (e) => {
+            e.preventDefault();
+            zona.classList.remove("hover");
+            const lead = e.dataTransfer.getData("text/plain");
+            
+            if (zona.dataset.target === lead || zona.innerText.includes(lead)) {
+                colocarElectrodo(lead);
+            }
+        });
+
+        zona.addEventListener("click", () => {
+            const lead = zona.dataset.target || zona.innerText.trim();
+            if (lead) colocarElectrodo(lead);
+        });
+    });
+}
+
+function colocarElectrodo(lead) {
+    if (!ELECTRODOS_REQUERIDOS.includes(lead)) return;
+
+    const zona = document.querySelector(`.dropzone[data-target="${lead}"]`);
+    const elOrigen = document.querySelector(`.electrode[data-lead="${lead}"]`);
+
+    if (zona) {
+        zona.classList.add("occupied");
+        zona.style.backgroundColor = "#22c55e";
+        zona.style.borderColor = "#ffffff";
+        zona.style.color = "#ffffff";
+        zona.innerText = `✓ ${lead}`;
+    }
+
+    if (elOrigen) {
+        elOrigen.style.opacity = "0.2";
+        elOrigen.style.pointerEvents = "none";
+    }
+
+    electrodosColocados.add(lead);
+    verificarElectrodosCompletos();
+}
+
+// --- EVALUACIÓN DE DECISIÓN Y MODALES DE FEEDBACK ---
+
 async function tomarDecision(confiaEnIa, diagnosticoManual = null) {
     const casoEvaluado = (casoActualId === 1) ? 3 : casoActualId - 1;
 
@@ -252,7 +319,6 @@ async function tomarDecision(confiaEnIa, diagnosticoManual = null) {
     }
 }
 
-// Manejo de Modales
 function mostrarSelectorManual() {
     document.getElementById("modal-selector")?.classList.remove("hidden");
 }
