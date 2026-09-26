@@ -54,9 +54,9 @@ body {
 
 /* BOTONES SUPERIORES E INFERIORES */
 .btn-top-left { position: absolute; top: 15px; left: 15px; z-index: 10; }
-.btn-top-right { position: absolute; top: 15px; right: 15px; z-index: 10; }
-.btn-bottom-left { position: absolute; bottom: 15px; left: 15px; z-index: 10; }
-.btn-bottom-right { position: absolute; bottom: 15px; right: 15px; z-index: 10; }
+.btn-top-left-2 { position: absolute; top: 15px; left: 130px; z-index: 10; }
+.btn-bottom-left { position: absolute; bottom: 15px; left: 15px; z-index: 25; }
+.btn-bottom-right { position: absolute; bottom: 15px; right: 15px; z-index: 25; }
 
 button {
     background: rgba(15, 23, 42, 0.85);
@@ -152,6 +152,91 @@ button:hover {
     box-shadow: 0 0 10px rgba(34, 197, 94, 0.8);
 }
 
+/* PANEL DERECHO DE IA (TIPO MONITOR) */
+.ai-panel {
+    position: absolute;
+    top: 70px;
+    right: 20px;
+    width: 280px;
+    background: rgba(15, 23, 42, 0.9);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    border-radius: 12px;
+    padding: 14px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    z-index: 15;
+}
+
+.ai-panel-header {
+    font-size: 12px;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 6px;
+}
+
+.ai-suggestion-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.ai-title-row {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.ai-label {
+    font-size: 11px;
+    color: #94a3b8;
+}
+
+.ai-diagnosis-val {
+    font-size: 15px;
+    font-weight: 700;
+    color: #38bdf8;
+}
+
+.ai-confidence-val {
+    font-size: 12px;
+    color: #0284c7;
+    font-weight: 600;
+}
+
+.btn-trust-ai {
+    background: #22c55e !important;
+    color: #ffffff !important;
+    border: none !important;
+    padding: 10px !important;
+    border-radius: 6px !important;
+    font-weight: bold !important;
+    cursor: pointer;
+    text-align: center;
+}
+
+.btn-trust-ai:hover {
+    background: #16a34a !important;
+}
+
+.btn-manual-analysis {
+    background: rgba(30, 41, 59, 0.9) !important;
+    color: #e2e8f0 !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    padding: 10px !important;
+    border-radius: 6px !important;
+    font-weight: 600 !important;
+    cursor: pointer;
+    text-align: center;
+}
+
+.btn-manual-analysis:hover {
+    background: #334155 !important;
+    border-color: #38bdf8 !important;
+}
+
 /* MONITOR INFERIOR DE ECG */
 .monitor-panel {
     position: absolute;
@@ -194,91 +279,15 @@ button:hover {
     height: 100%;
 }
 
-/* CAJA DE DECISIÓN DE LA IA ORIGINAL (ESQUINA DERECHA DEL MONITOR) */
-.decision-box {
-    position: absolute;
-    right: 15px;
-    bottom: 15px;
-    width: 280px;
-    background: rgba(15, 23, 42, 0.92);
-    border: 1px solid rgba(56, 189, 248, 0.4);
-    border-radius: 8px;
-    padding: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-    z-index: 30;
-}
-
-.ai-suggestion-card {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.ai-title-row {
-    display: flex;
-    gap: 6px;
-    font-size: 13px;
-    font-weight: 700;
-}
-
-.ai-label {
-    color: #f8fafc;
-}
-
-.ai-diagnosis-val {
-    color: #38bdf8;
-}
-
-.ai-confidence-val {
-    font-size: 11px;
-    color: #0284c7;
-    font-weight: 600;
-    margin-bottom: 4px;
-}
-
-.btn-trust-ai {
-    background: #22c55e !important;
-    color: #ffffff !important;
-    border: none !important;
-    padding: 8px 12px !important;
-    border-radius: 6px !important;
-    font-size: 12px !important;
-    font-weight: bold !important;
-    cursor: pointer;
-    text-align: center;
-    box-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
-}
-
-.btn-trust-ai:hover {
-    background: #16a34a !important;
-}
-
-.btn-manual-analysis {
-    background: rgba(30, 41, 59, 0.9) !important;
-    color: #e2e8f0 !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-    padding: 8px 12px !important;
-    border-radius: 6px !important;
-    font-size: 12px !important;
-    font-weight: 600 !important;
-    cursor: pointer;
-    text-align: center;
-}
-
-.btn-manual-analysis:hover {
-    background: #334155 !important;
-    border-color: #38bdf8 !important;
-}
-
-/* MODALES FLOTANTES */
+/* MODALES FLOTANTES CENTRALES */
 .modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(3, 7, 18, 0.8);
-    backdrop-filter: blur(4px);
+    background: rgba(3, 7, 18, 0.85);
+    backdrop-filter: blur(5px);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -290,7 +299,7 @@ button:hover {
     border: 1px solid rgba(56, 189, 248, 0.3);
     border-radius: 16px;
     padding: 24px;
-    max-width: 480px;
+    max-width: 500px;
     width: 90%;
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
 }
@@ -298,12 +307,69 @@ button:hover {
 .text-center { text-align: center; }
 .hidden { display: none !important; }
 
+.select-diag {
+    width: 100%;
+    padding: 10px;
+    margin: 15px 0;
+    background: #1e293b;
+    color: white;
+    border: 1px solid #38bdf8;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-cancel {
+    background: #475569;
+    color: white;
+}
+
 .btn-confirm {
-    margin-top: 18px;
+    margin-top: 10px;
     background: #0284c7;
     color: white;
     width: 100%;
     padding: 10px;
     border: none;
     font-size: 14px;
+}
+
+/* RESULTADO Y TRATAMIENTO */
+.result-badge {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-weight: 800;
+    margin: 12px 0;
+    font-size: 14px;
+}
+
+.result-badge.success { background: #16a34a; color: white; }
+.result-badge.error { background: #dc2626; color: white; }
+
+.result-info-box {
+    background: rgba(30, 41, 59, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 14px;
+    border-radius: 8px;
+    text-align: left;
+    margin-bottom: 15px;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.divider {
+    border: 0;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 10px 0;
+}
+
+.treatment-text {
+    color: #e2e8f0;
+    margin-top: 4px;
 }
