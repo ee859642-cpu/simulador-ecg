@@ -1,41 +1,148 @@
 const API_URL = "https://simulador-ecg.onrender.com";
 
-// BASE DE DATOS DE LOS 27 RITMOS EXACTOS DEL PROFESOR
+// BASE DE DATOS OFICIAL DE 27 RITMOS CON BPM Y TRATAMIENTO CLÍNICO
 const RITMOS_DOCENTE = {
-    "Sinus rhythm": { bpm: 72, desc: "Ritmo sinusal normal. Frecuencia dentro del rango fisiológico estándar." },
-    "Sinus bradycardia": { bpm: 54, desc: "Bradicardia sinusal. Frecuencia cardíaca por debajo de 60 BPM." },
-    "Sinus Tachycardia": { bpm: 138, desc: "Taquicardia sinusal. Frecuencia cardíaca elevada por encima de 100 BPM." },
-    "Sinus Arhythmia": { bpm: 78, desc: "Arritmia sinusal. Variación fisiológica del ritmo coordinado con la respiración." },
-    "Sinus exits block": { bpm: 48, desc: "Bloqueo de salida sinusal. Fallo de conducción del impulso desde el nodo SA." },
-    "Sinus arrest": { bpm: 54, desc: "Paro sinusal. Pausa en la actividad del nodo sinusal." },
-    "NSR with PAC(PJC) NSR with premature atrial": { bpm: 84, desc: "Ritmo sinusal normal con despolarizaciones auriculares/unccionales prematuras." },
-    "Supraventricular tachycardia": { bpm: 180, desc: "Taquicardia supraventricular. Ritmo rápido originado por encima de los ventrículos." },
-    "Atrial Fibrillallation": { bpm: 90, desc: "Fibrilación auricular. Actividad auricular desorganizada e irregular." },
-    "Atrial Flutter": { bpm: 75, desc: "Aleteo auricular. Circuito de reentrada auricular con ondas en diente de sierra." },
-    "Paced Atrial rhythm": { bpm: 60, desc: "Ritmo auricular marcapaseado. Estimulación eléctrica auricular por dispositivo." },
-    "NSR with 1 AVB(NSR with firot degree AV Block)": { bpm: 74, desc: "Ritmo sinusal con Bloqueo AV de 1er grado (intervalo PR prolongado constante)." },
-    "2 AVB type I": { bpm: 48, desc: "Bloqueo AV de 2do grado Tipo I (Mobitz I / Wenckebach). Prolongación progresiva de PR." },
-    "2 AVB type II": { bpm: 60, desc: "Bloqueo AV de 2do grado Tipo II (Mobitz II). Fallos intermitentes de conducción sin prolongación de PR." },
-    "2 AVB 2:1": { bpm: 38, desc: "Bloqueo AV de 2do grado 2:1. Conducción de un complejo por cada dos ondas P." },
-    "3 AVB Block": { bpm: 36, desc: "Bloqueo AV de 3er grado (Completo). Disociación auriculo-ventricular total." },
-    "NSR with PJC(Premature Junctional Complex)": { bpm: 84, desc: "Ritmo sinusal normal con complejo prematuro de la unión." },
-    "Junctional Rhythm": { bpm: 48, desc: "Ritmo nodal/unccional. Ritmo de escape originado en el nodo AV." },
-    "Accelerated Junctional": { bpm: 82, desc: "Ritmo unccional acelerado. Frecuencia nodal aumentada entre 60 y 100 BPM." },
-    "Junctional Tachycardia": { bpm: 186, desc: "Taquicardia unccional. Ritmo rápido originado en el tejido de la unión." },
-    "Wandering Pacemaker": { bpm: 78, desc: "Marcapasos migratorio. Cambios de morfología de la onda P por variación del sitio de origen." },
-    "NSR with PVC(Sinus Rhythm with Premature ventricular complex)": { bpm: 68, desc: "Ritmo sinusal con despolarización ventricular prematura (extrasístole ventricular)." },
-    "Idioventricular rhythm": { bpm: 36, desc: "Ritmo idioventricular. Escape ventricular lento por ausencia de pacemaker superior." },
-    "Accelerated dioventricular rhythm": { bpm: 84, desc: "Ritmo idioventricular acelerado (RIVA). Ritmo ventricular entre 50 y 100 BPM." },
-    "Ventricular tachycardia(VTach)": { bpm: 210, desc: "Taquicardia ventricular. Ritmo ventricular rápido de complejos QRS anchos." },
-    "Ventricular fibrillation": { bpm: 0, desc: "Fibrilación ventricular. Actividad eléctrica ventricular caótica sin gasto cardíaco." },
-    "Paced Ventricula": { bpm: 80, desc: "Ritmo ventricular marcapaseado. Estimulación directa por dispositivo en ventrículo." }
+    "Sinus rhythm": { 
+        bpm: 72, 
+        desc: "Ritmo sinusal normal. Frecuencia dentro del rango fisiológico estándar.",
+        tratamiento: "No requiere tratamiento. Monitorización continua y control de signos vitales."
+    },
+    "Sinus bradycardia": { 
+        bpm: 54, 
+        desc: "Bradicardia sinusal. Frecuencia cardíaca por debajo de 60 BPM.",
+        tratamiento: "Si es asintomática, solo observación. Si presenta hipotensión o mareo: Atropina IV (0.5 - 1 mg) o marcapasos transcutáneo."
+    },
+    "Sinus Tachycardia": { 
+        bpm: 138, 
+        desc: "Taquicardia sinusal. Frecuencia cardíaca elevada por encima de 100 BPM.",
+        tratamiento: "Tratar la causa subyacente (fiebre, deshidratación, dolor, ansiedad, anemia). No se indican antiarrítmicos de primera línea."
+    },
+    "Sinus Arhythmia": { 
+        bpm: 78, 
+        desc: "Arritmia sinusal. Variación fisiológica del ritmo coordinado con la respiración.",
+        tratamiento: "Variante benigna normal (común en jóvenes). No requiere tratamiento médico."
+    },
+    "Sinus exits block": { 
+        bpm: 48, 
+        desc: "Bloqueo de salida sinusal. Fallo de conducción del impulso desde el nodo SA.",
+        tratamiento: "Evaluar fármacos bradicardizantes (Betabloqueantes, Digoxina). Si genera síntomas graves, considerar marcapasos permanente."
+    },
+    "Sinus arrest": { 
+        bpm: 54, 
+        desc: "Paro sinusal. Pausa prolongada en la actividad del nodo sinusal.",
+        tratamiento: "Sintomático: Atropina IV temporal. En pausas sinusales prolongadas y recurrentes: implantación de Marcapasos definitivo."
+    },
+    "NSR with PAC(PJC) NSR with premature atrial": { 
+        bpm: 84, 
+        desc: "Ritmo sinusal normal con despolarizaciones auriculares prematuras (PAC).",
+        tratamiento: "Generalmente benigno. Evitar estimulantes (cafeína, alcohol, tabaco). Si genera palpitaciones molestas: Betabloqueantes a dosis bajas."
+    },
+    "Supraventricular tachycardia": { 
+        bpm: 180, 
+        desc: "Taquicardia supraventricular (TSV). Ritmo rápido originado por encima de los ventrículos.",
+        tratamiento: "Maniobras vagales (Valsalva). Si persiste y está estable: Adenosina IV rápida (6 mg -> 12 mg). Si está inestable: Cardioversión eléctrica sincronizada."
+    },
+    "Atrial Fibrillallation": { 
+        bpm: 90, 
+        desc: "Fibrilación auricular. Actividad auricular desorganizada e irregular.",
+        tratamiento: "Control de frecuencia (Betabloqueantes / Diltiazem), Anticoagulación según escala CHA2DS2-VASc y evaluación de Cardioversión."
+    },
+    "Atrial Flutter": { 
+        bpm: 75, 
+        desc: "Aleteo auricular. Circuito de reentrada auricular con ondas en 'diente de sierra'.",
+        tratamiento: "Control de frecuencia, Anticoagulación profiláctica y Ablación por radiofrecuencia del istmo cavotricuspídeo como tratamiento definitivo."
+    },
+    "Paced Atrial rhythm": { 
+        bpm: 60, 
+        desc: "Ritmo auricular marcapaseado. Estimulación eléctrica auricular por dispositivo.",
+        tratamiento: "Verificar adecuado funcionamiento y captura del marcapasos mediante telemetría. Sin intervención aguda si es normofuncionante."
+    },
+    "NSR with 1 AVB(NSR with firot degree AV Block)": { 
+        bpm: 74, 
+        desc: "Bloqueo AV de 1er grado (intervalo PR prolongado > 0.20s constante).",
+        tratamiento: "Generalmente asintomático y benigno. Monitorización regular y ajuste de fármacos que prolonguen la conducción AV."
+    },
+    "2 AVB type I": { 
+        bpm: 48, 
+        desc: "Bloqueo AV de 2do grado Tipo I (Mobitz I / Wenckebach). Prolongación progresiva del intervalo PR hasta que una onda P no conduce.",
+        tratamiento: "Asintomático: Observación. Sintomático: Atropina IV transitoria o suspensión de fármacos depresores del nodo AV."
+    },
+    "2 AVB type II": { 
+        bpm: 60, 
+        desc: "Bloqueo AV de 2do grado Tipo II (Mobitz II). Bloqueo inconstante e imprevisto de ondas P sin prolongación previa de PR.",
+        tratamiento: "Alto riesgo de progresión a bloqueo completo. Requiere Marcapasos transitorio/definitivo. Atropina suele ser ineficaz."
+    },
+    "2 AVB 2:1": { 
+        bpm: 38, 
+        desc: "Bloqueo AV de 2do grado 2:1. Conducción de un complejo QRS por cada dos ondas P.",
+        tratamiento: "Evaluación hemodinámica. Si cursa con bradicardia severa o hipotensión: Marcapasos percutáneo de urgencia e implantación definitiva."
+    },
+    "3 AVB Block": { 
+        bpm: 36, 
+        desc: "Bloqueo AV de 3er grado (Completo). Disociación auriculo-ventricular total (ondas P y QRS marchan a frecuencias independientes).",
+        tratamiento: "Urgencia médica. Marcapasos transcutáneo inmediato / Isoproterenol o Dopamina como puente a Marcapasos definitivo."
+    },
+    "NSR with PJC(Premature Junctional Complex)": { 
+        bpm: 84, 
+        desc: "Ritmo sinusal normal con complejo prematuro de la unión (PJC).",
+        tratamiento: "Tratamiento conservador. Corregir desequilibrios electrolíticos o toxicidad por Digoxina si aplica."
+    },
+    "Junctional Rhythm": { 
+        bpm: 48, 
+        desc: "Ritmo unccional o nodal. Escape originado en el nodo AV (QRS estrecho, ausencia de onda P o P invertida).",
+        tratamiento: "Tratar la causa subyacente (isquemia, hiperpotasemia, fármacos). Atropina si hay compromiso hemodinámico."
+    },
+    "Accelerated Junctional": { 
+        bpm: 82, 
+        desc: "Ritmo unccional acelerado. Automatisco unccional aumentado (60-100 BPM).",
+        tratamiento: "Identificar y revertir toxicidad por digitálicos, estados catecolaminérgicos o isquemia inferior."
+    },
+    "Junctional Tachycardia": { 
+        bpm: 186, 
+        desc: "Taquicardia unccional. Ritmo rápido originado en el tejido de la unión nodal.",
+        tratamiento: "Tratamiento de la causa desencadenante. Antiarrítmicos (Amiodarona, Flecainida) o Betabloqueantes según indicación especializada."
+    },
+    "Wandering Pacemaker": { 
+        bpm: 78, 
+        desc: "Marcapasos auricular migratorio. Variación en la morfología de ondas P de un latido a otro.",
+        tratamiento: "Afección benigna. Generalmente no requiere tratamiento directo; controlar enfermedad pulmonar subyacente (EPOC) si está presente."
+    },
+    "NSR with PVC(Sinus Rhythm with Premature ventricular complex)": { 
+        bpm: 68, 
+        desc: "Ritmo sinusal con complejo ventricular prematuro (extrasístole ventricular - QRS ancho y mellado).",
+        tratamiento: "Si son frecuentes o sintomáticas: Betabloqueantes o Calcioantagonistas. Evaluar electrólitos (K+, Mg++)."
+    },
+    "Idioventricular rhythm": { 
+        bpm: 36, 
+        desc: "Ritmo idioventricular. Escape ventricular muy lento con QRS ancho y sin ondas P asociadas.",
+        tratamiento: "Atropina (usualmente poco efectiva). Inotrópicos / Marcapasos de emergencia inmediatamente."
+    },
+    "Accelerated dioventricular rhythm": { 
+        bpm: 84, 
+        desc: "Ritmo idioventricular acelerado (RIVA). Ritmo ventricular de escape entre 50 y 100 BPM.",
+        tratamiento: "Ritmo benigno de reperfusión post-IAM. Generalmente hemodinámicamente estable; no se recomienda supresión antiarrítmica agresiva."
+    },
+    "Ventricular tachycardia(VTach)": { 
+        bpm: 210, 
+        desc: "Taquicardia ventricular. Ritmo ventricular rápido de complejos QRS anchos en monomórficos.",
+        tratamiento: "Con pulso y estable: Amiodarona IV (150 mg). Con pulso e inestable: Cardioversión eléctrica. Sin pulso: Desfibrilación e RCP inmediata."
+    },
+    "Ventricular fibrillation": { 
+        bpm: 0, 
+        desc: "Fibrilación ventricular. Actividad eléctrica caótica e inefectiva sin pulso palpable.",
+        tratamiento: "¡PARO CARDIORRESPIRATORIO! Desfibrilación inmediata no sincronizada + RCP de alta calidad + Adrenalina 1mg cada 3-5 min."
+    },
+    "Paced Ventricula": { 
+        bpm: 80, 
+        desc: "Ritmo ventricular marcapaseado. Espiga de estimulación previa a un complejo QRS ancho.",
+        tratamiento: "Monitoreo de la respuesta del marcapasos. Comprobar umbrales de captura y detección mediante evaluación técnica."
+    }
 };
 
 let nivelActual = 1;
 let aciertosNivel2 = 0;
 const META_ACIERTOS_NIVEL2 = 10;
 
-// SISTEMA DE SESGO / BIAS DE LA IA
 let confiasSeguidasIA = 0;
 let aciertosManualesSeguidos = 0;
 let indiceDependenciaIA = 0;
@@ -142,7 +249,6 @@ function generarNuevoCasoAleatorio() {
     let prediccionIA = ritmoReal;
     let confianza = Math.floor(Math.random() * 6) + 93;
 
-    // Si confías más de 2 veces seguidas en la IA, esta falla intencionalmente para inducir sesgo de automatización
     if (confiasSeguidasIA >= 2) {
         const filtradas = listaKeys.filter(r => r !== ritmoReal);
         prediccionIA = filtradas[Math.floor(Math.random() * filtradas.length)];
@@ -237,6 +343,7 @@ function evaluarDiagnosticoManual() {
     );
 }
 
+// MUESTRA EL DIAGNÓSTICO + TRATAMIENTO MÉDICO ESPECÍFICO
 function mostrarResultadoModal(titulo, esCorrecto, ritmoReal) {
     const badge = document.getElementById("res-status-badge");
     const realDiag = document.getElementById("res-real-diag");
@@ -249,8 +356,16 @@ function mostrarResultadoModal(titulo, esCorrecto, ritmoReal) {
         badge.className = `result-badge ${esCorrecto ? "success" : "error"}`;
     }
 
+    const info = RITMOS_DOCENTE[ritmoReal];
+
     if (realDiag) realDiag.innerText = ritmoReal;
-    if (treatment) treatment.innerText = RITMOS_DOCENTE[ritmoReal]?.desc || "Descripción clínica no disponible.";
+    if (treatment && info) {
+        treatment.innerHTML = `
+            <p><strong>Descripción:</strong> ${info.desc}</p>
+            <br>
+            <p style="color:#38bdf8;"><strong>💊 Tratamiento Clínico Indicado:</strong> ${info.tratamiento}</p>
+        `;
+    }
 
     document.getElementById("modal-resultado")?.classList.remove("hidden");
 }
@@ -305,7 +420,7 @@ function ajustarTamanoCanvas() {
     canvas.height = canvas.parentElement.clientHeight;
 }
 
-// RENDERIZADO DINÁMICO DE SEÑALES ECG SEGÚN RITMO
+// MOTOR ECG CON TRAZADO VISUAL DIFERENCIADO
 function iniciarTrazadoECG(ritmo) {
     if (!canvas || !ctx) return;
     if (animacionId) cancelAnimationFrame(animacionId);
@@ -316,7 +431,8 @@ function iniciarTrazadoECG(ritmo) {
 
         dibujarCuadricula();
 
-        ctx.strokeStyle = (ritmo.includes("Ventricular fibrillation") || ritmo.includes("arrest")) ? "#ef4444" : "#00FF66";
+        // Color según severidad
+        ctx.strokeStyle = (ritmo.includes("Ventricular fibrillation") || ritmo.includes("VTach") || ritmo.includes("3 AVB")) ? "#ef4444" : "#00FF66";
         ctx.lineWidth = 2;
         ctx.beginPath();
 
@@ -326,25 +442,48 @@ function iniciarTrazadoECG(ritmo) {
         while (x < canvas.width) {
             let y = yBase;
 
+            // 1. Fibrilación Ventricular (Caos)
             if (ritmo === "Ventricular fibrillation") {
-                y += (Math.random() - 0.5) * 50; // Trazado desorganizado y caótico
-            } else if (ritmo === "Sinus arrest") {
-                let posArrest = (x + offsetOnda) % 350;
-                if (posArrest > 250) y += (Math.random() - 0.5) * 2; // Línea casi plana
-                else if (posArrest >= 50 && posArrest < 60) y -= 50;
-            } else if (ritmo.includes("tachycardia") || ritmo.includes("VTach") || ritmo.includes("Flutter")) {
-                let posTaq = (x + offsetOnda) % 70;
-                if (posTaq >= 25 && posTaq < 35) y -= 50;
-            } else if (ritmo.includes("bradycardia") || ritmo.includes("Idioventricular") || ritmo.includes("Block")) {
-                let posBrad = (x + offsetOnda) % 260;
-                if (posBrad >= 60 && posBrad < 70) y -= 48;
-            } else {
-                // Ritmo Estándar / Sinusal
-                let posSin = (x + offsetOnda) % 170;
-                if (posSin > 20 && posSin < 35) y -= 8;
-                else if (posSin >= 50 && posSin < 60) y -= 55;
+                y += (Math.random() - 0.5) * 60; 
+            } 
+            // 2. Bloqueo AV Completo (Disociación AV: Ondas P frecuentes + QRS anchos muy lentos)
+            else if (ritmo === "3 AVB Block") {
+                let pos = (x + offsetOnda) % 260;
+                if (pos > 20 && pos < 30) y -= 12; // Onda P 1
+                if (pos > 90 && pos < 100) y -= 12; // Onda P 2
+                if (pos > 160 && pos < 170) y -= 12; // Onda P 3
+                if (pos >= 200 && pos < 220) y -= (pos % 2 === 0 ? 55 : -25); // Complejo QRS Ancho de Escape
+            }
+            // 3. Ritmo Idioventricular (Sin Onda P, QRS muy ancho y lento)
+            else if (ritmo === "Idioventricular rhythm") {
+                let pos = (x + offsetOnda) % 260;
+                if (pos >= 110 && pos < 140) y -= Math.sin((pos - 110) / 30 * Math.PI) * 50; // QRS Ancho
+            }
+            // 4. Aleteo Auricular (Ondas F en Diente de Sierra)
+            else if (ritmo === "Atrial Flutter") {
+                let pos = (x + offsetOnda) % 120;
+                y += Math.sin(pos / 5) * 12; // Onda sierra constante
+                if (pos >= 50 && pos < 58) y -= 50; // QRS
+            }
+            // 5. Taquicardia Ventricular (QRS anchos y rápidos continuos)
+            else if (ritmo === "Ventricular tachycardia(VTach)") {
+                let pos = (x + offsetOnda) % 45;
+                y -= Math.sin(pos / 45 * Math.PI) * 55;
+            }
+            // 6. Marcapasos Ventricular (Espiga vertical seguida de QRS ancho)
+            else if (ritmo === "Paced Ventricula") {
+                let pos = (x + offsetOnda) % 150;
+                if (pos >= 40 && pos < 43) y -= 65; // Espiga del marcapasos
+                else if (pos >= 44 && pos < 65) y -= 40; // QRS Ancho marcapaseado
+            }
+            // 7. Ritmo Estándar
+            else {
+                let ciclo = ritmo.includes("tachycardia") || ritmo.includes("SVT") ? 80 : 170;
+                let posSin = (x + offsetOnda) % ciclo;
+                if (posSin > 20 && posSin < 35) y -= 8; // Onda P
+                else if (posSin >= 50 && posSin < 60) y -= 55; // Onda QRS
                 else if (posSin >= 60 && posSin < 65) y += 10;
-                else if (posSin > 90 && posSin < 120) y -= 12;
+                else if (posSin > 90 && posSin < 120) y -= 12; // Onda T
             }
 
             if (x === 0) ctx.moveTo(x, y);
