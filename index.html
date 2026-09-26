@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simulador Clínico ECG & IA</title>
-    <link rel="stylesheet" href="styles.css?v=8">
+    <link rel="stylesheet" href="styles.css?v=10">
 </head>
 <body>
 
@@ -19,7 +19,7 @@
 
         <!-- BOTONES SUPERIORES IZQUIERDA -->
         <button class="btn-top-left" onclick="abrirModal('ajustes')">⚙️ Ajustes</button>
-        <button class="btn-top-left-2" onclick="abrirModal('patologias')">📊 27 Patologías</button>
+        <button class="btn-top-left-2" onclick="abrirModal('patologias')">📊 27 Ritmos Oficiales</button>
 
         <!-- PALETA DE ELECTRODOS (IZQUIERDA) -->
         <div class="electrode-palette">
@@ -67,7 +67,7 @@
                 </div>
                 <div id="ai-confidence-text" class="ai-confidence-val">Confianza: --%</div>
                 
-                <button class="btn-trust-ai" onclick="tomarDecisionIA(true)">
+                <button class="btn-trust-ai" onclick="tomarDecisionIA()">
                     ✓ Confiar en la IA
                 </button>
                 
@@ -86,7 +86,7 @@
             <div class="patient-bar">
                 <span id="patient-info">Paciente: PAC-001 (56 años)</span>
                 <span id="bpm-display">BPM: --</span>
-                <span id="bias-display">Índice Dependencia IA: 0%</span>
+                <span id="bias-display" class="bias-tag">Índice Dependencia IA: 0%</span>
             </div>
             <div class="monitor-content">
                 <div class="canvas-wrapper">
@@ -118,7 +118,7 @@
     <div id="modal-nivel2" class="modal-overlay hidden">
         <div class="modal-content text-center">
             <h2>📈 Nivel 2: Interpretación de Señal ECG</h2>
-            <p class="modal-description">Electrodos colocados correctamente. Para superar el Nivel 2 deberás acumular al menos <strong>10 aciertos</strong> en el diagnóstico de ritmos cardíacos.</p>
+            <p class="modal-description">Electrodos colocados correctamente. Completa <strong>10 aciertos</strong> sobre la lista de 27 ritmos para avanzar al Nivel 3.</p>
             <button class="btn-confirm" onclick="comenzarNivel2()">Iniciar Monitor ECG</button>
         </div>
     </div>
@@ -126,13 +126,9 @@
     <!-- MODAL DE ANÁLISIS MANUAL -->
     <div id="modal-manual" class="modal-overlay hidden">
         <div class="modal-content">
-            <h2>✍️ Diagnóstico Manual</h2>
-            <p class="modal-description">Selecciona tu diagnóstico para este paciente:</p>
-            <select id="select-diagnostico" class="select-diag">
-                <option value="Sinus Rhythm">Sinus Rhythm (Ritmo Sinusal Normal)</option>
-                <option value="Sinus Bradycardia">Sinus Bradycardia (Bradicardia Sinusal)</option>
-                <option value="Sinus Tachycardia">Sinus Tachycardia (Taquicardia Sinusal)</option>
-            </select>
+            <h2>✍️ Diagnóstico Manual (27 Ritmos)</h2>
+            <p class="modal-description">Selecciona el ritmo correspondiente:</p>
+            <select id="select-diagnostico" class="select-diag"></select>
             <div class="modal-actions">
                 <button class="btn-confirm" onclick="evaluarDiagnosticoManual()">Confirmar Diagnóstico</button>
                 <button class="btn-cancel" onclick="cerrarModalManual()">Cancelar</button>
@@ -147,9 +143,9 @@
             <div id="res-status-badge" class="result-badge">--</div>
             
             <div class="result-info-box">
-                <p><strong>Diagnóstico Real:</strong> <span id="res-real-diag">--</span></p>
+                <p><strong>Ritmo Real:</strong> <span id="res-real-diag">--</span></p>
                 <hr class="divider">
-                <p><strong>💡 Explicación Clínica & Tratamiento:</strong></p>
+                <p><strong>💡 Explicación Clínica:</strong></p>
                 <p id="res-treatment-text" class="treatment-text">--</p>
             </div>
 
@@ -157,18 +153,27 @@
         </div>
     </div>
 
-    <!-- MODAL DE META COMPLETADA (NIVEL 2 SUPERADO) -->
+    <!-- MODAL DE META COMPLETADA -->
     <div id="modal-nivel2-completado" class="modal-overlay hidden">
         <div class="modal-content text-center">
             <h2>🎉 ¡Nivel 2 Superado!</h2>
-            <p class="modal-description">Has logrado acumular los <strong>10 aciertos</strong> requeridos analizando señales de ECG.</p>
+            <p class="modal-description">Has acumulado los <strong>10 aciertos</strong> requeridos analizando los 27 ritmos cardíacos.</p>
             <div class="result-info-box">
-                <p>🔒 <strong>Nivel 3 (Próximamente):</strong> Manejo Clínico Completo y Farmacoterapia Avanzada.</p>
+                <p>🔒 <strong>Nivel 3 (Próximamente):</strong> Tratamiento Clínico Avanzado.</p>
             </div>
-            <button class="btn-confirm" onclick="continuarPracticandoNivel2()">Seguir Practicando Nivel 2 🔄</button>
+            <button class="btn-confirm" onclick="continuarPracticandoNivel2()">Seguir Practicando 🔄</button>
         </div>
     </div>
 
-    <script src="app.js?v=8"></script>
+    <!-- MODAL 27 RITMOS INFORMATIVO -->
+    <div id="modal-patologias-info" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2>📊 Lista Oficial de 27 Ritmos</h2>
+            <div id="lista-patologias-container" class="patologias-list-box"></div>
+            <button class="btn-confirm" onclick="cerrarModalInfoPatologias()">Cerrar</button>
+        </div>
+    </div>
+
+    <script src="app.js?v=10"></script>
 </body>
 </html>
