@@ -4,16 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simulador Clínico ECG & IA</title>
-    <link rel="stylesheet" href="styles.css?v=7">
+    <link rel="stylesheet" href="styles.css?v=8">
 </head>
 <body>
 
     <div class="app-container">
 
-        <!-- BANNER SUPERIOR DE NIVEL -->
+        <!-- BANNER SUPERIOR DE NIVEL CON CONTADOR -->
         <div class="level-banner">
             <span id="level-badge" class="level-badge">NIVEL 1</span>
             <span id="level-title" class="level-title">Posicionamiento Anatómico de Electrodos</span>
+            <span id="score-badge" class="score-badge hidden">🎯 Aciertos: 0 / 10</span>
         </div>
 
         <!-- BOTONES SUPERIORES IZQUIERDA -->
@@ -56,7 +57,7 @@
             </div>
         </div>
 
-        <!-- PANEL DE CONTROL DE IA (MOVIDO A LA DERECHA SUPERIOR) -->
+        <!-- PANEL DE CONTROL DE IA -->
         <div id="ai-panel" class="ai-panel hidden">
             <div class="ai-panel-header">🖥️ Asistente Diagnóstico IA</div>
             <div class="ai-suggestion-card">
@@ -78,9 +79,9 @@
 
         <!-- BOTONES INFERIORES -->
         <button class="btn-bottom-left" onclick="abrirModal('metricas')">🧠 Modelo IA & Bias</button>
-        <button class="btn-bottom-right" onclick="iniciarNuevoCaso()">🚑 Nuevo Paciente</button>
+        <button class="btn-bottom-right" onclick="reiniciarDesdeNivel1()">🔄 Reiniciar Posicionamiento</button>
 
-        <!-- MONITOR DE ECG INFERIOR (LIMPIO) -->
+        <!-- MONITOR DE ECG INFERIOR -->
         <div id="monitor-panel" class="monitor-panel hidden">
             <div class="patient-bar">
                 <span id="patient-info">Paciente: PAC-001 (56 años)</span>
@@ -117,7 +118,7 @@
     <div id="modal-nivel2" class="modal-overlay hidden">
         <div class="modal-content text-center">
             <h2>📈 Nivel 2: Interpretación de Señal ECG</h2>
-            <p class="modal-description">Electrodos colocados correctamente. Revisa la sugerencia del modelo de IA o realiza tu propio análisis manual en el panel derecho.</p>
+            <p class="modal-description">Electrodos colocados correctamente. Para superar el Nivel 2 deberás acumular al menos <strong>10 aciertos</strong> en el diagnóstico de ritmos cardíacos.</p>
             <button class="btn-confirm" onclick="comenzarNivel2()">Iniciar Monitor ECG</button>
         </div>
     </div>
@@ -139,7 +140,7 @@
         </div>
     </div>
 
-    <!-- MODAL DE RESULTADO / TRATAMIENTO (CENTRAL) -->
+    <!-- MODAL DE RESULTADO / TRATAMIENTO -->
     <div id="modal-resultado" class="modal-overlay hidden">
         <div class="modal-content text-center">
             <h2 id="res-status-title">📋 Resultado del Diagnóstico</h2>
@@ -152,10 +153,22 @@
                 <p id="res-treatment-text" class="treatment-text">--</p>
             </div>
 
-            <button class="btn-confirm" onclick="cerrarModalResultado()">Siguiente Paciente 🚑</button>
+            <button class="btn-confirm" onclick="siguienteCasoNivel2()">Siguiente Paciente 🚑</button>
         </div>
     </div>
 
-    <script src="app.js?v=7"></script>
+    <!-- MODAL DE META COMPLETADA (NIVEL 2 SUPERADO) -->
+    <div id="modal-nivel2-completado" class="modal-overlay hidden">
+        <div class="modal-content text-center">
+            <h2>🎉 ¡Nivel 2 Superado!</h2>
+            <p class="modal-description">Has logrado acumular los <strong>10 aciertos</strong> requeridos analizando señales de ECG.</p>
+            <div class="result-info-box">
+                <p>🔒 <strong>Nivel 3 (Próximamente):</strong> Manejo Clínico Completo y Farmacoterapia Avanzada.</p>
+            </div>
+            <button class="btn-confirm" onclick="continuarPracticandoNivel2()">Seguir Practicando Nivel 2 🔄</button>
+        </div>
+    </div>
+
+    <script src="app.js?v=8"></script>
 </body>
 </html>
