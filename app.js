@@ -7,6 +7,12 @@ let animacionId = null;
 let offsetOnda = 0;
 let datosCasoActual = null;
 
+const TRATAMIENTOS = {
+    "Sinus Rhythm": "Ritmo cardíaco normal y saludable. No requiere tratamiento farmacológico ni intervención. Se recomienda mantener hábitos de vida saludables.",
+    "Sinus Bradycardia": "Frecuencia cardíaca < 60 BPM. Si el paciente está asintomático, solo requiere observación. En presencia de mareos o síncope, considerar Atropina EV o marcapasos temporal.",
+    "Sinus Tachycardia": "Frecuencia cardíaca > 100 BPM. Generalmente secundaria a fiebre, ansiedad, deshidratación o ejercicio. Tratar la causa subyacente (reposición de fluidos, control del dolor o ansiolíticos)."
+};
+
 const ELECTRODOS_REQUERIDOS = ["V1", "V2", "V3", "V4", "V5", "V6"];
 let electrodosColocados = new Set();
 
@@ -32,6 +38,7 @@ function actualizarBannerNivel(numeroNivel, tituloNivel) {
 function comenzarNivel1() {
     nivelActual = 1;
     document.getElementById("modal-nivel1")?.classList.add("hidden");
+    document.getElementById("ai-panel")?.classList.add("hidden");
 }
 
 function verificarElectrodosCompletos() {
@@ -48,6 +55,7 @@ async function comenzarNivel2() {
     
     document.getElementById("modal-nivel2")?.classList.add("hidden");
     document.getElementById("monitor-panel")?.classList.remove("hidden");
+    document.getElementById("ai-panel")?.classList.remove("hidden");
 
     await cargarDatosCaso();
 }
@@ -83,28 +91,68 @@ function actualizarInterfazCaso(datos) {
 }
 
 function tomarDecisionIA(confiaEnIA) {
-    if (confiaEnIA) {
-        alert(`Has aceptado el diagnóstico de la IA: ${datosCasoActual?.prediccion_ia || "Sinus Rhythm"}`);
-    }
+    const ritmoReal = datosCasoActual?.ritmo_patologia_real || "Sinus Rhythm";
+    const prediccionIA = datosCasoActual?.prediccion_ia || "Sinus Rhythm";
+    const esCorrecto = (prediccionIA.toLowerCase() === ritmoReal.toLowerCase());
+
+    mostrarResultadoModal(
+        esCorrecto ? "¡Diagnóstico Correcto!" : "Diagnóstico Incorrecto",
+        esCorrecto,
+        ritmoReal
+    );
 }
 
-function mostrarDiagnosticoManual() {
-    const seleccion = prompt(
-        "Ingresa tu diagnóstico manual (Ej: Sinus Rhythm, Sinus Bradycardia, Atrial Fibrillation):"
+function abrirModalManual() {
+    document.getElementById("modal-manual")?.classList.remove("hidden");
+}
+
+function cerrarModalManual() {
+    document.getElementById("modal-manual")?.classList.add("hidden");
+}
+
+function evaluarDiagnosticoManual() {
+    const select = document.getElementById("select-diagnostico");
+    const seleccion = select.value;
+    const ritmoReal = datosCasoActual?.ritmo_patologia_real || "Sinus Rhythm";
+    
+    cerrarModalManual();
+
+    const esCorrecto = (seleccion.toLowerCase() === ritmoReal.toLowerCase());
+
+    mostrarResultadoModal(
+        esCorrecto ? "¡Análisis Manual Acertado!" : "Análisis Manual Incorrecto",
+        esCorrecto,
+        ritmoReal
     );
-    if (seleccion) {
-        const ritmoReal = datosCasoActual?.ritmo_patologia_real || "Sinus Rhythm";
-        if (seleccion.trim().toLowerCase() === ritmoReal.toLowerCase()) {
-            alert("¡Correcto! Tu análisis manual es atinado.");
-        } else {
-            alert(`Diagnóstico incorrecto. El ritmo real del paciente era: ${ritmoReal}`);
-        }
+}
+
+function mostrarResultadoModal(titulo, esCorrecto, ritmoReal) {
+    const badge = document.getElementById("res-status-badge");
+    const realDiag = document.getElementById("res-real-diag");
+    const treatment = document.getElementById("res-treatment-text");
+
+    document.getElementById("res-status-title").innerText = titulo;
+    
+    if (badge) {
+        badge.innerText = esCorrecto ? "✓ ACIERTO" : "✖ ERROR";
+        badge.className = `result-badge ${esCorrecto ? "success" : "error"}`;
     }
+
+    if (realDiag) realDiag.innerText = ritmoReal;
+    if (treatment) treatment.innerText = TRATAMIENTOS[ritmoReal] || "Tratamiento no especificado.";
+
+    document.getElementById("modal-resultado")?.classList.remove("hidden");
+}
+
+function cerrarModalResultado() {
+    document.getElementById("modal-resultado")?.classList.add("hidden");
+    iniciarNuevoCaso();
 }
 
 function iniciarNuevoCaso() {
     reiniciarElectrodos();
     document.getElementById("monitor-panel")?.classList.add("hidden");
+    document.getElementById("ai-panel")?.classList.add("hidden");
     comenzarNivel1();
 }
 
@@ -156,6 +204,13 @@ function iniciarTrazadoECG(ritmo) {
                 else if (pos >= 55 && pos < 65) y -= 55;
                 else if (pos >= 65 && pos < 70) y += 12;
                 else if (pos > 90 && pos < 130) y -= Math.sin((pos - 90) * Math.PI / 40) * 14;
+            } else if (ritmo === "Sinus Tachycardia") {
+                let posTaq = (x + offsetOnda) % 120;
+                if (posTaq > 10 && posTaq < 25) y -= Math.sin((posTaq - 10) * Math.PI / 15) * 8;
+                else if (posTaq >= 30 && posTaq < 35) y += 6;
+                else if (posTaq >= 35 && posTaq < 45) y -= 55;
+                else if (posTaq >= 45 && posTaq < 50) y += 12;
+                else if (posTaq > 60 && posTaq < 90) y -= Math.sin((posTaq - 60) * Math.PI / 30) * 14;
             } else {
                 let posBrad = (x + offsetOnda) % 260;
                 if (posBrad > 20 && posBrad < 40) y -= Math.sin((posBrad - 20) * Math.PI / 20) * 7;
