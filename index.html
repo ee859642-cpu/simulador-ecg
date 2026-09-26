@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simulador Clínico ECG & IA</title>
-    <link rel="stylesheet" href="styles.css?v=6">
+    <link rel="stylesheet" href="styles.css?v=7">
 </head>
 <body>
 
@@ -16,9 +16,9 @@
             <span id="level-title" class="level-title">Posicionamiento Anatómico de Electrodos</span>
         </div>
 
-        <!-- BOTONES SUPERIORES -->
+        <!-- BOTONES SUPERIORES IZQUIERDA -->
         <button class="btn-top-left" onclick="abrirModal('ajustes')">⚙️ Ajustes</button>
-        <button class="btn-top-right" onclick="abrirModal('patologias')">📊 27 Patologías</button>
+        <button class="btn-top-left-2" onclick="abrirModal('patologias')">📊 27 Patologías</button>
 
         <!-- PALETA DE ELECTRODOS (IZQUIERDA) -->
         <div class="electrode-palette">
@@ -30,33 +30,23 @@
             <div class="electrode" data-lead="V6">V6</div>
         </div>
 
-        <!-- ÁREA CENTRAL (TORSO / ESCUDO CON CAJA TORÁCICA) -->
+        <!-- ÁREA CENTRAL (TORSO) -->
         <div class="viewport-3d">
             <div class="torso-container">
                 <svg class="torso-svg" viewBox="0 0 300 450" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <!-- Silueta del Torso -->
                     <path d="M150 20 C220 20 250 80 250 150 C250 260 210 370 150 430 C90 370 50 260 50 150 C50 80 80 20 150 20 Z" 
                           stroke="#38bdf8" stroke-width="3" fill="rgba(15, 23, 42, 0.4)" />
-                    
-                    <!-- Esternón Central -->
                     <rect x="146" y="100" width="8" height="120" rx="4" fill="rgba(248, 250, 252, 0.25)"/>
-                    
-                    <!-- Costillas Lado Derecho (Izquierda en pantalla) -->
                     <path d="M145 115 C110 110 80 125 70 145" stroke="rgba(248, 250, 252, 0.2)" stroke-width="2.5" stroke-linecap="round"/>
                     <path d="M145 135 C110 130 80 145 72 165" stroke="rgba(248, 250, 252, 0.2)" stroke-width="2.5" stroke-linecap="round"/>
                     <path d="M145 155 C110 150 82 170 75 190" stroke="rgba(248, 250, 252, 0.2)" stroke-width="2.5" stroke-linecap="round"/>
-                    
-                    <!-- Costillas Lado Izquierdo Paciente (Derecha en pantalla) -->
                     <path d="M155 115 C190 110 220 125 230 145" stroke="rgba(248, 250, 252, 0.2)" stroke-width="2.5" stroke-linecap="round"/>
                     <path d="M155 135 C190 130 220 145 228 165" stroke="rgba(248, 250, 252, 0.2)" stroke-width="2.5" stroke-linecap="round"/>
                     <path d="M155 155 C190 150 218 170 225 190" stroke="rgba(248, 250, 252, 0.2)" stroke-width="2.5" stroke-linecap="round"/>
-
-                    <!-- Corazón -->
                     <path d="M140 125 C130 110 105 110 98 125 C90 140 105 160 140 185 C175 160 190 140 182 125 C175 110 150 110 140 125 Z" 
                           fill="rgba(225, 29, 72, 0.35)" stroke="#e11d48" stroke-width="1.5" />
                 </svg>
 
-                <!-- DROPZONES CON POSICIÓN ANATÓMICA -->
                 <div class="dropzone" data-target="V1" style="top: 31%; left: 41%;">V1</div>
                 <div class="dropzone" data-target="V2" style="top: 31%; left: 59%;">V2</div>
                 <div class="dropzone" data-target="V3" style="top: 37%; left: 64%;">V3</div>
@@ -66,11 +56,31 @@
             </div>
         </div>
 
+        <!-- PANEL DE CONTROL DE IA (MOVIDO A LA DERECHA SUPERIOR) -->
+        <div id="ai-panel" class="ai-panel hidden">
+            <div class="ai-panel-header">🖥️ Asistente Diagnóstico IA</div>
+            <div class="ai-suggestion-card">
+                <div class="ai-title-row">
+                    <span class="ai-label">Sugerencia IA:</span>
+                    <span id="ai-diagnosis-text" class="ai-diagnosis-val">Analizando...</span>
+                </div>
+                <div id="ai-confidence-text" class="ai-confidence-val">Confianza: --%</div>
+                
+                <button class="btn-trust-ai" onclick="tomarDecisionIA(true)">
+                    ✓ Confiar en la IA
+                </button>
+                
+                <button class="btn-manual-analysis" onclick="abrirModalManual()">
+                    ✍️ Análisis Manual / Cuestionar
+                </button>
+            </div>
+        </div>
+
         <!-- BOTONES INFERIORES -->
         <button class="btn-bottom-left" onclick="abrirModal('metricas')">🧠 Modelo IA & Bias</button>
         <button class="btn-bottom-right" onclick="iniciarNuevoCaso()">🚑 Nuevo Paciente</button>
 
-        <!-- MONITOR DE ECG INFERIOR -->
+        <!-- MONITOR DE ECG INFERIOR (LIMPIO) -->
         <div id="monitor-panel" class="monitor-panel hidden">
             <div class="patient-bar">
                 <span id="patient-info">Paciente: PAC-001 (56 años)</span>
@@ -80,25 +90,6 @@
             <div class="monitor-content">
                 <div class="canvas-wrapper">
                     <canvas id="ecg-wave"></canvas>
-                </div>
-
-                <!-- CAJA DE DECISIÓN DE IA Y ANÁLISIS MANUAL (RESTAURADA ORIGINAL) -->
-                <div id="decision-box" class="decision-box">
-                    <div class="ai-suggestion-card">
-                        <div class="ai-title-row">
-                            <span class="ai-label">Sugerencia IA:</span>
-                            <span id="ai-diagnosis-text" class="ai-diagnosis-val">Analizando...</span>
-                        </div>
-                        <div id="ai-confidence-text" class="ai-confidence-val">Confianza: --%</div>
-                        
-                        <button class="btn-trust-ai" onclick="tomarDecisionIA(true)">
-                            ✓ Confiar en la IA
-                        </button>
-                        
-                        <button class="btn-manual-analysis" onclick="mostrarDiagnosticoManual()">
-                            ✍️ Análisis Manual / Cuestionar
-                        </button>
-                    </div>
                 </div>
             </div>
         </div>
@@ -126,11 +117,45 @@
     <div id="modal-nivel2" class="modal-overlay hidden">
         <div class="modal-content text-center">
             <h2>📈 Nivel 2: Interpretación de Señal ECG</h2>
-            <p class="modal-description">Electrodos colocados correctamente. Revisa la sugerencia del modelo de IA o realiza tu propio análisis manual en el monitor.</p>
+            <p class="modal-description">Electrodos colocados correctamente. Revisa la sugerencia del modelo de IA o realiza tu propio análisis manual en el panel derecho.</p>
             <button class="btn-confirm" onclick="comenzarNivel2()">Iniciar Monitor ECG</button>
         </div>
     </div>
 
-    <script src="app.js?v=6"></script>
+    <!-- MODAL DE ANÁLISIS MANUAL -->
+    <div id="modal-manual" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2>✍️ Diagnóstico Manual</h2>
+            <p class="modal-description">Selecciona tu diagnóstico para este paciente:</p>
+            <select id="select-diagnostico" class="select-diag">
+                <option value="Sinus Rhythm">Sinus Rhythm (Ritmo Sinusal Normal)</option>
+                <option value="Sinus Bradycardia">Sinus Bradycardia (Bradicardia Sinusal)</option>
+                <option value="Sinus Tachycardia">Sinus Tachycardia (Taquicardia Sinusal)</option>
+            </select>
+            <div class="modal-actions">
+                <button class="btn-confirm" onclick="evaluarDiagnosticoManual()">Confirmar Diagnóstico</button>
+                <button class="btn-cancel" onclick="cerrarModalManual()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE RESULTADO / TRATAMIENTO (CENTRAL) -->
+    <div id="modal-resultado" class="modal-overlay hidden">
+        <div class="modal-content text-center">
+            <h2 id="res-status-title">📋 Resultado del Diagnóstico</h2>
+            <div id="res-status-badge" class="result-badge">--</div>
+            
+            <div class="result-info-box">
+                <p><strong>Diagnóstico Real:</strong> <span id="res-real-diag">--</span></p>
+                <hr class="divider">
+                <p><strong>💡 Explicación Clínica & Tratamiento:</strong></p>
+                <p id="res-treatment-text" class="treatment-text">--</p>
+            </div>
+
+            <button class="btn-confirm" onclick="cerrarModalResultado()">Siguiente Paciente 🚑</button>
+        </div>
+    </div>
+
+    <script src="app.js?v=7"></script>
 </body>
 </html>
