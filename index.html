@@ -3,177 +3,166 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulador Clínico ECG & IA</title>
-    <link rel="stylesheet" href="styles.css?v=10">
+    <title>Simulador ECG - Yachay Tech</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <div class="app-container">
-
-        <!-- BANNER SUPERIOR DE NIVEL CON CONTADOR -->
-        <div class="level-banner">
-            <span id="level-badge" class="level-badge">NIVEL 1</span>
-            <span id="level-title" class="level-title">Posicionamiento Anatómico de Electrodos</span>
-            <span id="score-badge" class="score-badge hidden">🎯 Aciertos: 0 / 10</span>
+    <!-- ENCABEZADO Y STATUS DEL JUEGO -->
+    <header class="top-bar">
+        <div class="level-info">
+            <span id="level-badge" class="badge">NIVEL 1</span>
+            <h2 id="level-title">Posicionamiento Anatómico de Electrodos</h2>
         </div>
-
-        <!-- BOTONES SUPERIORES IZQUIERDA -->
-        <button class="btn-top-left" onclick="abrirModal('ajustes')">⚙️ Ajustes</button>
-        <button class="btn-top-left-2" onclick="abrirModal('patologias')">📊 27 Ritmos Oficiales</button>
-
-        <!-- PALETA DE ELECTRODOS (IZQUIERDA) -->
-        <div class="electrode-palette">
-            <div class="electrode" data-lead="V1">V1</div>
-            <div class="electrode" data-lead="V2">V2</div>
-            <div class="electrode" data-lead="V3">V3</div>
-            <div class="electrode" data-lead="V4">V4</div>
-            <div class="electrode" data-lead="V5">V5</div>
-            <div class="electrode" data-lead="V6">V6</div>
+        <div class="stats-container">
+            <span id="bias-display" class="bias-tag">Índice Dependencia IA: 0%</span>
+            <span id="score-badge" class="score-tag hidden">🎯 Nivel 2: 0 / 10</span>
         </div>
+    </header>
 
-        <!-- ÁREA CENTRAL (TORSO) -->
-        <div class="viewport-3d">
-            <div class="torso-container">
-                <svg class="torso-svg" viewBox="0 0 300 450" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M150 20 C220 20 250 80 250 150 C250 260 210 370 150 430 C90 370 50 260 50 150 C50 80 80 20 150 20 Z" 
-                          stroke="#38bdf8" stroke-width="3" fill="rgba(15, 23, 42, 0.4)" />
-                    <rect x="146" y="100" width="8" height="120" rx="4" fill="rgba(248, 250, 252, 0.25)"/>
-                    <path d="M145 115 C110 110 80 125 70 145" stroke="rgba(248, 250, 252, 0.2)" stroke-width="2.5" stroke-linecap="round"/>
-                    <path d="M145 135 C110 130 80 145 72 165" stroke="rgba(248, 250, 252, 0.2)" stroke-width="2.5" stroke-linecap="round"/>
-                    <path d="M145 155 C110 150 82 170 75 190" stroke="rgba(248, 250, 252, 0.2)" stroke-width="2.5" stroke-linecap="round"/>
-                    <path d="M155 115 C190 110 220 125 230 145" stroke="rgba(248, 250, 252, 0.2)" stroke-width="2.5" stroke-linecap="round"/>
-                    <path d="M155 135 C190 130 220 145 228 165" stroke="rgba(248, 250, 252, 0.2)" stroke-width="2.5" stroke-linecap="round"/>
-                    <path d="M155 155 C190 150 218 170 225 190" stroke="rgba(248, 250, 252, 0.2)" stroke-width="2.5" stroke-linecap="round"/>
-                    <path d="M140 125 C130 110 105 110 98 125 C90 140 105 160 140 185 C175 160 190 140 182 125 C175 110 150 110 140 125 Z" 
-                          fill="rgba(225, 29, 72, 0.35)" stroke="#e11d48" stroke-width="1.5" />
-                </svg>
+    <main class="main-container">
 
-                <div class="dropzone" data-target="V1" style="top: 31%; left: 41%;">V1</div>
-                <div class="dropzone" data-target="V2" style="top: 31%; left: 59%;">V2</div>
-                <div class="dropzone" data-target="V3" style="top: 37%; left: 64%;">V3</div>
-                <div class="dropzone" data-target="V4" style="top: 44%; left: 67%;">V4</div>
-                <div class="dropzone" data-target="V5" style="top: 47%; left: 74%;">V5</div>
-                <div class="dropzone" data-target="V6" style="top: 46%; left: 81%;">V6</div>
+        <!-- ÁREA DEL MONITOR Y RENDERIZADO ECG -->
+        <section id="monitor-panel" class="panel-section">
+            <div class="patient-card">
+                <span id="patient-info">Paciente: Selecciona los electrodos para iniciar</span>
+                <span id="bpm-display" class="bpm-tag">BPM: --</span>
             </div>
-        </div>
-
-        <!-- PANEL DE CONTROL DE IA -->
-        <div id="ai-panel" class="ai-panel hidden">
-            <div class="ai-panel-header">🖥️ Asistente Diagnóstico IA</div>
-            <div class="ai-suggestion-card">
-                <div class="ai-title-row">
-                    <span class="ai-label">Sugerencia IA:</span>
-                    <span id="ai-diagnosis-text" class="ai-diagnosis-val">Analizando...</span>
-                </div>
-                <div id="ai-confidence-text" class="ai-confidence-val">Confianza: --%</div>
-                
-                <button class="btn-trust-ai" onclick="tomarDecisionIA()">
-                    ✓ Confiar en la IA
-                </button>
-                
-                <button class="btn-manual-analysis" onclick="abrirModalManual()">
-                    ✍️ Análisis Manual / Cuestionar
-                </button>
-            </div>
-        </div>
-
-        <!-- BOTONES INFERIORES -->
-        <button class="btn-bottom-left" onclick="abrirModal('metricas')">🧠 Modelo IA & Bias</button>
-        <button class="btn-bottom-right" onclick="reiniciarDesdeNivel1()">🔄 Reiniciar Posicionamiento</button>
-
-        <!-- MONITOR DE ECG INFERIOR -->
-        <div id="monitor-panel" class="monitor-panel hidden">
-            <div class="patient-bar">
-                <span id="patient-info">Paciente: PAC-001 (56 años)</span>
-                <span id="bpm-display">BPM: --</span>
-                <span id="bias-display" class="bias-tag">Índice Dependencia IA: 0%</span>
-            </div>
-            <div class="monitor-content">
-                <div class="canvas-wrapper">
-                    <canvas id="ecg-wave"></canvas>
-                </div>
-            </div>
-        </div>
-
-    </div>
-
-    <!-- MODAL NIVEL 1 -->
-    <div id="modal-nivel1" class="modal-overlay">
-        <div class="modal-content text-center">
-            <h2>🫀 Nivel 1: Posicionamiento Anatómico</h2>
-            <p class="modal-description">Coloca los electrodos V1 a V6 en el tórax del paciente según las referencias anatómicas:</p>
-            <div class="instructions-list">
-                <p>• <strong>V1:</strong> 4º Espacio intercostal derecho</p>
-                <p>• <strong>V2:</strong> 4º Espacio intercostal izquierdo</p>
-                <p>• <strong>V3:</strong> Entre V2 y V4</p>
-                <p>• <strong>V4:</strong> 5º Espacio intercostal izquierdo, línea medioclavicular</p>
-                <p>• <strong>V5:</strong> 5º Espacio intercostal, línea axilar anterior</p>
-                <p>• <strong>V6:</strong> 5º Espacio intercostal, línea axilar media</p>
-            </div>
-            <button class="btn-confirm" onclick="comenzarNivel1()">Comenzar Posicionamiento</button>
-        </div>
-    </div>
-
-    <!-- MODAL NIVEL 2 -->
-    <div id="modal-nivel2" class="modal-overlay hidden">
-        <div class="modal-content text-center">
-            <h2>📈 Nivel 2: Interpretación de Señal ECG</h2>
-            <p class="modal-description">Electrodos colocados correctamente. Completa <strong>10 aciertos</strong> sobre la lista de 27 ritmos para avanzar al Nivel 3.</p>
-            <button class="btn-confirm" onclick="comenzarNivel2()">Iniciar Monitor ECG</button>
-        </div>
-    </div>
-
-    <!-- MODAL DE ANÁLISIS MANUAL -->
-    <div id="modal-manual" class="modal-overlay hidden">
-        <div class="modal-content">
-            <h2>✍️ Diagnóstico Manual (27 Ritmos)</h2>
-            <p class="modal-description">Selecciona el ritmo correspondiente:</p>
-            <select id="select-diagnostico" class="select-diag"></select>
-            <div class="modal-actions">
-                <button class="btn-confirm" onclick="evaluarDiagnosticoManual()">Confirmar Diagnóstico</button>
-                <button class="btn-cancel" onclick="cerrarModalManual()">Cancelar</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL DE RESULTADO / TRATAMIENTO -->
-    <div id="modal-resultado" class="modal-overlay hidden">
-        <div class="modal-content text-center">
-            <h2 id="res-status-title">📋 Resultado del Diagnóstico</h2>
-            <div id="res-status-badge" class="result-badge">--</div>
             
-            <div class="result-info-box">
-                <p><strong>Ritmo Real:</strong> <span id="res-real-diag">--</span></p>
-                <hr class="divider">
-                <p><strong>💡 Explicación Clínica:</strong></p>
-                <p id="res-treatment-text" class="treatment-text">--</p>
+            <div class="canvas-wrapper">
+                <canvas id="ecg-wave"></canvas>
+            </div>
+        </section>
+
+        <!-- PANEL DE CONTROL Y ACCIONES DINÁMICAS -->
+        <section class="controls-section">
+
+            <!-- INTERFAZ NIVEL 1: TORSO Y ELECTRODOS (DRAG & DROP) -->
+            <div id="electrode-placement-panel" class="control-panel">
+                <h3>Arrastra los electrodos precordiales a su posición correcta:</h3>
+                <div class="torso-container">
+                    <div class="dropzone" data-target="V1">V1</div>
+                    <div class="dropzone" data-target="V2">V2</div>
+                    <div class="dropzone" data-target="V3">V3</div>
+                    <div class="dropzone" data-target="V4">V4</div>
+                    <div class="dropzone" data-target="V5">V5</div>
+                    <div class="dropzone" data-target="V6">V6</div>
+                </div>
+                <div class="electrodes-pool">
+                    <div class="electrode" data-lead="V1">V1</div>
+                    <div class="electrode" data-lead="V2">V2</div>
+                    <div class="electrode" data-lead="V3">V3</div>
+                    <div class="electrode" data-lead="V4">V4</div>
+                    <div class="electrode" data-lead="V5">V5</div>
+                    <div class="electrode" data-lead="V6">V6</div>
+                </div>
             </div>
 
-            <button class="btn-confirm" onclick="siguienteCasoNivel2()">Siguiente Paciente 🚑</button>
+            <!-- INTERFAZ NIVEL 2: ASISTENCIA POR IA Y DIAGNÓSTICO MANUAL -->
+            <div id="ai-panel" class="control-panel hidden">
+                <div class="ai-box">
+                    <h4>🤖 Predicción del Modelo IA:</h4>
+                    <p id="ai-diagnosis-text" class="ai-diag">Analizando trazado...</p>
+                    <span id="ai-confidence-text" class="ai-conf">Confianza: 0%</span>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn-primary" onclick="tomarDecisionIA()">Aceptar Diagnóstico de IA</button>
+                    <button class="btn-secondary" onclick="abrirModalManual()">Análisis Manual / Corregir IA</button>
+                    <button class="btn-info" onclick="abrirModal('patologias')">📋 Consultar 27 Ritmos</button>
+                </div>
+            </div>
+
+            <!-- INTERFAZ NIVEL 3: ROMPECABEZAS ECG Y SUGERENCIAS CLÍNICAS -->
+            <div id="puzzle-ecg-panel" class="control-panel hidden">
+                <h3>🧩 Rompecabezas Fisiológico: Reconstruye la Onda ECG</h3>
+                <p style="font-size: 0.9em; color: #94a3b8; margin-bottom: 10px;">
+                    El monitor presenta interferencia. Selecciona los componentes electrofisiológicos correctos para estabilizar la señal visual.
+                </p>
+                
+                <!-- Zona de ensamblaje -->
+                <div id="puzzle-drop-container" class="puzzle-dropzone">
+                    <p class="placeholder-text">Haz clic en las piezas para reconstruir el trazado...</p>
+                </div>
+
+                <!-- Piezas disponibles (generadas dinámicamente) -->
+                <div id="puzzle-pieces-container" class="puzzle-grid"></div>
+            </div>
+
+        </section>
+    </main>
+
+    <!-- ==================== MODALES Y VENTANAS EMERGENTES ==================== -->
+
+    <!-- MODAL DE TRANSICIÓN AL NIVEL 2 -->
+    <div id="modal-nivel2" class="modal-overlay hidden">
+        <div class="modal-card">
+            <h2>✅ Electrodos Posicionados Correctamente</h2>
+            <p>Has completado la derivación de 12 electrodos del Nivel 1. Ahora pasarás al **Nivel 2: Diagnóstico Diferencial de 27 Arritmias y Manejo de Sesgo de IA**.</p>
+            <p>Completa <strong>10 diagnósticos correctos</strong> para desbloquear el nivel final.</p>
+            <button class="btn-primary" onclick="comenzarNivel2()">Iniciar Nivel 2</button>
         </div>
     </div>
 
-    <!-- MODAL DE META COMPLETADA -->
-    <div id="modal-nivel2-completado" class="modal-overlay hidden">
-        <div class="modal-content text-center">
-            <h2>🎉 ¡Nivel 2 Superado!</h2>
-            <p class="modal-description">Has acumulado los <strong>10 aciertos</strong> requeridos analizando los 27 ritmos cardíacos.</p>
-            <div class="result-info-box">
-                <p>🔒 <strong>Nivel 3 (Próximamente):</strong> Tratamiento Clínico Avanzado.</p>
+    <!-- MODAL SELECCIÓN MANUAL DE DIAGNÓSTICO (NIVEL 2) -->
+    <div id="modal-manual" class="modal-overlay hidden">
+        <div class="modal-card">
+            <h3>🩺 Selección de Diagnóstico Clínico</h3>
+            <p>Selecciona el ritmo correspondiente a la señal observada:</p>
+            <select id="select-diagnostico" class="select-full"></select>
+            <div class="modal-actions">
+                <button class="btn-primary" onclick="evaluarDiagnosticoManual()">Confirmar Diagnóstico</button>
+                <button class="btn-secondary" onclick="cerrarModalManual()">Cancelar</button>
             </div>
-            <button class="btn-confirm" onclick="continuarPracticandoNivel2()">Seguir Practicando 🔄</button>
         </div>
     </div>
 
-    <!-- MODAL 27 RITMOS INFORMATIVO -->
+    <!-- MODAL RESULTADO DEL CASO (NIVEL 2) -->
+    <div id="modal-resultado" class="modal-overlay hidden">
+        <div class="modal-card">
+            <h2 id="res-status-title">Resultado</h2>
+            <div id="res-status-badge" class="result-badge">--</div>
+            <p><strong>Ritmo Confirmado:</strong> <span id="res-real-diag">--</span></p>
+            <div id="res-treatment-text" class="treatment-info"></div>
+            <button class="btn-primary" onclick="siguienteCasoNivel2()">Siguiente Paciente</button>
+        </div>
+    </div>
+
+    <!-- MODAL CONSULTA DE PATOLOGÍAS -->
     <div id="modal-patologias-info" class="modal-overlay hidden">
-        <div class="modal-content">
-            <h2>📊 Lista Oficial de 27 Ritmos</h2>
-            <div id="lista-patologias-container" class="patologias-list-box"></div>
-            <button class="btn-confirm" onclick="cerrarModalInfoPatologias()">Cerrar</button>
+        <div class="modal-card modal-large">
+            <h3>📋 Base de Datos de Ritmos Electrocardiográficos</h3>
+            <div id="lista-patologias-container" class="patologias-scroll"></div>
+            <button class="btn-secondary" onclick="cerrarModalInfoPatologias()">Cerrar Consulta</button>
         </div>
     </div>
 
-    <script src="app.js?v=10"></script>
+    <!-- MODAL DE TRANSICIÓN AL NIVEL 3 -->
+    <div id="modal-nivel3-intro" class="modal-overlay hidden">
+        <div class="modal-card">
+            <h2>🧩 Nivel 3: Reconstrucción & Análisis Clínico Guiado</h2>
+            <p>¡Excelente trabajo! Has analizado con éxito los 10 ritmos electrocardiográficos del Nivel 2.</p>
+            <p>En este nivel final, los monitores presentarán interferencia. Deberás <strong>ensamblar los componentes electrofisiológicos correctos</strong> para reconstruir la señal y revisar la propuesta terapéutica del simulador.</p>
+            <button class="btn-primary" onclick="comenzarNivel3()">Iniciar Nivel 3</button>
+        </div>
+    </div>
+
+    <!-- MODAL FINAL DE CIERRE Y FELICITACIONES -->
+    <div id="modal-juego-completado" class="modal-overlay hidden">
+        <div class="modal-card text-center">
+            <h1 style="font-size: 2.2em; color: #00FF66; margin-bottom: 5px;">🏆 ¡Felicidades, eres todo un biomédico!</h1>
+            <p style="font-size: 0.9em; color: #94a3b8; letter-spacing: 1.5px; margin-bottom: 25px;">Yachay Tech</p>
+            
+            <p>Has superado satisfactoriamente los 3 niveles del Simulador ECG:</p>
+            <ul style="text-align: left; margin: 15px auto; max-width: 320px; color: #e2e8f0; line-height: 1.8;">
+                <li>✅ Colocación anatómica de electrodos.</li>
+                <li>✅ Diagnóstico diferencial de 27 arritmias y control de sesgo de IA.</li>
+                <li>✅ Ensamblaje electrofisiológico y tratamiento guiado.</li>
+            </ul>
+            
+            <button class="btn-primary" style="margin-top: 15px;" onclick="reiniciarDesdeNivel1()">Volver a Jugar</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
 </body>
 </html>
