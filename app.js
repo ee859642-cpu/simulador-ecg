@@ -2,6 +2,9 @@ const API_URL = "https://simulador-ecg.onrender.com";
 
 let casoActualId = 1;
 let nivelActual = 1;
+let aciertosNivel2 = 0;
+const META_ACIERTOS_NIVEL2 = 10;
+
 let canvas, ctx;
 let animacionId = null;
 let offsetOnda = 0;
@@ -35,10 +38,19 @@ function actualizarBannerNivel(numeroNivel, tituloNivel) {
     if (title) title.innerText = tituloNivel;
 }
 
+function actualizarContadorAciertos() {
+    const scoreBadge = document.getElementById("score-badge");
+    if (scoreBadge) {
+        scoreBadge.innerText = `🎯 Aciertos: ${aciertosNivel2} / ${META_ACIERTOS_NIVEL2}`;
+        scoreBadge.classList.remove("hidden");
+    }
+}
+
 function comenzarNivel1() {
     nivelActual = 1;
     document.getElementById("modal-nivel1")?.classList.add("hidden");
     document.getElementById("ai-panel")?.classList.add("hidden");
+    document.getElementById("score-badge")?.classList.add("hidden");
 }
 
 function verificarElectrodosCompletos() {
@@ -52,6 +64,7 @@ function verificarElectrodosCompletos() {
 async function comenzarNivel2() {
     nivelActual = 2;
     actualizarBannerNivel(2, "Análisis de Señales e Interpretación de ECG");
+    actualizarContadorAciertos();
     
     document.getElementById("modal-nivel2")?.classList.add("hidden");
     document.getElementById("monitor-panel")?.classList.remove("hidden");
@@ -68,6 +81,7 @@ async function cargarDatosCaso() {
         datosCasoActual = await respuesta.json();
         actualizarInterfazCaso(datosCasoActual);
 
+        // Selección cíclica entre los casos disponibles
         casoActualId = (casoActualId % 3) + 1;
     } catch (error) {
         console.error("Error cargando paciente:", error);
@@ -95,6 +109,11 @@ function tomarDecisionIA(confiaEnIA) {
     const prediccionIA = datosCasoActual?.prediccion_ia || "Sinus Rhythm";
     const esCorrecto = (prediccionIA.toLowerCase() === ritmoReal.toLowerCase());
 
+    if (esCorrecto) {
+        aciertosNivel2++;
+        actualizarContadorAciertos();
+    }
+
     mostrarResultadoModal(
         esCorrecto ? "¡Diagnóstico Correcto!" : "Diagnóstico Incorrecto",
         esCorrecto,
@@ -118,6 +137,11 @@ function evaluarDiagnosticoManual() {
     cerrarModalManual();
 
     const esCorrecto = (seleccion.toLowerCase() === ritmoReal.toLowerCase());
+
+    if (esCorrecto) {
+        aciertosNivel2++;
+        actualizarContadorAciertos();
+    }
 
     mostrarResultadoModal(
         esCorrecto ? "¡Análisis Manual Acertado!" : "Análisis Manual Incorrecto",
@@ -144,15 +168,28 @@ function mostrarResultadoModal(titulo, esCorrecto, ritmoReal) {
     document.getElementById("modal-resultado")?.classList.remove("hidden");
 }
 
-function cerrarModalResultado() {
+async function siguienteCasoNivel2() {
     document.getElementById("modal-resultado")?.classList.add("hidden");
-    iniciarNuevoCaso();
+
+    if (aciertosNivel2 >= META_ACIERTOS_NIVEL2) {
+        document.getElementById("modal-nivel2-completado")?.classList.remove("hidden");
+    } else {
+        await cargarDatosCaso();
+    }
 }
 
-function iniciarNuevoCaso() {
+function continuarPracticandoNivel2() {
+    document.getElementById("modal-nivel2-completado")?.classList.add("hidden");
+    cargarDatosCaso();
+}
+
+function reiniciarDesdeNivel1() {
+    aciertosNivel2 = 0;
+    actualizarContadorAciertos();
     reiniciarElectrodos();
     document.getElementById("monitor-panel")?.classList.add("hidden");
     document.getElementById("ai-panel")?.classList.add("hidden");
+    actualizarBannerNivel(1, "Posicionamiento Anatómico de Electrodos");
     comenzarNivel1();
 }
 
