@@ -11,11 +11,17 @@
         <!-- ESQUINA SUPERIOR IZQUIERDA -->
         <button class="btn-top-left" onclick="abrirModal('ajustes')">⚙️ Ajustes</button>
         
+        <!-- BARRA SUPERIOR DE NIVEL Y PROGRESO -->
+        <div class="level-banner">
+            <span id="level-badge" class="level-badge">NIVEL 1</span>
+            <span id="level-title" class="level-title">Posicionamiento Anatómico de Electrodos</span>
+        </div>
+
         <!-- ESQUINA SUPERIOR DERECHA -->
         <button class="btn-top-right" onclick="abrirModal('patologias')">📚 27 Patologías</button>
 
         <!-- PALETA DE ELECTRODOS IZQUIERDA -->
-        <div class="electrode-palette">
+        <div class="electrode-palette" id="electrode-palette">
             <div class="electrode" draggable="true" data-lead="V1">V1</div>
             <div class="electrode" draggable="true" data-lead="V2">V2</div>
             <div class="electrode" draggable="true" data-lead="V3">V3</div>
@@ -24,7 +30,7 @@
             <div class="electrode" draggable="true" data-lead="V6">V6</div>
         </div>
 
-        <!-- ÁREA CENTRAL: SILUETA ANATÓMICA Y ZONAS OBJETIVO (POSICIONAMIENTO ANATÓMICO REAL) -->
+        <!-- ÁREA CENTRAL: SILUETA ANATÓMICA Y ZONAS OBJETIVO (NIVEL 1) -->
         <div class="viewport-3d" id="viewport-3d">
             <div class="torso-container">
                 <svg viewBox="0 0 200 300" class="torso-svg">
@@ -51,9 +57,9 @@
         <button class="btn-bottom-right" onclick="iniciarNuevoCaso()">🚑 Nuevo Paciente</button>
 
         <!-- MONITOR DE ECG Y PANEL DE DECISIÓN INFERIOR -->
-        <div class="monitor-panel">
+        <div class="monitor-panel hidden" id="monitor-panel">
             <div class="patient-bar">
-                <span id="patient-info">Paciente: Haz clic en "Nuevo Paciente"</span>
+                <span id="patient-info">Paciente: Seleccionando...</span>
                 <span id="bpm-display">BPM: --</span>
                 <span id="bias-display">Índice Dependencia IA: 0%</span>
             </div>
@@ -63,7 +69,7 @@
                     <canvas id="ecg-wave"></canvas>
                 </div>
                 
-                <div class="decision-box">
+                <div class="decision-box hidden" id="decision-box">
                     <div class="ai-suggestion">
                         <strong id="ai-text">Sugerencia IA: Esperando datos...</strong>
                         <div id="ai-confidence" class="confidence-tag">Confianza: --</div>
@@ -98,6 +104,30 @@
                 <li><strong>V6:</strong> 5º espacio intercostal, línea medioaxilar.</li>
             </ul>
             <button onclick="comenzarNivel1()" class="btn-confirm">¡Comenzar Nivel 1!</button>
+        </div>
+    </div>
+
+    <!-- MODAL TRANSICIÓN AL NIVEL 2 -->
+    <div id="modal-nivel2" class="modal-overlay hidden">
+        <div class="modal-content text-center">
+            <h2>📈 Nivel 2: Lectura y Análisis de Señales ECG</h2>
+            <p class="modal-description">
+                ¡Electrodos conectados correctamente! Se ha desplegado el monitor de electrocardiógrafo en tiempo real. 
+                Analiza detenidamente la frecuencia cardíaca (BPM) y la morfología del trazado.
+            </p>
+            <button onclick="comenzarNivel2()" class="btn-confirm">Iniciar Análisis de Señal</button>
+        </div>
+    </div>
+
+    <!-- MODAL TRANSICIÓN AL NIVEL 3 -->
+    <div id="modal-nivel3" class="modal-overlay hidden">
+        <div class="modal-content text-center">
+            <h2>🧠 Nivel 3: Evaluación de Sesgo e Inteligencia Artificial</h2>
+            <p class="modal-description">
+                El motor de Inteligencia Artificial ha emitido un diagnóstico preliminar con su nivel de confianza.
+                ¿Aceptarás la recomendación automatizada o emitirás un juicio clínico independiente?
+            </p>
+            <button onclick="comenzarNivel3()" class="btn-confirm">Proceder a la Decisión Clínica</button>
         </div>
     </div>
 
@@ -141,7 +171,7 @@
                 </div>
             </div>
             <div class="feedback-footer">
-                <button onclick="cerrarFeedbackModal()" class="btn-feedback-action">Continuar Simulación</button>
+                <button onclick="cerrarFeedbackModal()" class="btn-feedback-action">Siguiente Paciente</button>
             </div>
         </div>
     </div>
