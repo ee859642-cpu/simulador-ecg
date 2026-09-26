@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simulador Clínico ECG & IA</title>
-    <link rel="stylesheet" href="styles.css?v=4">
+    <link rel="stylesheet" href="styles.css?v=6">
 </head>
 <body>
 
     <div class="app-container">
 
-        <!-- BANNER DE NIVEL SUPERIOR -->
+        <!-- BANNER SUPERIOR DE NIVEL -->
         <div class="level-banner">
             <span id="level-badge" class="level-badge">NIVEL 1</span>
             <span id="level-title" class="level-title">Posicionamiento Anatómico de Electrodos</span>
@@ -30,11 +30,11 @@
             <div class="electrode" data-lead="V6">V6</div>
         </div>
 
-        <!-- ÁREA CENTRAL (ESCUDO ORIGINAL CON CAJA TORÁCICA) -->
+        <!-- ÁREA CENTRAL (TORSO / ESCUDO CON CAJA TORÁCICA) -->
         <div class="viewport-3d">
             <div class="torso-container">
                 <svg class="torso-svg" viewBox="0 0 300 450" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <!-- Silueta del Escudo/Torso Original -->
+                    <!-- Silueta del Torso -->
                     <path d="M150 20 C220 20 250 80 250 150 C250 260 210 370 150 430 C90 370 50 260 50 150 C50 80 80 20 150 20 Z" 
                           stroke="#38bdf8" stroke-width="3" fill="rgba(15, 23, 42, 0.4)" />
                     
@@ -46,7 +46,7 @@
                     <path d="M145 135 C110 130 80 145 72 165" stroke="rgba(248, 250, 252, 0.2)" stroke-width="2.5" stroke-linecap="round"/>
                     <path d="M145 155 C110 150 82 170 75 190" stroke="rgba(248, 250, 252, 0.2)" stroke-width="2.5" stroke-linecap="round"/>
                     
-                    <!-- Costillas Lado Izquierdo del Paciente (Derecha en pantalla) -->
+                    <!-- Costillas Lado Izquierdo Paciente (Derecha en pantalla) -->
                     <path d="M155 115 C190 110 220 125 230 145" stroke="rgba(248, 250, 252, 0.2)" stroke-width="2.5" stroke-linecap="round"/>
                     <path d="M155 135 C190 130 220 145 228 165" stroke="rgba(248, 250, 252, 0.2)" stroke-width="2.5" stroke-linecap="round"/>
                     <path d="M155 155 C190 150 218 170 225 190" stroke="rgba(248, 250, 252, 0.2)" stroke-width="2.5" stroke-linecap="round"/>
@@ -56,15 +56,13 @@
                           fill="rgba(225, 29, 72, 0.35)" stroke="#e11d48" stroke-width="1.5" />
                 </svg>
 
-                <!-- DROPZONES CON POSICIÓN ANATÓMICA CORREGIDA -->
-                <!-- V1: Lado Derecho del Paciente (Izquierda en pantalla) -->
-                <div class="dropzone" data-target="V1" style="top: 32%; left: 42%;">V1</div>
-                <!-- V2 a V6: Lado Izquierdo del Paciente (Derecha en pantalla) -->
-                <div class="dropzone" data-target="V2" style="top: 32%; left: 58%;">V2</div>
-                <div class="dropzone" data-target="V3" style="top: 38%; left: 64%;">V3</div>
-                <div class="dropzone" data-target="V4" style="top: 45%; left: 68%;">V4</div>
-                <div class="dropzone" data-target="V5" style="top: 48%; left: 75%;">V5</div>
-                <div class="dropzone" data-target="V6" style="top: 47%; left: 82%;">V6</div>
+                <!-- DROPZONES CON POSICIÓN ANATÓMICA -->
+                <div class="dropzone" data-target="V1" style="top: 31%; left: 41%;">V1</div>
+                <div class="dropzone" data-target="V2" style="top: 31%; left: 59%;">V2</div>
+                <div class="dropzone" data-target="V3" style="top: 37%; left: 64%;">V3</div>
+                <div class="dropzone" data-target="V4" style="top: 44%; left: 67%;">V4</div>
+                <div class="dropzone" data-target="V5" style="top: 47%; left: 74%;">V5</div>
+                <div class="dropzone" data-target="V6" style="top: 46%; left: 81%;">V6</div>
             </div>
         </div>
 
@@ -75,7 +73,7 @@
         <!-- MONITOR DE ECG INFERIOR -->
         <div id="monitor-panel" class="monitor-panel hidden">
             <div class="patient-bar">
-                <span id="patient-info">Paciente: Cargando...</span>
+                <span id="patient-info">Paciente: PAC-001 (56 años)</span>
                 <span id="bpm-display">BPM: --</span>
                 <span id="bias-display">Índice Dependencia IA: 0%</span>
             </div>
@@ -84,14 +82,22 @@
                     <canvas id="ecg-wave"></canvas>
                 </div>
 
-                <div id="decision-box" class="decision-box hidden">
-                    <div class="ai-suggestion">
-                        <div id="ai-text">Sugerencia IA: Analizando...</div>
-                        <div id="ai-confidence" class="confidence-tag">Confianza: --%</div>
-                    </div>
-                    <div class="action-buttons">
-                        <button class="btn-trust" onclick="tomarDecision(true)">✓ Confiar en la IA</button>
-                        <button class="btn-manual" onclick="mostrarSelectorManual()">✍️ Diagnóstico Manual</button>
+                <!-- CAJA DE DECISIÓN DE IA Y ANÁLISIS MANUAL (RESTAURADA ORIGINAL) -->
+                <div id="decision-box" class="decision-box">
+                    <div class="ai-suggestion-card">
+                        <div class="ai-title-row">
+                            <span class="ai-label">Sugerencia IA:</span>
+                            <span id="ai-diagnosis-text" class="ai-diagnosis-val">Analizando...</span>
+                        </div>
+                        <div id="ai-confidence-text" class="ai-confidence-val">Confianza: --%</div>
+                        
+                        <button class="btn-trust-ai" onclick="tomarDecisionIA(true)">
+                            ✓ Confiar en la IA
+                        </button>
+                        
+                        <button class="btn-manual-analysis" onclick="mostrarDiagnosticoManual()">
+                            ✍️ Análisis Manual / Cuestionar
+                        </button>
                     </div>
                 </div>
             </div>
@@ -116,15 +122,15 @@
         </div>
     </div>
 
-    <!-- MODAL TRANSICIÓN A NIVEL 2 -->
+    <!-- MODAL NIVEL 2 -->
     <div id="modal-nivel2" class="modal-overlay hidden">
         <div class="modal-content text-center">
             <h2>📈 Nivel 2: Interpretación de Señal ECG</h2>
-            <p class="modal-description">Electrodos colocados correctamente. Analiza la morfología y el ritmo de la señal en el monitor.</p>
+            <p class="modal-description">Electrodos colocados correctamente. Revisa la sugerencia del modelo de IA o realiza tu propio análisis manual en el monitor.</p>
             <button class="btn-confirm" onclick="comenzarNivel2()">Iniciar Monitor ECG</button>
         </div>
     </div>
 
-    <script src="app.js?v=4"></script>
+    <script src="app.js?v=6"></script>
 </body>
 </html>
