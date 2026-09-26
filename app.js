@@ -25,6 +25,14 @@ document.addEventListener("DOMContentLoaded", () => {
     inicializarDragAndDrop();
 });
 
+// Función para cerrar el modal de bienvenida e iniciar el Nivel 1
+function comenzarNivel1() {
+    const modalNivel1 = document.getElementById("modal-nivel1");
+    if (modalNivel1) {
+        modalNivel1.classList.add("hidden");
+    }
+}
+
 function ajustarTamanoCanvas() {
     if (!canvas || !canvas.parentElement) return;
     canvas.width = canvas.parentElement.clientWidth;
@@ -104,9 +112,13 @@ function colocarElectrodo(lead) {
     verificarElectrodosCompletos();
 }
 
+// Transición del Nivel 1 al Nivel 2 al completar la colocación de electrodos
 function verificarElectrodosCompletos() {
     if (electrodosColocados.size === ELECTRODOS_REQUERIDOS.length) {
-        console.log("¡Todos los electrodos colocados correctamente!");
+        setTimeout(() => {
+            alert("🎉 ¡Nivel 1 Completado! Electrodos colocados en posición anatómica. Pasando al Nivel 2: Análisis de Señal ECG.");
+            iniciarNuevoCaso();
+        }, 300);
     }
 }
 
