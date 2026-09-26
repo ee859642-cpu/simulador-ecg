@@ -24,7 +24,7 @@
             <div class="electrode" draggable="true" data-lead="V6">V6</div>
         </div>
 
-        <!-- ÁREA CENTRAL: SILUETA ANATÓMICA Y ZONAS OBJETIVO -->
+        <!-- ÁREA CENTRAL: SILUETA ANATÓMICA Y ZONAS OBJETIVO (POSICIONAMIENTO ANATÓMICO REAL) -->
         <div class="viewport-3d" id="viewport-3d">
             <div class="torso-container">
                 <svg viewBox="0 0 200 300" class="torso-svg">
@@ -34,12 +34,13 @@
                           fill="#e11d48" opacity="0.4"/>
                 </svg>
 
-                <div class="dropzone" data-target="V1" style="top: 30%; left: 38%;">V1</div>
-                <div class="dropzone" data-target="V2" style="top: 30%; left: 54%;">V2</div>
-                <div class="dropzone" data-target="V3" style="top: 42%; left: 45%;">V3</div>
-                <div class="dropzone" data-target="V4" style="top: 52%; left: 36%;">V4</div>
-                <div class="dropzone" data-target="V5" style="top: 52%; left: 22%;">V5</div>
-                <div class="dropzone" data-target="V6" style="top: 52%; left: 10%;">V6</div>
+                <!-- POSICIONES PRECORDIALES ANATÓMICAS V1-V6 -->
+                <div class="dropzone" data-target="V1" style="top: 36%; left: 44%;">V1</div>
+                <div class="dropzone" data-target="V2" style="top: 36%; left: 54%;">V2</div>
+                <div class="dropzone" data-target="V3" style="top: 44%; left: 58%;">V3</div>
+                <div class="dropzone" data-target="V4" style="top: 52%; left: 63%;">V4</div>
+                <div class="dropzone" data-target="V5" style="top: 51%; left: 72%;">V5</div>
+                <div class="dropzone" data-target="V6" style="top: 46%; left: 81%;">V6</div>
             </div>
         </div>
 
@@ -78,6 +79,25 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE INSTRUCCIONES Y BIENVENIDA AL NIVEL 1 -->
+    <div id="modal-nivel1" class="modal-overlay">
+        <div class="modal-content text-center">
+            <h2>🫀 Nivel 1: Posicionamiento de Electrodos</h2>
+            <p class="modal-description">
+                Bienvenido a la simulación clínica. Tu objetivo en este nivel es colocar los 6 electrodos precordiales (<strong>V1 a V6</strong>) en sus posiciones anatómicas correctas sobre el tórax del paciente.
+            </p>
+            <ul class="instructions-list">
+                <li><strong>V1:</strong> 4º espacio intercostal derecho.</li>
+                <li><strong>V2:</strong> 4º espacio intercostal izquierdo.</li>
+                <li><strong>V3:</strong> Entre V2 y V4.</li>
+                <li><strong>V4:</strong> 5º espacio intercostal, línea medioclavicular.</li>
+                <li><strong>V5:</strong> 5º espacio intercostal, línea axilar anterior.</li>
+                <li><strong>V6:</strong> 5º espacio intercostal, línea medioaxilar.</li>
+            </ul>
+            <button onclick="comenzarNivel1()" class="btn-confirm">¡Comenzar Nivel 1!</button>
         </div>
     </div>
 
@@ -134,7 +154,7 @@
         </div>
     </div>
 
-    <!-- VÍNCULO CORRECTO AL ARCHIVO LÓGICO JAVASCRIPT -->
+    <!-- VÍNCULO AL ARCHIVO JAVASCRIPT -->
     <script src="app.js"></script>
 </body>
 </html>
