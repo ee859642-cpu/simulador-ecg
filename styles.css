@@ -62,7 +62,6 @@ body {
     color: #e0f2fe;
 }
 
-/* BOTONES SUPERIORES E INFERIORES */
 .btn-top-left { position: absolute; top: 15px; left: 15px; z-index: 10; }
 .btn-top-left-2 { position: absolute; top: 15px; left: 130px; z-index: 10; }
 .btn-bottom-left { position: absolute; bottom: 15px; left: 15px; z-index: 25; }
@@ -116,7 +115,7 @@ button:hover {
     user-select: none;
 }
 
-/* ÁREA CENTRAL */
+/* TORSO */
 .viewport-3d {
     display: flex;
     justify-content: center;
@@ -162,12 +161,12 @@ button:hover {
     box-shadow: 0 0 10px rgba(34, 197, 94, 0.8);
 }
 
-/* PANEL DE IA */
+/* PANEL DERECHO DE IA */
 .ai-panel {
     position: absolute;
     top: 70px;
     right: 20px;
-    width: 280px;
+    width: 290px;
     background: rgba(15, 23, 42, 0.9);
     border: 1px solid rgba(56, 189, 248, 0.3);
     border-radius: 12px;
@@ -199,22 +198,9 @@ button:hover {
     gap: 2px;
 }
 
-.ai-label {
-    font-size: 11px;
-    color: #94a3b8;
-}
-
-.ai-diagnosis-val {
-    font-size: 15px;
-    font-weight: 700;
-    color: #38bdf8;
-}
-
-.ai-confidence-val {
-    font-size: 12px;
-    color: #0284c7;
-    font-weight: 600;
-}
+.ai-label { font-size: 11px; color: #94a3b8; }
+.ai-diagnosis-val { font-size: 13px; font-weight: 700; color: #38bdf8; }
+.ai-confidence-val { font-size: 12px; color: #0284c7; font-weight: 600; }
 
 .btn-trust-ai {
     background: #22c55e !important;
@@ -224,7 +210,6 @@ button:hover {
     border-radius: 6px !important;
     font-weight: bold !important;
     cursor: pointer;
-    text-align: center;
 }
 
 .btn-trust-ai:hover { background: #16a34a !important; }
@@ -237,7 +222,6 @@ button:hover {
     border-radius: 6px !important;
     font-weight: 600 !important;
     cursor: pointer;
-    text-align: center;
 }
 
 .btn-manual-analysis:hover {
@@ -271,21 +255,11 @@ button:hover {
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.monitor-content {
-    flex: 1;
-    position: relative;
-    display: flex;
-}
+.bias-tag { font-weight: bold; color: #f59e0b; }
 
-.canvas-wrapper {
-    flex: 1;
-    height: 100%;
-}
-
-#ecg-wave {
-    width: 100%;
-    height: 100%;
-}
+.monitor-content { flex: 1; position: relative; display: flex; }
+.canvas-wrapper { flex: 1; height: 100%; }
+#ecg-wave { width: 100%; height: 100%; }
 
 /* MODALES */
 .modal-overlay {
@@ -307,7 +281,7 @@ button:hover {
     border: 1px solid rgba(56, 189, 248, 0.3);
     border-radius: 16px;
     padding: 24px;
-    max-width: 500px;
+    max-width: 520px;
     width: 90%;
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
 }
@@ -323,14 +297,10 @@ button:hover {
     color: white;
     border: 1px solid #38bdf8;
     border-radius: 8px;
-    font-size: 14px;
+    font-size: 13px;
 }
 
-.modal-actions {
-    display: flex;
-    gap: 10px;
-}
-
+.modal-actions { display: flex; gap: 10px; }
 .btn-cancel { background: #475569; color: white; }
 
 .btn-confirm {
@@ -366,14 +336,21 @@ button:hover {
     line-height: 1.5;
 }
 
-.divider {
-    border: 0;
-    height: 1px;
-    background: rgba(255, 255, 255, 0.1);
+.divider { border: 0; height: 1px; background: rgba(255, 255, 255, 0.1); margin: 10px 0; }
+
+.patologias-list-box {
+    max-height: 260px;
+    overflow-y: auto;
+    background: rgba(15, 23, 42, 0.8);
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
     margin: 10px 0;
+    font-size: 12px;
+    text-align: left;
 }
 
-.treatment-text {
-    color: #e2e8f0;
-    margin-top: 4px;
+.patologia-item {
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
