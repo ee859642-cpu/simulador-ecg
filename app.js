@@ -159,7 +159,6 @@ window.addEventListener('DOMContentLoaded', () => {
     inicializarDragAndDropNivel1();
     poblarSelectDiagnosticos();
     poblarTablaPatologiasInfo();
-    ajustarTamanioCanvas();
     window.addEventListener('resize', ajustarTamanioCanvas);
 });
 
@@ -254,7 +253,6 @@ function iniciarNivel1() {
     document.getElementById('ai-panel').classList.add('hidden');
     document.getElementById('puzzle-ecg-panel').classList.add('hidden');
 
-    // Restaurar electrodos visualmente
     document.querySelectorAll('.electrode-circle').forEach(el => el.style.display = 'flex');
     document.querySelectorAll('.dropzone-overlay').forEach(z => {
         z.classList.remove('placed');
@@ -310,7 +308,12 @@ function comenzarNivel2() {
     document.getElementById('electrode-placement-panel').classList.add('hidden');
     document.getElementById('puzzle-ecg-panel').classList.add('hidden');
     document.getElementById('ai-panel').classList.remove('hidden');
-    cargarSiguienteCasoNivel2();
+    
+    // Forzar el ajuste del canvas tras mostrar el panel para evitar tamaño 0px
+    setTimeout(() => {
+        ajustarTamanioCanvas();
+        cargarSiguienteCasoNivel2();
+    }, 50);
 }
 
 function cargarSiguienteCasoNivel2() {
@@ -564,8 +567,15 @@ function cerrarModalInfoPatologias() { document.getElementById('modal-patologias
 function ajustarTamanioCanvas() {
     const canvas = document.getElementById('ecg-wave');
     if (canvas && canvas.parentElement) {
-        canvas.width = canvas.parentElement.clientWidth;
-        canvas.height = canvas.parentElement.clientHeight;
+        const w = canvas.parentElement.clientWidth;
+        const h = canvas.parentElement.clientHeight;
+        if (w > 0 && h > 0) {
+            canvas.width = w;
+            canvas.height = h;
+        } else {
+            canvas.width = 620;
+            canvas.height = 280;
+        }
     }
 }
 
