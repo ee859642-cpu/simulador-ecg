@@ -1,19 +1,17 @@
-/* ==================== PALETA DE COLORES Y ESTILOS BASE ==================== */
 :root {
-    --bg-main: #0a0f1d;
-    --panel-bg: #111827;
-    --card-bg: #1a2332;
-    --border-color: #243044;
+    --bg-main: #0b111e;
+    --panel-bg: #101929;
+    --card-bg: #172236;
+    --border-color: #23334d;
     
     --primary-cyan: #38bdf8;
     --primary-green: #10b981;
     --accent-blue: #2563eb;
     --accent-red: #ef4444;
-    --accent-orange: #f97316;
     
     --text-white: #ffffff;
     --text-light: #94a3b8;
-    --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 * {
@@ -36,15 +34,15 @@ body {
     display: none !important;
 }
 
-/* ==================== ENCABEZADO SUPERIOR ==================== */
+/* ENCABEZADO */
 .app-header {
     background-color: var(--panel-bg);
     border-bottom: 1px solid var(--border-color);
-    padding: 10px 20px;
+    padding: 10px 24px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    height: 55px;
+    height: 56px;
 }
 
 .header-left, .header-center, .header-right {
@@ -54,7 +52,7 @@ body {
 }
 
 .btn-header {
-    background-color: var(--card-bg);
+    background-color: #1c2a40;
     color: var(--text-light);
     border: 1px solid var(--border-color);
     padding: 6px 14px;
@@ -73,13 +71,12 @@ body {
 }
 
 .header-title {
-    font-size: 1.1rem;
+    font-size: 1.15rem;
     font-weight: bold;
-    color: var(--text-white);
 }
 
 .badge-score {
-    background-color: rgba(16, 185, 129, 0.2);
+    background-color: rgba(16, 185, 129, 0.15);
     color: #34d399;
     border: 1px solid #10b981;
     padding: 4px 12px;
@@ -89,12 +86,12 @@ body {
 }
 
 .ia-dependency-text {
-    color: var(--accent-orange);
+    color: #f97316;
     font-size: 0.85rem;
     font-weight: bold;
 }
 
-/* ==================== ÁREA PRINCIPAL (INTERACTOR) ==================== */
+/* WORKSPACE PRINCIPAL */
 .main-workspace {
     flex: 1;
     display: flex;
@@ -102,21 +99,21 @@ body {
     overflow: hidden;
 }
 
-/* Barra Lateral Izquierda: Electrodos Circulares */
+/* BARRA LATERAL ELECTRODOS */
 .electrodes-sidebar {
-    width: 80px;
+    width: 75px;
     background-color: var(--panel-bg);
     border-right: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
     align-items: center;
     padding: 20px 0;
-    gap: 15px;
+    gap: 16px;
 }
 
 .electrode-circle {
-    width: 42px;
-    height: 42px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     border: 2px solid #2563eb;
     background-color: rgba(37, 99, 235, 0.1);
@@ -134,10 +131,10 @@ body {
 .electrode-circle:hover {
     border-color: #38bdf8;
     color: #fff;
-    box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
 }
 
-/* Área Central: Torso SVG */
+/* ÁREA CENTRAL - TORSO */
 .center-viewport {
     flex: 1;
     display: flex;
@@ -149,15 +146,15 @@ body {
 
 .instruction-banner {
     position: absolute;
-    top: 20px;
+    top: 25px;
     color: var(--text-light);
     font-size: 0.95rem;
 }
 
 .torso-wrapper {
     position: relative;
-    width: 280px;
-    height: 380px;
+    width: 260px;
+    height: 360px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -170,8 +167,8 @@ body {
 
 .dropzone-overlay {
     position: absolute;
-    width: 30px;
-    height: 30px;
+    width: 32px;
+    height: 32px;
     border: 2px dashed #10b981;
     border-radius: 50%;
     transform: translate(-50%, -50%);
@@ -182,38 +179,36 @@ body {
     font-size: 0.75rem;
     font-weight: bold;
     background-color: rgba(16, 185, 129, 0.1);
+    transition: all 0.2s;
 }
 
 .dropzone-overlay.placed {
-    background-color: rgba(16, 185, 129, 0.8);
+    background-color: rgba(16, 185, 129, 0.9);
     border-style: solid;
     color: #000;
+    box-shadow: 0 0 10px #10b981;
 }
 
-/* Panel Derecho: Asistente IA */
+/* PANEL DERECHO - IA */
 .right-sidebar {
     width: 320px;
     padding: 20px;
     display: flex;
     flex-direction: column;
-    gap: 15px;
 }
 
 .ai-card {
     background-color: var(--card-bg);
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    padding: 18px;
+    padding: 20px;
 }
 
 .ai-card-header {
     font-size: 0.8rem;
     font-weight: bold;
     color: #38bdf8;
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    margin-bottom: 14px;
 }
 
 .ai-label {
@@ -222,16 +217,16 @@ body {
 }
 
 .ai-suggestion {
-    font-size: 1.25rem;
+    font-size: 1.3rem;
     font-weight: bold;
     color: #38bdf8;
-    margin: 4px 0;
+    margin: 6px 0;
 }
 
 .ai-confidence {
     font-size: 0.85rem;
     color: #0284c7;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
 }
 
 .btn-ai-confirm {
@@ -243,12 +238,12 @@ body {
     padding: 10px;
     border-radius: 6px;
     cursor: pointer;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
 }
 
 .btn-ai-manual {
     width: 100%;
-    background-color: #1e293b;
+    background-color: #1c2a40;
     color: #cbd5e1;
     border: 1px solid var(--border-color);
     padding: 10px;
@@ -257,7 +252,7 @@ body {
     font-size: 0.85rem;
 }
 
-/* ==================== MONITOR ECG INFERIOR ==================== */
+/* MONITOR ECG INFERIOR */
 .bottom-ecg-section {
     height: 180px;
     background-color: #030712;
@@ -273,10 +268,11 @@ body {
     font-size: 0.8rem;
     color: var(--text-light);
     background-color: var(--panel-bg);
+    border-bottom: 1px solid var(--border-color);
 }
 
 .bpm-highlight {
-    color: var(--accent-red);
+    color: #ef4444;
     font-weight: bold;
 }
 
@@ -284,11 +280,10 @@ body {
     flex: 1;
     width: 100%;
     position: relative;
-    /* Fondo con rejilla médica */
     background-color: #020d08;
     background-image: 
-        linear-gradient(rgba(16, 185, 129, 0.1) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(16, 185, 129, 0.1) 1px, transparent 1px);
+        linear-gradient(rgba(16, 185, 129, 0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(16, 185, 129, 0.08) 1px, transparent 1px);
     background-size: 20px 20px;
 }
 
@@ -298,7 +293,7 @@ body {
     display: block;
 }
 
-/* ==================== MODALES ==================== */
+/* MODALES */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -306,6 +301,7 @@ body {
     width: 100vw;
     height: 100vh;
     background-color: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(2px);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -318,5 +314,5 @@ body {
     border-radius: 10px;
     padding: 25px;
     width: 90%;
-    max-width: 500px;
+    max-width: 480px;
 }
