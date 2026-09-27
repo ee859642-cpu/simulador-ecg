@@ -43,63 +43,175 @@ let indiceSesgoIA = 0;          // Porcentaje de dependencia (0% - 100%)
 
 let animacionCanvasId = null;
 
-// ==================== CASOS CLÍNICOS NIVEL 3 (ROMPECABEZAS VISUAL CON PISTAS DE CONTINUIDAD) ====================
-const CASOS_NIVEL3 = [
-    {
-        id: 1,
-        paciente: "Paciente masculino de 68 años con palpitaciones, mareos y pulso irregularmente irregular.",
-        patologia: "Atrial Fibrillallation",
-        piezas: [
-            { id: 0, label: "Inicio (Línea plana): Ondas f caóticas iniciales", hint: "Conector: Borde Izquierdo", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 Q10,15 20,25 T40,20 T60,25 T80,18 L100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
-            { id: 1, label: "Despolarización Ventricular #1", hint: "Conector: Empalme con línea plana previa", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 L20,20 L25,35 L30,5 L35,25 L40,20 L100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
-            { id: 2, label: "Pausa Inter-R-R Irregular", hint: "Conector: Salida de QRS anterior", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 Q15,23 30,17 T60,22 L100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
-            { id: 3, label: "Despolarización Ventricular #2", hint: "Conector: Borde Derecho / Salida", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 L50,20 L55,35 L60,5 L65,25 L70,20 L100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' }
-        ],
-        tratamientoCorrecto: 1,
-        opcionesTratamiento: [
-            "Cardioversión eléctrica inmediata sin anticoagulación previa",
-            "Control de frecuencia cardíaca (Betabloqueantes / Diltiazem) y Anticoagulación",
-            "Administración de Atropina 1mg IV en bolo"
-        ]
-    },
-    {
-        id: 2,
-        paciente: "Paciente femenina de 55 años con dolor torácico opresivo de 2 horas de evolución e irradiado a brazo izquierdo.",
-        patologia: "Infarto Agudo de Miocardio (Supradesnivel ST)",
-        piezas: [
-            { id: 0, label: "Onda P y Segmento PR Isoeléctrico", hint: "Conector: Borde Izquierdo", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 Q15,12 30,20 L50,20 L100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
-            { id: 1, label: "Complejo QRS con ascenso agudo", hint: "Conector: Empalme PR", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 L20,20 L25,35 L30,0 L35,15 L100,15" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
-            { id: 2, label: "Elevación Supradesnivel del Segmento ST", hint: "Conector: Salida de QRS elevado", svg: '<svg viewBox="0 0 100 40"><path d="M0,15 L40,15 C60,15 70,30 100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
-            { id: 3, label: "Onda T Terminal / Retorno a línea de base", hint: "Conector: Borde Derecho / Final", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 Q25,30 50,20 L100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' }
-        ],
-        tratamientoCorrecto: 0,
-        opcionesTratamiento: [
-            "Reperfusión inmediata: Angioplastia Coronaria Percutánea (ACTP) o Trombólisis",
-            "Observación ambulatoria y alta con analgésicos",
-            "Maniobras vagales y Adenosina 6mg IV"
-        ]
-    },
-    {
-        id: 3,
-        paciente: "Paciente masculino de 60 años con antecedente de miocardiopatía que presenta taquicardia sostenida de QRS ancho y presíncope.",
-        patologia: "Ventricular tachycardia(VTach)",
-        piezas: [
-            { id: 0, label: "Inicio: Onda Ancha Monomórfica V1", hint: "Conector: Borde Izquierdo", svg: '<svg viewBox="0 0 100 40"><path d="M0,30 Q25,0 50,30 L100,30" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
-            { id: 1, label: "Ciclo Intermedio: Onda Ancha Monomórfica V2", hint: "Conector: Continuidad V1-V2", svg: '<svg viewBox="0 0 100 40"><path d="M0,30 Q25,0 50,30 L100,30" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
-            { id: 2, label: "Ciclo Intermedio: Onda Ancha Monomórfica V3", hint: "Conector: Continuidad V2-V3", svg: '<svg viewBox="0 0 100 40"><path d="M0,30 Q25,0 50,30 L100,30" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
-            { id: 3, label: "Final del Trazado: Onda Ancha Monomórfica V4", hint: "Conector: Borde Derecho / Final", svg: '<svg viewBox="0 0 100 40"><path d="M0,30 Q25,0 50,30 L100,30" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' }
-        ],
-        tratamientoCorrecto: 2,
-        opcionesTratamiento: [
-            "Compresiones torácicas inmediatas (RCP únicamente)",
-            "Aspirina 300mg VO y observación",
-            "Amiodarona IV (si está estable) o Cardioversión Eléctrica Sincronizada"
-        ]
-    }
-];
+// ==================== NUEVO: ESTADO DE JUGADOR, TIEMPO Y ESTADÍSTICAS ====================
+let jugadorNombre = '';
+let jugadorGenero = '';
+let horaInicioJuego = null;
+let intentosNivel2 = 0; // Total de diagnósticos intentados en Nivel 2 (para calcular precisión)
 
-let casoActualN3 = 0;
-let ordenSeleccionadoN3 = [null, null, null, null];
+// ==================== NUEVO: SONIDO (WEB AUDIO API, SIN ARCHIVOS EXTERNOS) ====================
+let audioCtx = null;
+let latidoIntervalId = null;
+
+function obtenerAudioCtx() {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    return audioCtx;
+}
+
+function reproducirClic() {
+    try {
+        const ctx = obtenerAudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(700, ctx.currentTime);
+        gain.gain.setValueAtTime(0.15, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.08);
+    } catch (e) { /* Audio no soportado en este navegador */ }
+}
+
+function reproducirLatido() {
+    try {
+        const ctx = obtenerAudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, ctx.currentTime);
+        gain.gain.setValueAtTime(0.2, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.12);
+    } catch (e) { /* Audio no soportado en este navegador */ }
+}
+
+function iniciarLatidoSonoro(bpm) {
+    detenerLatidoSonoro();
+    const intervaloMs = bpm > 0 ? (60000 / bpm) : 1200;
+    reproducirLatido();
+    latidoIntervalId = setInterval(reproducirLatido, intervaloMs);
+}
+
+function detenerLatidoSonoro() {
+    if (latidoIntervalId) {
+        clearInterval(latidoIntervalId);
+        latidoIntervalId = null;
+    }
+}
+
+// Sonido de clic global: se activa en cualquier botón, electrodo o pieza de rompecabezas
+// sin necesidad de tocar los onclick ya existentes en el HTML.
+document.addEventListener('click', (e) => {
+    const elementoClic = e.target.closest('button, .electrode-circle, .puzzle-piece');
+    if (elementoClic) reproducirClic();
+});
+
+// ==================== NUEVO: REGISTRO DE JUGADOR Y AVATAR ====================
+function seleccionarGenero(genero, btnEl) {
+    jugadorGenero = genero;
+    document.querySelectorAll('.btn-genero').forEach(b => b.classList.remove('genero-selected'));
+    btnEl.classList.add('genero-selected');
+}
+
+function registrarJugador() {
+    const inputNombre = document.getElementById('input-nombre-jugador');
+    const nombre = inputNombre ? inputNombre.value.trim() : '';
+
+    if (!nombre) {
+        alert('⚠️ Por favor escribe tu nombre para continuar.');
+        return;
+    }
+    if (!jugadorGenero) {
+        alert('⚠️ Por favor selecciona un género para asignar tu avatar.');
+        return;
+    }
+
+    jugadorNombre = nombre;
+    horaInicioJuego = Date.now();
+
+    const avatarEmoji = jugadorGenero === 'femenino' ? '👩‍⚕️' : '🧑‍⚕️';
+    const tituloAvatar = jugadorGenero === 'femenino' ? 'Biomédica' : 'Biomédico';
+
+    const playerBadge = document.getElementById('player-badge');
+    if (playerBadge) {
+        playerBadge.innerText = `${avatarEmoji} ${jugadorNombre} (${tituloAvatar})`;
+    }
+
+    const modalRegistro = document.getElementById('modal-registro');
+    if (modalRegistro) modalRegistro.classList.add('hidden');
+
+    const modalN1 = document.getElementById('modal-nivel1-intro');
+    if (modalN1) modalN1.classList.remove('hidden');
+}
+
+// ==================== NUEVO: ESTADÍSTICAS Y PANTALLA FINAL PERSONALIZADA ====================
+function mostrarPantallaFinal() {
+    detenerLatidoSonoro();
+
+    const tiempoTotalMs = horaInicioJuego ? (Date.now() - horaInicioJuego) : 0;
+    const minutos = Math.floor(tiempoTotalMs / 60000);
+    const segundos = Math.floor((tiempoTotalMs % 60000) / 1000);
+    const tiempoFormateado = `${minutos}m ${segundos}s`;
+
+    const precisionNivel2 = intentosNivel2 > 0
+        ? Math.round((aciertosNivel2 / intentosNivel2) * 100)
+        : 100;
+
+    const autonomiaIA = 100 - indiceSesgoIA;
+
+    const avatarEmoji = jugadorGenero === 'femenino' ? '👩‍⚕️' : '🧑‍⚕️';
+    const tituloAvatar = jugadorGenero === 'femenino' ? 'Biomédica' : 'Biomédico';
+    const nombreMostrado = jugadorNombre || 'Estudiante';
+    const terminacion = jugadorGenero === 'femenino' ? 'a' : 'o';
+
+    const finalBadge = document.getElementById('final-player-badge');
+    if (finalBadge) finalBadge.innerText = `${avatarEmoji} ${nombreMostrado}`;
+
+    const finalTitulo = document.getElementById('final-congrats-title');
+    if (finalTitulo) {
+        finalTitulo.innerText = `🏆 ¡Felicidades ${nombreMostrado}, eres tod${terminacion} un${terminacion} ${tituloAvatar}!`;
+    }
+
+    const finalStats = document.getElementById('final-stats');
+    if (finalStats) {
+        finalStats.innerHTML = `
+            <p>⏱ Tiempo total: <strong>${tiempoFormateado}</strong></p>
+            <p>🎯 Precisión diagnóstica: <strong>${precisionNivel2}%</strong></p>
+            <p>🧠 Autonomía frente al sesgo de la IA: <strong>${autonomiaIA}%</strong></p>
+        `;
+    }
+
+    guardarResultadoLocal({
+        nombre: nombreMostrado,
+        genero: jugadorGenero,
+        tiempoMs: tiempoTotalMs,
+        precision: precisionNivel2,
+        autonomia: autonomiaIA,
+        fecha: new Date().toISOString()
+    });
+}
+
+function guardarResultadoLocal(resultado) {
+    try {
+        const clave = 'ecg_leaderboard';
+        const datosPrevios = JSON.parse(localStorage.getItem(clave) || '[]');
+        datosPrevios.push(resultado);
+        localStorage.setItem(clave, JSON.stringify(datosPrevios));
+    } catch (e) {
+        console.warn('No se pudo guardar el resultado localmente.', e);
+    }
+
+    // OPCIONAL: envío a Firebase para tabla de posiciones en tiempo real del docente.
+    // Descomenta la línea de abajo solo después de configurar firebase-config.js:
+    // guardarEnFirebase(resultado);
+}
 
 // ==================== INICIALIZACIÓN DE LA APLICACIÓN ====================
 window.addEventListener('DOMContentLoaded', () => {
@@ -108,8 +220,9 @@ window.addEventListener('DOMContentLoaded', () => {
     poblarTablaPatologiasInfo();
     ajustarTamanioCanvas();
 
-    const modalN1 = document.getElementById('modal-nivel1-intro');
-    if (modalN1) modalN1.classList.remove('hidden');
+    // Antes se mostraba directo el modal de Nivel 1; ahora primero se registra al jugador.
+    const modalRegistro = document.getElementById('modal-registro');
+    if (modalRegistro) modalRegistro.classList.remove('hidden');
 
     const aiPanel = document.getElementById('ai-panel');
     if (aiPanel) aiPanel.classList.add('hidden');
@@ -197,6 +310,7 @@ function inicializarDragAndDropNivel1() {
 function comenzarNivel2() {
     nivelActual = 2;
     aciertosNivel2 = 0;
+    intentosNivel2 = 0;
     usoSeguidoIA = 0;
     analisisManualesSeguidos = 0;
     indiceSesgoIA = 0;
@@ -225,21 +339,26 @@ function cargarSiguienteCasoNivel2() {
         patientInfo.innerText = `Paciente: ID PAC-${Math.floor(Math.random() * 899 + 100)} (${Math.floor(Math.random() * 50 + 25)} años)`;
     }
 
+    // Corregido: Muestra explícitamente "BPM: (NÚMERO)"
     const bpmDisplay = document.getElementById('bpm-display');
     if (bpmDisplay) {
         bpmDisplay.innerText = `BPM: ${casoActualN2.rate}`;
     }
 
+    // REGLA DE COMPORTAMIENTO DE IA:
+    // Si confía 2 o más veces seguidas en la IA O si el índice de dependencia supera el 40%, la IA SE CONFUNDE (falla a propósito)
     let laIaSeConfunde = (usoSeguidoIA >= 2) || (indiceSesgoIA >= 40);
 
     let sugerenciaIA;
     let confianzaIA;
 
     if (laIaSeConfunde) {
+        // La IA comete un error deliberado
         const ritmosIncorrectos = RITMOS_ECG.filter(r => r.name !== casoActualN2.name);
         sugerenciaIA = ritmosIncorrectos[Math.floor(Math.random() * ritmosIncorrectos.length)].name;
-        confianzaIA = Math.floor(Math.random() * 15 + 80);
+        confianzaIA = Math.floor(Math.random() * 15 + 80); // Muestra alta confianza errónea para simular "alucinación"
     } else {
+        // La IA funciona correctamente
         sugerenciaIA = casoActualN2.name;
         confianzaIA = Math.floor(Math.random() * 12 + 88);
     }
@@ -250,10 +369,11 @@ function cargarSiguienteCasoNivel2() {
 
     const aiConfText = document.getElementById('ai-confidence-text');
     if (aiConfText) {
-        aiConfText.innerText = "";
+        aiConfText.innerText = ""; // Se limpia el texto para que permanezca oculto
     }
 
     iniciarAnimacionECG(casoActualN2.id);
+    iniciarLatidoSonoro(casoActualN2.rate); // NUEVO: latido sincronizado con el BPM del caso
 }
 
 function tomarDecisionIA() {
@@ -277,16 +397,21 @@ function evaluarDiagnosticoManual() {
 }
 
 function evaluarRespuestaNivel2(diagnosticoPropuesto, provieneDeIA) {
+    intentosNivel2++; // NUEVO: cuenta cada intento para calcular precisión final
+
     const esCorrecto = (diagnosticoPropuesto === casoActualN2.name);
     const modalRes = document.getElementById('modal-resultado');
 
     if (provieneDeIA) {
         usoSeguidoIA++;
         analisisManualesSeguidos = 0;
+        // Aumenta el índice de dependencia
         indiceSesgoIA = Math.min(100, indiceSesgoIA + 25);
     } else {
         analisisManualesSeguidos++;
-        usoSeguidoIA = 0;
+        usoSeguidoIA = 0; // Se resetea el contador de abuso de IA
+        
+        // Reducción paulatina de la dependencia al analizar manualmente a 3 o 4 pacientes
         indiceSesgoIA = Math.max(0, indiceSesgoIA - 30);
     }
 
@@ -305,6 +430,7 @@ function evaluarRespuestaNivel2(diagnosticoPropuesto, provieneDeIA) {
 
     document.getElementById('score-badge').innerText = `🎯 Aciertos: ${aciertosNivel2} / ${MAX_ACIERTOS_NIVEL2}`;
     
+    // Actualizar badges de dependencia
     const txtBias = `Dependencia IA: ${indiceSesgoIA}%`;
     const biasDisplay = document.getElementById('bias-display');
     const biasFooter = document.getElementById('bias-info-footer');
@@ -335,6 +461,8 @@ function siguienteCasoNivel2() {
 function comenzarNivel3() {
     nivelActual = 3;
     casoActualN3 = 0;
+
+    detenerLatidoSonoro(); // NUEVO: detiene el latido del Nivel 2 al pasar de nivel
 
     const modalN3Intro = document.getElementById('modal-nivel3-intro');
     if (modalN3Intro) modalN3Intro.classList.add('hidden');
@@ -449,6 +577,7 @@ function evaluarTratamientoN3(opcionSeleccionada) {
             alert(`✅ ¡Excelente! Has completado la reconstrucción y conducta clínica para ${caso.patologia}. Pasamos al siguiente caso.`);
             cargarCasoNivel3(casoActualN3);
         } else {
+            mostrarPantallaFinal(); // NUEVO: calcula y muestra estadísticas antes del modal final
             document.getElementById('modal-juego-completado').classList.remove('hidden');
         }
     } else {
@@ -589,3 +718,61 @@ function abrirModal(tipo) {
 function cerrarModalInfoPatologias() {
     document.getElementById('modal-patologias-info').classList.add('hidden');
 }
+
+// ==================== CASOS CLÍNICOS NIVEL 3 (ROMPECABEZAS VISUAL CON PISTAS DE CONTINUIDAD) ====================
+const CASOS_NIVEL3 = [
+    {
+        id: 1,
+        paciente: "Paciente masculino de 68 años con palpitaciones, mareos y pulso irregularmente irregular.",
+        patologia: "Atrial Fibrillallation",
+        piezas: [
+            { id: 0, label: "Inicio (Línea plana): Ondas f caóticas iniciales", hint: "Conector: Borde Izquierdo", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 Q10,15 20,25 T40,20 T60,25 T80,18 L100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
+            { id: 1, label: "Despolarización Ventricular #1", hint: "Conector: Empalme con línea plana previa", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 L20,20 L25,35 L30,5 L35,25 L40,20 L100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
+            { id: 2, label: "Pausa Inter-R-R Irregular", hint: "Conector: Salida de QRS anterior", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 Q15,23 30,17 T60,22 L100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
+            { id: 3, label: "Despolarización Ventricular #2", hint: "Conector: Borde Derecho / Salida", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 L50,20 L55,35 L60,5 L65,25 L70,20 L100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' }
+        ],
+        tratamientoCorrecto: 1,
+        opcionesTratamiento: [
+            "Cardioversión eléctrica inmediata sin anticoagulación previa",
+            "Control de frecuencia cardíaca (Betabloqueantes / Diltiazem) y Anticoagulación",
+            "Administración de Atropina 1mg IV en bolo"
+        ]
+    },
+    {
+        id: 2,
+        paciente: "Paciente femenina de 55 años con dolor torácico opresivo de 2 horas de evolución e irradiado a brazo izquierdo.",
+        patologia: "Infarto Agudo de Miocardio (Supradesnivel ST)",
+        piezas: [
+            { id: 0, label: "Onda P y Segmento PR Isoeléctrico", hint: "Conector: Borde Izquierdo", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 Q15,12 30,20 L50,20 L100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
+            { id: 1, label: "Complejo QRS con ascenso agudo", hint: "Conector: Empalme PR", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 L20,20 L25,35 L30,0 L35,15 L100,15" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
+            { id: 2, label: "Elevación Supradesnivel del Segmento ST", hint: "Conector: Salida de QRS elevado", svg: '<svg viewBox="0 0 100 40"><path d="M0,15 L40,15 C60,15 70,30 100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
+            { id: 3, label: "Onda T Terminal / Retorno a línea de base", hint: "Conector: Borde Derecho / Final", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 Q25,30 50,20 L100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' }
+        ],
+        tratamientoCorrecto: 0,
+        opcionesTratamiento: [
+            "Reperfusión inmediata: Angioplastia Coronaria Percutánea (ACTP) o Trombólisis",
+            "Observación ambulatoria y alta con analgésicos",
+            "Maniobras vagales y Adenosina 6mg IV"
+        ]
+    },
+    {
+        id: 3,
+        paciente: "Paciente masculino de 60 años con antecedente de miocardiopatía que presenta taquicardia sostenida de QRS ancho y presíncope.",
+        patologia: "Ventricular tachycardia(VTach)",
+        piezas: [
+            { id: 0, label: "Inicio: Onda Ancha Monomórfica V1", hint: "Conector: Borde Izquierdo", svg: '<svg viewBox="0 0 100 40"><path d="M0,30 Q25,0 50,30 L100,30" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
+            { id: 1, label: "Ciclo Intermedio: Onda Ancha Monomórfica V2", hint: "Conector: Continuidad V1-V2", svg: '<svg viewBox="0 0 100 40"><path d="M0,30 Q25,0 50,30 L100,30" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
+            { id: 2, label: "Ciclo Intermedio: Onda Ancha Monomórfica V3", hint: "Conector: Continuidad V2-V3", svg: '<svg viewBox="0 0 100 40"><path d="M0,30 Q25,0 50,30 L100,30" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
+            { id: 3, label: "Final del Trazado: Onda Ancha Monomórfica V4", hint: "Conector: Borde Derecho / Final", svg: '<svg viewBox="0 0 100 40"><path d="M0,30 Q25,0 50,30 L100,30" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' }
+        ],
+        tratamientoCorrecto: 2,
+        opcionesTratamiento: [
+            "Compresiones torácicas inmediatas (RCP únicamente)",
+            "Aspirina 300mg VO y observación",
+            "Amiodarona IV (si está estable) o Cardioversión Eléctrica Sincronizada"
+        ]
+    }
+];
+
+let casoActualN3 = 0;
+let ordenSeleccionadoN3 = [null, null, null, null];
