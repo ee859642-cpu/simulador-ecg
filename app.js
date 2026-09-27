@@ -220,7 +220,7 @@ function cargarSiguienteCasoNivel2() {
     // Actualiza el elemento de BPM en la interfaz inferior respetando el ID "bpm-display"
     const bpmDisplay = document.getElementById('bpm-display');
     if (bpmDisplay) {
-        bpmDisplay.innerText = casoActualN2.rate;
+        bpmDisplay.innerText = `BPM: ${casoActualN2.rate}`;
     }
 
     const aciertoIA = Math.random() < 0.85;
