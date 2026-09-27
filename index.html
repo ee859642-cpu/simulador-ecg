@@ -130,11 +130,33 @@
     </footer>
 
     <!-- MODALES Y VENTANAS EMERGENTES -->
+
+    <!-- VENTANA 1 INICIAL: INSTRUCCIONES NIVEL 1 -->
+    <div id="modal-nivel1-intro" class="modal-overlay">
+        <div class="modal-card">
+            <h2>🫀 Nivel 1: Posicionamiento Anatómico</h2>
+            <p>Bienvenido al Simulador ECG. Arrastra los 6 electrodos precordiales (V1 a V6) desde el panel izquierdo hacia sus posiciones anatómicas correctas sobre el torso.</p>
+            <button class="btn-primary" onclick="cerrarModalNivel1()">Comenzar Nivel 1</button>
+        </div>
+    </div>
+
+    <!-- VENTANA 2: TRANSICIÓN A NIVEL 2 -->
     <div id="modal-nivel2" class="modal-overlay hidden">
         <div class="modal-card">
             <h2>✅ Electrodos Posicionados Correctamente</h2>
             <p>Has completado el posicionamiento del Nivel 1. A continuación pasarás al <strong>Nivel 2: Análisis de Señales e Interpretación de ECG</strong>.</p>
+            <p>Deberás lograr <strong>10 aciertos</strong> para desbloquear el Nivel 3.</p>
             <button class="btn-primary" onclick="comenzarNivel2()">Iniciar Nivel 2</button>
+        </div>
+    </div>
+
+    <!-- VENTANA 3: TRANSICIÓN A NIVEL 3 -->
+    <div id="modal-nivel3-intro" class="modal-overlay hidden">
+        <div class="modal-card">
+            <h2>🧩 Nivel 3: Rompecabezas Fisiológico</h2>
+            <p>¡Excelente trabajo! Has alcanzado los 10 aciertos en el Nivel 2.</p>
+            <p>En este nivel reconstruirás el trazado electrocardiográfico a partir de sus componentes primarios.</p>
+            <button class="btn-primary" onclick="comenzarNivel3()">Iniciar Nivel 3</button>
         </div>
     </div>
 
