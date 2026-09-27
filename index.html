@@ -21,6 +21,7 @@
         </div>
 
         <div class="header-right">
+            <span id="player-badge" class="player-badge"></span>
             <span id="score-badge" class="badge-score">🎯 Nivel 1: 0 / 6</span>
             <span id="bias-display" class="ia-dependency-text">Índice Dependencia IA: 0%</span>
         </div>
@@ -118,6 +119,24 @@
         </div>
     </footer>
 
+    <!-- MODAL DE REGISTRO Y AVATAR (SE MUESTRA ANTES DEL NIVEL 1) -->
+    <div id="modal-registro" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2 style="color: #38bdf8; margin-bottom: 10px;">🩺 Bienvenido al Simulador Clínico</h2>
+            <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 15px;">Regístrate para comenzar tu guardia:</p>
+
+            <input id="input-nombre-jugador" class="input-registro" type="text" placeholder="Escribe tu nombre" maxlength="24">
+
+            <p style="color: #94a3b8; font-size: 0.85rem; margin: 12px 0 8px;">Selecciona tu avatar:</p>
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <button type="button" class="btn-genero" onclick="seleccionarGenero('masculino', this)">🧑‍⚕️ Biomédico</button>
+                <button type="button" class="btn-genero" onclick="seleccionarGenero('femenino', this)">👩‍⚕️ Biomédica</button>
+            </div>
+
+            <button class="btn-ai-confirm" onclick="registrarJugador()">Iniciar Guardia</button>
+        </div>
+    </div>
+
     <!-- MODALES DE CONTROL -->
     <div id="modal-nivel1-intro" class="modal-overlay hidden">
         <div class="modal-content">
@@ -175,13 +194,25 @@
         </div>
     </div>
 
+    <!-- MODAL FINAL: AHORA CON AVATAR, MENSAJE POR GÉNERO Y ESTADÍSTICAS -->
     <div id="modal-juego-completado" class="modal-overlay hidden">
         <div class="modal-content">
-            <h2 style="color: #10b981; margin-bottom: 10px;">🏆 ¡Simulación Finalizada!</h2>
-            <p style="color: #94a3b8; margin-bottom: 15px;">Has completado exitosamente los 3 niveles del simulador clínico.</p>
-            <button class="btn-ai-confirm" onclick="reiniciarDesdeNivel1()">Reiniciar Simulador</button>
+            <div id="final-player-badge" class="player-badge" style="font-size: 1rem; margin-bottom: 8px;"></div>
+            <h2 id="final-congrats-title" style="color: #10b981; margin-bottom: 10px;">🏆 ¡Simulación Finalizada!</h2>
+            <div id="final-stats" class="final-stats"></div>
+            <button class="btn-ai-confirm" style="margin-top: 15px;" onclick="reiniciarDesdeNivel1()">Reiniciar Simulador</button>
         </div>
     </div>
+
+    <!-- OPCIONAL: Firebase para tabla de posiciones en tiempo real (leaderboard del docente).
+         Para activarlo: 1) crea un proyecto gratis en https://console.firebase.google.com
+         2) habilita Firestore Database 3) pega tu configuración en firebase-config.js
+         4) descomenta las 3 líneas de abajo. -->
+    <!--
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    -->
 
     <script src="app.js"></script>
 </body>
