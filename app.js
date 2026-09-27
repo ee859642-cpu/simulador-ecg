@@ -29,16 +29,6 @@ const RITMOS_ECG = [
     { id: "long_qt", name: "Síndrome de QT Largo", rate: "Normal", qrs: "Normal", p: "Presente", st: "QTc Prolongado (>470ms)", treat: "Betabloqueantes / Evitar fármacos que alarguen QT", status: "Riesgo de Arritmia", type: "canalopatia" }
 ];
 
-// POSICIONES CORRECTAS DE LOS ELECTRODOS (NIVEL 1)
-const POSICIONES_CORRECTAS = {
-    "V1": { top: 38, left: 47 },
-    "V2": { top: 38, left: 53 },
-    "V3": { top: 45, left: 50 },
-    "V4": { top: 51, left: 45 },
-    "V5": { top: 51, left: 53 },
-    "V6": { top: 51, left: 60 }
-};
-
 // ==================== VARIABLES DE ESTADO GLOBAL ====================
 let nivelActual = 1;
 let aciertosNivel2 = 0;
@@ -113,11 +103,9 @@ window.addEventListener('DOMContentLoaded', () => {
     poblarTablaPatologiasInfo();
     ajustarTamanioCanvas();
 
-    // 1. Mostrar modal inicial de instrucciones del Nivel 1
     const modalN1 = document.getElementById('modal-nivel1-intro');
     if (modalN1) modalN1.classList.remove('hidden');
 
-    // Ocultar panel de IA de inicio
     const aiPanel = document.getElementById('ai-panel');
     if (aiPanel) aiPanel.classList.add('hidden');
 
@@ -131,62 +119,73 @@ function cerrarModalNivel1() {
 
 // ==================== LÓGICA DEL NIVEL 1: ELECTRODOS ====================
 function inicializarDragAndDropNivel1() {
-    const electrodos = document.querySelectorAll('.electrode');
-    const zonasDrop = document.querySelectorAll('.dropzone');
+    const electrodos = document.querySelectorAll('.electrode-circle');
+    const zonasDrop = document.querySelectorAll('.dropzone-overlay');
 
     electrodos.forEach(el => {
-        el.setAttribute('draggable', true);
         el.addEventListener('dragstart', (e) => {
             e.dataTransfer.setData('text/plain', el.dataset.lead);
+            el.style.opacity = '0.5';
+        });
+
+        el.addEventListener('dragend', () => {
+            el.style.opacity = '1';
         });
     });
 
     zonasDrop.forEach(zona => {
-        zona.addEventListener('dragover', (e) => e.preventDefault());
+        zona.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            zona.style.transform = 'translate(-50%, -50%) scale(1.2)';
+        });
+
+        zona.addEventListener('dragleave', () => {
+            zona.style.transform = 'translate(-50%, -50%) scale(1.0)';
+        });
+
         zona.addEventListener('drop', (e) => {
             e.preventDefault();
+            zona.style.transform = 'translate(-50%, -50%) scale(1.0)';
+            
             const leadDragged = e.dataTransfer.getData('text/plain');
             const targetZone = zona.dataset.target;
 
             if (leadDragged === targetZone) {
-                zona.classList.add('placed');
-                zona.innerText = leadDragged;
+                if (zona.classList.contains('placed')) return;
 
-                const originalEl = document.querySelector(`.electrode[data-lead="${leadDragged}"]`);
-                if (originalEl) originalEl.style.visibility = 'hidden';
+                zona.classList.add('placed');
+                zona.innerText = '✓';
+
+                const originalEl = document.querySelector(`.electrode-circle[data-lead="${leadDragged}"]`);
+                if (originalEl) {
+                    originalEl.style.opacity = '0.25';
+                    originalEl.style.cursor = 'not-allowed';
+                    originalEl.setAttribute('draggable', 'false');
+                }
 
                 electrodosColocados++;
 
-                // Al colocar los 6 electrodos, avanzar a Nivel 2
+                const scoreBadge = document.getElementById('score-badge');
+                if (scoreBadge) {
+                    scoreBadge.textContent = `🎯 Nivel 1: ${electrodosColocados} / 6`;
+                }
+
                 if (electrodosColocados === 6) {
                     setTimeout(() => {
                         const modalN2 = document.getElementById('modal-nivel2');
                         if (modalN2) modalN2.classList.remove('hidden');
-                    }, 500);
+                    }, 400);
                 }
             } else {
-                alert(`⚠️ Posición incorrecta. ${leadDragged} no corresponde a esa ubicación anatómica.`);
+                zona.style.borderColor = '#ef4444';
+                setTimeout(() => {
+                    if (!zona.classList.contains('placed')) {
+                        zona.style.borderColor = '#10b981';
+                    }
+                }, 800);
             }
         });
     });
-}
-
-function reiniciarNivel1() {
-    electrodosColocados = 0;
-    const zonasDrop = document.querySelectorAll('.dropzone');
-    zonasDrop.forEach(zona => {
-        zona.classList.remove('placed');
-        zona.innerText = '';
-    });
-
-    const electrodos = document.querySelectorAll('.electrode');
-    electrodos.forEach(el => el.style.visibility = 'visible');
-
-    if (nivelActual === 1) {
-        document.getElementById('patient-info').innerText = 'Paciente: Selecciona los electrodos para iniciar';
-        document.getElementById('bpm-display').innerText = 'BPM: --';
-        detenerAnimacionCanvas();
-    }
 }
 
 // ==================== LÓGICA DEL NIVEL 2: ANÁLISIS DE ECG ====================
@@ -194,7 +193,6 @@ function comenzarNivel2() {
     nivelActual = 2;
     aciertosNivel2 = 0;
 
-    // Actualizar Encabezado
     const modalN2 = document.getElementById('modal-nivel2');
     if (modalN2) modalN2.classList.add('hidden');
 
@@ -207,20 +205,16 @@ function comenzarNivel2() {
 
     document.getElementById('ai-panel').classList.remove('hidden');
 
-    // Cargar primer paciente Nivel 2
     cargarSiguienteCasoNivel2();
 }
 
 function cargarSiguienteCasoNivel2() {
-    // Seleccionar ritmo aleatorio
     const indiceAleatorio = Math.floor(Math.random() * RITMOS_ECG.length);
     casoActualN2 = RITMOS_ECG[indiceAleatorio];
 
-    // Actualizar Interfaz del Paciente
     document.getElementById('patient-info').innerText = `Paciente: ID PAC-${Math.floor(Math.random() * 899 + 100)} (${Math.floor(Math.random() * 50 + 25)} años)`;
     document.getElementById('bpm-display').innerText = `BPM: ${casoActualN2.rate}`;
 
-    // Simulación del Asistente de IA (con 85% de precisión)
     const aciertoIA = Math.random() < 0.85;
     const sugerenciaIA = aciertoIA ? casoActualN2.name : RITMOS_ECG[Math.floor(Math.random() * RITMOS_ECG.length)].name;
     const confianzaIA = Math.floor(Math.random() * 15 + 83);
@@ -229,7 +223,6 @@ function cargarSiguienteCasoNivel2() {
     document.getElementById('ai-confidence-text').innerText = `Confianza: ${confianzaIA}%`;
     document.getElementById('ai-diagnosis-text').dataset.sugerencia = sugerenciaIA;
 
-    // Renderizar trazado en Canvas específico para la patología
     iniciarAnimacionECG(casoActualN2.id);
 }
 
@@ -261,7 +254,7 @@ function evaluarRespuestaNivel2(diagnosticoPropuesto, provieneDeIA) {
         aciertosNivel2++;
         document.getElementById('res-status-title').innerText = "¡Diagnóstico Correcto! 🎉";
         document.getElementById('res-status-badge').innerText = "CORRECTO";
-        document.getElementById('res-status-badge').style.background = "#00FF66";
+        document.getElementById('res-status-badge').style.background = "#10b981";
         document.getElementById('res-status-badge').style.color = "#000";
 
         if (provieneDeIA) {
@@ -270,7 +263,7 @@ function evaluarRespuestaNivel2(diagnosticoPropuesto, provieneDeIA) {
     } else {
         document.getElementById('res-status-title').innerText = "Diagnóstico Incorrecto ⚠️";
         document.getElementById('res-status-badge').innerText = "INCORRECTO";
-        document.getElementById('res-status-badge').style.background = "#FF0055";
+        document.getElementById('res-status-badge').style.background = "#ef4444";
         document.getElementById('res-status-badge').style.color = "#FFF";
 
         if (!provieneDeIA) {
@@ -278,7 +271,6 @@ function evaluarRespuestaNivel2(diagnosticoPropuesto, provieneDeIA) {
         }
     }
 
-    // Actualizar marcadores de sesgo y aciertos
     document.getElementById('score-badge').innerText = `🎯 Aciertos: ${aciertosNivel2} / ${MAX_ACIERTOS_NIVEL2}`;
     document.getElementById('bias-display').innerText = `Índice Dependencia IA: ${indiceSesgoIA}%`;
     document.getElementById('bias-info-footer').innerText = `Índice Dependencia IA: ${indiceSesgoIA}%`;
@@ -292,7 +284,6 @@ function evaluarRespuestaNivel2(diagnosticoPropuesto, provieneDeIA) {
 function siguienteCasoNivel2() {
     document.getElementById('modal-resultado').classList.add('hidden');
 
-    // VALIDACIÓN PASE A NIVEL 3 EXACTAMENTE A LOS 10 ACIERTOS
     if (aciertosNivel2 >= MAX_ACIERTOS_NIVEL2) {
         setTimeout(() => {
             const modalN3Intro = document.getElementById('modal-nivel3-intro');
@@ -308,7 +299,6 @@ function comenzarNivel3() {
     nivelActual = 3;
     casoActualN3 = 0;
 
-    // Actualizar Encabezado
     const modalN3Intro = document.getElementById('modal-nivel3-intro');
     if (modalN3Intro) modalN3Intro.classList.add('hidden');
 
@@ -317,7 +307,6 @@ function comenzarNivel3() {
     document.getElementById('score-badge').classList.add('hidden');
     document.getElementById('ai-panel').classList.add('hidden');
 
-    // Cambiar vista de paneles
     document.getElementById('electrode-placement-panel').classList.add('hidden');
     document.getElementById('puzzle-ecg-panel').classList.remove('hidden');
 
@@ -328,7 +317,6 @@ function cargarCasoNivel3(index) {
     const caso = CASOS_NIVEL3[index];
     ordenSeleccionadoN3 = [null, null, null, null];
 
-    // Resetear UI preservando el diseño
     const titleElem = document.getElementById('n3-patient-title');
     const descElem = document.getElementById('n3-patient-desc');
     const treatSec = document.getElementById('n3-treatment-section');
@@ -337,14 +325,12 @@ function cargarCasoNivel3(index) {
     if (descElem) descElem.innerText = caso.paciente;
     if (treatSec) treatSec.classList.add('hidden');
 
-    // Limpiar slots de armado
     const slots = document.querySelectorAll('.puzzle-slot');
     slots.forEach(slot => {
         slot.innerHTML = `<span class="slot-number">${parseInt(slot.dataset.slot) + 1}</span>`;
         slot.classList.remove('filled');
     });
 
-    // Cargar piezas desordenadas
     const containerPiezas = document.getElementById('puzzle-pieces-container');
     if (containerPiezas) {
         containerPiezas.innerHTML = '';
@@ -353,7 +339,12 @@ function cargarCasoNivel3(index) {
         piezasMezcladas.forEach(p => {
             const div = document.createElement('div');
             div.className = 'puzzle-piece';
-            div.innerHTML = `${p.svg}<p>${p.label}</p>`;
+            div.style.background = '#1e293b';
+            div.style.border = '1px solid #334155';
+            div.style.padding = '10px';
+            div.style.borderRadius = '8px';
+            div.style.cursor = 'pointer';
+            div.innerHTML = `${p.svg}<p style="font-size:0.75rem; color:#94a3b8; text-align:center;">${p.label}</p>`;
             div.onclick = () => colocarPiezaN3(p, div);
             containerPiezas.appendChild(div);
         });
@@ -392,7 +383,7 @@ function validarEnsambleN3() {
             containerOpciones.innerHTML = '';
             caso.opcionesTratamiento.forEach((opc, i) => {
                 const btn = document.createElement('button');
-                btn.className = 'btn-primary';
+                btn.className = 'btn-ai-confirm';
                 btn.style.margin = "5px 0";
                 btn.style.width = "100%";
                 btn.innerText = opc;
@@ -455,7 +446,6 @@ function iniciarAnimacionECG(tipoRitmo) {
     const speed = 2.5;
 
     function dibujarFrame() {
-        // Redibujar fondo con cuadrícula verde médica
         ctx.fillStyle = '#051109';
         ctx.fillRect(x, 0, speed + 2, canvas.height);
 
@@ -468,12 +458,11 @@ function iniciarAnimacionECG(tipoRitmo) {
             ctx.stroke();
         }
 
-        // Calcular amplitud según el tipo de ritmo
         let yOffset = calcularEcuacionOnda(x, tipoRitmo, canvas.height);
 
-        ctx.strokeStyle = '#00FF66';
+        ctx.strokeStyle = '#10b981';
         ctx.lineWidth = 2;
-        ctx.shadowColor = '#00FF66';
+        ctx.shadowColor = '#10b981';
         ctx.shadowBlur = 8;
 
         ctx.beginPath();
@@ -494,43 +483,36 @@ function iniciarAnimacionECG(tipoRitmo) {
 
 function calcularEcuacionOnda(x, tipo, height) {
     const scale = height * 0.35;
-    const cycle = (x % 140) / 140; // Ciclo continuo
+    const cycle = (x % 140) / 140;
 
     switch (tipo) {
-        case 'afib': // Fibrilación Auricular: Sin onda P, base caótica
+        case 'afib':
             return (Math.sin(x * 0.3) * 0.1 + (Math.random() - 0.5) * 0.15) * scale + (cycle > 0.45 && cycle < 0.5 ? (Math.random() > 0.5 ? 0.8 : -0.2) : 0) * scale;
-        
-        case 'aflutter': // Aleteo Auricular: Dientes de sierra
+        case 'aflutter':
             return (Math.sin(x * 0.2) * 0.25 + (cycle > 0.48 && cycle < 0.52 ? 0.9 : 0)) * scale;
-
-        case 'vt_mono': // Taquicardia Ventricular Monomórfica: QRS ancho y alto
+        case 'vt_mono':
             return Math.sin(x * 0.08) * scale * 0.95;
-
-        case 'vfib': // Fibrilación Ventricular: Caos absoluto
+        case 'vfib':
             return (Math.sin(x * 0.12) * 0.5 + Math.cos(x * 0.25) * 0.4 + (Math.random() - 0.5) * 0.3) * scale;
-
-        case 'stemi_ant': // STEMI: Elevación marcada del segmento ST
-            if (cycle > 0.35 && cycle < 0.4) return 0.9 * scale; // R
-            if (cycle >= 0.4 && cycle < 0.7) return 0.45 * scale; // ST elevado
+        case 'stemi_ant':
+            if (cycle > 0.35 && cycle < 0.4) return 0.9 * scale;
+            if (cycle >= 0.4 && cycle < 0.7) return 0.45 * scale;
             return 0;
-
-        case 'sb': // Bradicardia Sinusal: Ritmo lento dilatado
+        case 'sb':
             const cycleSlow = (x % 240) / 240;
             if (cycleSlow > 0.1 && cycleSlow < 0.18) return Math.sin((cycleSlow - 0.1) * Math.PI / 0.08) * 0.15 * scale;
             if (cycleSlow > 0.38 && cycleSlow < 0.42) return (cycleSlow < 0.4 ? -0.15 : 0.9) * scale;
             return 0;
-
-        case 'st': // Taquicardia Sinusal: Ritmo acelerado
+        case 'st':
             const cycleFast = (x % 80) / 80;
             if (cycleFast > 0.38 && cycleFast < 0.44) return 0.85 * scale;
             return 0;
-
-        default: // Ritmo Sinusal Normal
-            if (cycle > 0.15 && cycle < 0.25) return Math.sin((cycle - 0.15) * Math.PI / 0.1) * 0.15 * scale; // Onda P
-            if (cycle > 0.38 && cycle < 0.40) return -0.15 * scale; // Q
-            if (cycle >= 0.40 && cycle < 0.43) return 0.95 * scale;  // R
-            if (cycle >= 0.43 && cycle < 0.45) return -0.25 * scale; // S
-            if (cycle > 0.55 && cycle < 0.70) return Math.sin((cycle - 0.55) * Math.PI / 0.15) * 0.25 * scale; // Onda T
+        default:
+            if (cycle > 0.15 && cycle < 0.25) return Math.sin((cycle - 0.15) * Math.PI / 0.1) * 0.15 * scale;
+            if (cycle > 0.38 && cycle < 0.40) return -0.15 * scale;
+            if (cycle >= 0.40 && cycle < 0.43) return 0.95 * scale;
+            if (cycle >= 0.43 && cycle < 0.45) return -0.25 * scale;
+            if (cycle > 0.55 && cycle < 0.70) return Math.sin((cycle - 0.55) * Math.PI / 0.15) * 0.25 * scale;
             return 0;
     }
 }
@@ -551,9 +533,9 @@ function poblarSelectDiagnosticos() {
 function poblarTablaPatologiasInfo() {
     const container = document.getElementById('lista-patologias-container');
     if (!container) return;
-    let html = '<table class="patologias-table"><thead><tr><th>Ritmo</th><th>BPM</th><th>Complejo QRS</th><th>Onda P</th><th>Tratamiento</th></tr></thead><tbody>';
+    let html = '<table class="patologias-table" style="width:100%; text-align:left; border-collapse:collapse;"><thead><tr style="border-bottom:1px solid #334155;"><th>Ritmo</th><th>BPM</th><th>Complejo QRS</th><th>Onda P</th><th>Tratamiento</th></tr></thead><tbody>';
     RITMOS_ECG.forEach(r => {
-        html += `<tr><td><strong>${r.name}</strong></td><td>${r.rate}</td><td>${r.qrs}</td><td>${r.p}</td><td>${r.treat}</td></tr>`;
+        html += `<tr style="border-bottom:1px solid #1e293b;"><td><strong style="color:#38bdf8;">${r.name}</strong></td><td>${r.rate}</td><td>${r.qrs}</td><td>${r.p}</td><td>${r.treat}</td></tr>`;
     });
     html += '</tbody></table>';
     container.innerHTML = html;
