@@ -1,265 +1,128 @@
-// ==================== CONFIGURACIÓN DE FIREBASE ====================
-const firebaseConfig = {
-    apiKey: "AIzaSyDemoKeyUniversityECG2026",
-    authDomain: "simulador-ecg-biomedica.firebaseapp.com",
-    projectId: "simulador-ecg-biomedica",
-    storageBucket: "simulador-ecg-biomedica.appspot.com",
-    messagingSenderId: "1234567890",
-    appId: "1:1234567890:web:abcdef123456"
-};
+// ==================== BASE DE DATOS DE RITMOS (27 RITMOS CON BPM EXACTOS) ====================
+const RITMOS_ECG = [
+    { id: "sr", name: "Sinus rhythm", rate: 72, qrs: "Normal", p: "Presente", st: "Isoeléctrico", treat: "Ninguno (Ritmo Fisiológico Normal)", status: "Fisiológico", type: "sinusal" },
+    { id: "sb", name: "Sinus bradycardia", rate: 54, qrs: "Normal", p: "Presente", st: "Isoeléctrico", treat: "Observación / Atropina si sintomático", status: "Sintomático", type: "sinusal" },
+    { id: "st", name: "Sinus Tachycardia", rate: 138, qrs: "Normal", p: "Presente", st: "Isoeléctrico", treat: "Tratar causa subyacente (Fiebre, Dolor, Anemia)", status: "Secundario", type: "sinusal" },
+    { id: "sa", name: "Sinus Arhythmia", rate: 78, qrs: "Normal", p: "Presente", st: "Isoeléctrico", treat: "Ninguno (Variación fásica respiratoria normal)", status: "Benigno", type: "sinusal" },
+    { id: "s_block", name: "Sinus exits block", rate: 48, qrs: "Normal", p: "Pausas/Ausente", st: "Isoeléctrico", treat: "Evaluación clínica / Marcapasos si sintomático", status: "Sintomático", type: "sinusal" },
+    { id: "s_arrest", name: "Sinus arrest", rate: 54, qrs: "Normal", p: "Pausa prolongada", st: "Isoeléctrico", treat: "Evaluación médica / Marcapasos", status: "Sintomático", type: "sinusal" },
+    { id: "pac", name: "NSR with PAC(PJC) NSR with premature atrial", rate: 84, qrs: "Estrecho", p: "Prematura/Anormal", st: "Isoeléctrico", treat: "Tranquilizar al paciente / Evitar estimulantes", status: "Benigno", type: "auricular" },
+    { id: "svt", name: "Supraventricular tachycardia", rate: 180, qrs: "Estrecho", p: "Oculta o retrograda", st: "Infradesnivel en crisis", treat: "Maniobras vagales / Adenosina IV", status: "Urgencia", type: "auricular" },
+    { id: "afib", name: "Atrial Fibrillallation", rate: 90, qrs: "Estrecho", p: "Ausente (Ondas f caóticas)", st: "Variable", treat: "Control de Frecuencia + Anticoagulación", status: "Patológico", type: "auricular" },
+    { id: "aflutter", name: "Atrial Flutter", rate: 75, qrs: "Estrecho", p: "Dientes de Sierra (Ondas F)", st: "Variable", treat: "Control de frecuencia / Cardioversión / Ablación", status: "Patológico", type: "auricular" },
+    { id: "paced_a", name: "Paced Atrial rhythm", rate: 60, qrs: "Estrecho", p: "Spike de Marcapasos", st: "Isoeléctrico", treat: "Monitoreo de Marcapasos", status: "Controlado", type: "auricular" },
+    { id: "avb1", name: "NSR with 1 AVB(NSR with first degree AV Block)", rate: 74, qrs: "Estrecho", p: "PR Prolongado (>0.20s)", st: "Isoeléctrico", treat: "Observación (Monitorización)", status: "Benigno", type: "bloqueo" },
+    { id: "avb2_1", name: "2 AVB type I", rate: 48, qrs: "Estrecho", p: "PR se alarga progresivamente", st: "Isoeléctrico", treat: "Observación / Revertir causas", status: "Generalmente Benigno", type: "bloqueo" },
+    { id: "avb2_2", name: "2 AVB type II", rate: 60, qrs: "Ancho/Estrecho", p: "PR constante con P bloqueada", st: "Isoeléctrico", treat: "Marcapasos Temporal / Definitivo", status: "Peligroso", type: "bloqueo" },
+    { id: "avb2_21", name: "2 AVB 2:1", rate: 38, qrs: "Ancho/Estrecho", p: "Conducción 2:1", st: "Isoeléctrico", treat: "Marcapasos Temporal / Definitivo", status: "Peligroso", type: "bloqueo" },
+    { id: "avb3", name: "3 AV Block", rate: 36, qrs: "Ancho (Escape Ventricular)", p: "Disociada por completo", st: "Isoeléctrico", treat: "Marcapasos de Emergencia + Isoproterenol", status: "Emergencia", type: "bloqueo" },
+    { id: "pjc", name: "NSR with PJC(Premature Junctional Complex)", rate: 84, qrs: "Estrecho", p: "Invertida/Oculta", st: "Isoeléctrico", treat: "Observación / Evitar estimulantes", status: "Benigno", type: "nodal" },
+    { id: "j_rhythm", name: "Junctional Rhythm", rate: 48, qrs: "Estrecho", p: "Invertida/Oculta", st: "Isoeléctrico", treat: "Tratar causa subyacente / Atropina si sintomático", status: "Pasivo", type: "nodal" },
+    { id: "acc_junct", name: "Accelerated Junctional", rate: 82, qrs: "Estrecho", p: "Invertida/Oculta", st: "Isoeléctrico", treat: "Monitorización / Evaluar toxicidad digitálica", status: "Patológico", type: "nodal" },
+    { id: "j_tach", name: "Junctional Tachycardia", rate: 186, qrs: "Estrecho", p: "Invertida/Oculta", st: "Isoeléctrico", treat: "Betabloqueantes / Antiarrítmicos", status: "Urgencia", type: "nodal" },
+    { id: "wandering", name: "Wandering Pacemaker", rate: 78, qrs: "Estrecho", p: "Variables en forma", st: "Isoeléctrico", treat: "Tratamiento conservador", status: "Benigno", type: "auricular" },
+    { id: "pvc", name: "NSR with PVC(Sinus Rhythm with Premature ventricular complex)", rate: 68, qrs: "Ancho y aberrante", p: "Ausente en PVC", st: "Oposición T-QRS", treat: "Betabloqueantes si sintomático", status: "Variable", type: "ventricular" },
+    { id: "idiov", name: "Idioventricular rhythm", rate: 36, qrs: "Ancho", p: "Ausente/Disociada", st: "Alterado", treat: "Marcapasos / Atropina / Soporte Vital", status: "Emergencia", type: "ventricular" },
+    { id: "acc_idiov", name: "Accelerated dioventricular rhythm", rate: 84, qrs: "Ancho", p: "Ausente/Disociada", st: "Alterado", treat: "Observación (Ritmo de reperfusión)", status: "Post-Reperfusión", type: "ventricular" },
+    { id: "vt_mono", name: "Ventricular tachycardia(VTach)", rate: 210, qrs: "Ancho idéntico", p: "Disociación AV", st: "Alterado", treat: "Cardioversión eléctrica / Amiodarona", status: "Emergencia", type: "ventricular" },
+    { id: "vfib", name: "Ventricular fibrillation", rate: 0, qrs: "Ausente / Caótico", p: "Ausente", st: "Ausente", treat: "Desfibrilación inmediata + RCP de alta calidad", status: "Paro Cardíaco", type: "ventricular" },
+    { id: "paced_v", name: "Paced Ventricula", rate: 80, qrs: "Ancho (Spike previo)", p: "Variable", st: "Alterado secundario", treat: "Monitoreo de Marcapasos Ventricular", status: "Controlado", type: "ventricular" }
+];
 
-let db = null;
-try {
-    firebase.initializeApp(firebaseConfig);
-    db = firebase.firestore();
-} catch (e) {
-    console.warn("Firebase no inicializado. Usando modo local.");
-}
-
-// ==================== ESTADO GLOBAL ====================
-let datosJugador = { nombre: "", genero: "masculino", avatar: "👨‍⚕️" };
-let tiempoInicioJuego = null;
-let timerInterval = null;
-let tiempoTotalSegundos = 0;
-
-let nivelMaximoDesbloqueado = 1;
+// ==================== VARIABLES DE ESTADO GLOBAL ====================
 let nivelActual = 1;
 let aciertosNivel2 = 0;
-const MAX_ACIERTOS_NIVEL2 = 3;
+const MAX_ACIERTOS_NIVEL2 = 10;
 let electrodosColocados = 0;
 let casoActualN2 = null;
 
-let indiceSesgoIA = 0;
-let contadorAciertosIA = 0;
+// Lógica de dependencia y confusión de IA
+let usoSeguidoIA = 0;           // Cuántas veces seguidas confió en la IA
+let analisisManualesSeguidos = 0; // Cuántas veces analizó manualmente
+let indiceSesgoIA = 0;          // Porcentaje de dependencia (0% - 100%)
+
 let animacionCanvasId = null;
 
-// ==================== AUDIO FX ====================
-class SoundManager {
-    constructor() { this.ctx = null; this.isMuted = false; }
-    init() {
-        if (!this.ctx) {
-            const AudioCtx = window.AudioContext || window.webkitAudioContext;
-            this.ctx = new AudioCtx();
-        }
-        if (this.ctx.state === 'suspended') this.ctx.resume();
-    }
-    playButtonClick() {
-        if (!this.ctx || this.isMuted) return;
-        const now = this.ctx.currentTime;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.frequency.setValueAtTime(600, now);
-        osc.frequency.exponentialRampToValueAtTime(1200, now + 0.05);
-        gain.gain.setValueAtTime(0.15, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
-        osc.connect(gain); gain.connect(this.ctx.destination);
-        osc.start(now); osc.stop(now + 0.05);
-    }
-    playSuccess() {
-        if (!this.ctx || this.isMuted) return;
-        const now = this.ctx.currentTime;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(523.25, now);
-        osc.frequency.setValueAtTime(659.25, now + 0.1);
-        osc.frequency.setValueAtTime(783.99, now + 0.2);
-        gain.gain.setValueAtTime(0.2, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
-        osc.connect(gain); gain.connect(this.ctx.destination);
-        osc.start(now); osc.stop(now + 0.4);
-    }
-    playError() {
-        if (!this.ctx || this.isMuted) return;
-        const now = this.ctx.currentTime;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(150, now);
-        osc.frequency.linearRampToValueAtTime(100, now + 0.3);
-        gain.gain.setValueAtTime(0.25, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
-        osc.connect(gain); gain.connect(this.ctx.destination);
-        osc.start(now); osc.stop(now + 0.3);
-    }
-    playDrop() {
-        if (!this.ctx || this.isMuted) return;
-        const now = this.ctx.currentTime;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.frequency.setValueAtTime(400, now);
-        osc.frequency.exponentialRampToValueAtTime(800, now + 0.08);
-        gain.gain.setValueAtTime(0.2, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
-        osc.connect(gain); gain.connect(this.ctx.destination);
-        osc.start(now); osc.stop(now + 0.08);
-    }
-    toggleMute() { this.isMuted = !this.isMuted; return this.isMuted; }
-}
-
-const audioFX = new SoundManager();
-
-// ==================== BASE DE DATOS DE 27 RITMOS ECG ====================
-const RITMOS_ECG = [
-    { id: "sr", name: "Normal Sinus Rhythm", rate: 72, qrs: "Normal (<120ms)", p: "Presente, regular", treat: "Ninguno (Ritmo Fisiológico Normal)" },
-    { id: "sb", name: "Sinus Bradycardia", rate: 48, qrs: "Normal", p: "Presente", treat: "Observación / Atropina si presenta síntomas" },
-    { id: "st", name: "Sinus Tachycardia", rate: 135, qrs: "Normal", p: "Presente", treat: "Tratar la causa subyacente" },
-    { id: "sa", name: "Sinus Arrhythmia", rate: 75, qrs: "Normal", p: "Presente", treat: "Ninguno (Variación fásica normal)" },
-    { id: "sinus_arrest", name: "Sinus Arrest / Pause", rate: 50, qrs: "Normal", p: "Ausente en pausa", treat: "Considerar marcapasos" },
-    { id: "pac", name: "Premature Atrial Contraction (PAC)", rate: 80, qrs: "Normal", p: "Prematura / Anómala", treat: "Evitar estimulantes" },
-    { id: "svt", name: "Supraventricular Tachycardia (SVT)", rate: 180, qrs: "Estrecho", p: "Oculta", treat: "Maniobras vagales / Adenosina" },
-    { id: "afib", name: "Atrial Fibrillation (AFib)", rate: 110, qrs: "Irregular", p: "Ondas f caóticas", treat: "Control de frecuencia" },
-    { id: "aflutter", name: "Atrial Flutter", rate: 150, qrs: "Estrecho", p: "Diente de sierra", treat: "Control de frecuencia" },
-    { id: "mat", name: "Multifocal Atrial Tachycardia", rate: 125, qrs: "Estrecho", p: "≥3 morfologías", treat: "Tratar EPOC" },
-    { id: "junctional", name: "Junctional Escape Rhythm", rate: 45, qrs: "Estrecho", p: "Ausente", treat: "Atropina o marcapasos" },
-    { id: "avb1", name: "1st Degree AV Block", rate: 65, qrs: "Normal", p: "PR prolongado", treat: "Observación" },
-    { id: "avb2_1", name: "2nd Degree AV Block (Mobitz I)", rate: 58, qrs: "Normal", p: "PR alargado", treat: "Observación" },
-    { id: "avb2_2", name: "2nd Degree AV Block (Mobitz II)", rate: 42, qrs: "Ancho/Normal", p: "Constante", treat: "Marcapasos de emergencia" },
-    { id: "avb3", name: "3rd Degree Complete AV Block", rate: 35, qrs: "Ancho", p: "Disociación", treat: "Marcapasos definitivo" },
-    { id: "rbbb", name: "Right Bundle Branch Block (RBBB)", rate: 70, qrs: "Ancho (V1)", p: "Normal", treat: "Evaluación clínica" },
-    { id: "pvc_mono", name: "Monomorphic PVC", rate: 75, qrs: "Ancho", p: "Ausente", treat: "Observación" },
-    { id: "pvc_poly", name: "Polymorphic PVC", rate: 82, qrs: "Heterogéneo", p: "Ausente", treat: "Corregir electrolitos" },
-    { id: "vt_mono", name: "Monomorphic Ventricular Tachycardia", rate: 190, qrs: "Muy ancho", p: "Disociada", treat: "Cardioversión eléctrica" },
-    { id: "vt_poly", name: "Polymorphic V-Tach (Torsades)", rate: 220, qrs: "Variable", p: "No visible", treat: "Magnesio IV" },
-    { id: "vfib", name: "Ventricular Fibrillation (V-Fib)", rate: 0, qrs: "Caótico", p: "Ausente", treat: "Desfibrilación + RCP" },
-    { id: "idioventricular", name: "Accelerated Idioventricular Rhythm", rate: 70, qrs: "Ancho", p: "Ausente", treat: "Monitoreo" },
-    { id: "st_elevation", name: "ST-Elevation Myocardial Infarction", rate: 85, qrs: "Elevación ST", p: "Normal", treat: "¡CÓDIGO INFARTO!" },
-    { id: "st_depression", name: "ST-Depression (Ischemia)", rate: 90, qrs: "Infradesnivel", p: "Normal", treat: "Antiagregantes" },
-    { id: "asystole", name: "Asystole", rate: 0, qrs: "Línea plana", p: "Ausente", treat: "RCP + Adrenalina" },
-    { id: "pea", name: "Pulseless Electrical Activity (PEA)", rate: 60, qrs: "Variable", p: "Variable", treat: "Tratar causa 5H/5T" },
-    { id: "pacemaker", name: "Paced Ventricular Rhythm", rate: 70, qrs: "Espiga", p: "Variable", treat: "Verificar captura" }
-];
-
-// ==================== CASOS NIVEL 3 ====================
+// ==================== CASOS CLÍNICOS NIVEL 3 (ROMPECABEZAS VISUAL CON PISTAS DE CONTINUIDAD) ====================
 const CASOS_NIVEL3 = [
     {
         id: 1,
-        paciente: "Paciente de 68 años con arritmia y mareos.",
-        patologia: "Atrial Fibrillation (AFib)",
+        paciente: "Paciente masculino de 68 años con palpitaciones, mareos y pulso irregularmente irregular.",
+        patologia: "Atrial Fibrillallation",
         piezas: [
-            { id: 0, label: "Ondas f caóticas", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 Q10,15 20,25 T40,20 T60,25 T80,18 L100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
-            { id: 1, label: "Complejo QRS #1", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 L20,20 L25,35 L30,5 L35,25 L40,20 L100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
-            { id: 2, label: "Pausa Irregular", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 Q15,23 30,17 T60,22 L100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
-            { id: 3, label: "Complejo QRS #2", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 L50,20 L55,35 L60,5 L65,25 L70,20 L100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' }
+            { id: 0, label: "Inicio (Línea plana): Ondas f caóticas iniciales", hint: "Conector: Borde Izquierdo", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 Q10,15 20,25 T40,20 T60,25 T80,18 L100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
+            { id: 1, label: "Despolarización Ventricular #1", hint: "Conector: Empalme con línea plana previa", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 L20,20 L25,35 L30,5 L35,25 L40,20 L100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
+            { id: 2, label: "Pausa Inter-R-R Irregular", hint: "Conector: Salida de QRS anterior", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 Q15,23 30,17 T60,22 L100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
+            { id: 3, label: "Despolarización Ventricular #2", hint: "Conector: Borde Derecho / Salida", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 L50,20 L55,35 L60,5 L65,25 L70,20 L100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' }
+        ],
+        tratamientoCorrecto: 1,
+        opcionesTratamiento: [
+            "Cardioversión eléctrica inmediata sin anticoagulación previa",
+            "Control de frecuencia cardíaca (Betabloqueantes / Diltiazem) y Anticoagulación",
+            "Administración de Atropina 1mg IV en bolo"
+        ]
+    },
+    {
+        id: 2,
+        paciente: "Paciente femenina de 55 años con dolor torácico opresivo de 2 horas de evolución e irradiado a brazo izquierdo.",
+        patologia: "Infarto Agudo de Miocardio (Supradesnivel ST)",
+        piezas: [
+            { id: 0, label: "Onda P y Segmento PR Isoeléctrico", hint: "Conector: Borde Izquierdo", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 Q15,12 30,20 L50,20 L100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
+            { id: 1, label: "Complejo QRS con ascenso agudo", hint: "Conector: Empalme PR", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 L20,20 L25,35 L30,0 L35,15 L100,15" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
+            { id: 2, label: "Elevación Supradesnivel del Segmento ST", hint: "Conector: Salida de QRS elevado", svg: '<svg viewBox="0 0 100 40"><path d="M0,15 L40,15 C60,15 70,30 100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
+            { id: 3, label: "Onda T Terminal / Retorno a línea de base", hint: "Conector: Borde Derecho / Final", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 Q25,30 50,20 L100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' }
+        ],
+        tratamientoCorrecto: 0,
+        opcionesTratamiento: [
+            "Reperfusión inmediata: Angioplastia Coronaria Percutánea (ACTP) o Trombólisis",
+            "Observación ambulatoria y alta con analgésicos",
+            "Maniobras vagales y Adenosina 6mg IV"
+        ]
+    },
+    {
+        id: 3,
+        paciente: "Paciente masculino de 60 años con antecedente de miocardiopatía que presenta taquicardia sostenida de QRS ancho y presíncope.",
+        patologia: "Ventricular tachycardia(VTach)",
+        piezas: [
+            { id: 0, label: "Inicio: Onda Ancha Monomórfica V1", hint: "Conector: Borde Izquierdo", svg: '<svg viewBox="0 0 100 40"><path d="M0,30 Q25,0 50,30 L100,30" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
+            { id: 1, label: "Ciclo Intermedio: Onda Ancha Monomórfica V2", hint: "Conector: Continuidad V1-V2", svg: '<svg viewBox="0 0 100 40"><path d="M0,30 Q25,0 50,30 L100,30" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
+            { id: 2, label: "Ciclo Intermedio: Onda Ancha Monomórfica V3", hint: "Conector: Continuidad V2-V3", svg: '<svg viewBox="0 0 100 40"><path d="M0,30 Q25,0 50,30 L100,30" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
+            { id: 3, label: "Final del Trazado: Onda Ancha Monomórfica V4", hint: "Conector: Borde Derecho / Final", svg: '<svg viewBox="0 0 100 40"><path d="M0,30 Q25,0 50,30 L100,30" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' }
+        ],
+        tratamientoCorrecto: 2,
+        opcionesTratamiento: [
+            "Compresiones torácicas inmediatas (RCP únicamente)",
+            "Aspirina 300mg VO y observación",
+            "Amiodarona IV (si está estable) o Cardioversión Eléctrica Sincronizada"
         ]
     }
 ];
 
+let casoActualN3 = 0;
 let ordenSeleccionadoN3 = [null, null, null, null];
 
-// ==================== INICIALIZACIÓN ====================
+// ==================== INICIALIZACIÓN DE LA APLICACIÓN ====================
 window.addEventListener('DOMContentLoaded', () => {
-    document.body.addEventListener('click', (e) => {
-        audioFX.init();
-        if (e.target.tagName === 'BUTTON' || e.target.closest('button')) {
-            audioFX.playButtonClick();
-        }
-    });
-
     inicializarDragAndDropNivel1();
     poblarSelectDiagnosticos();
     poblarTablaPatologiasInfo();
+    ajustarTamanioCanvas();
+
+    const modalN1 = document.getElementById('modal-nivel1-intro');
+    if (modalN1) modalN1.classList.remove('hidden');
+
+    const aiPanel = document.getElementById('ai-panel');
+    if (aiPanel) aiPanel.classList.add('hidden');
+
     window.addEventListener('resize', ajustarTamanioCanvas);
 });
 
-function mostrarPantallaRegistro() {
-    audioFX.playDrop();
-    document.getElementById('screen-welcome').classList.add('hidden');
-    document.getElementById('screen-register').classList.remove('hidden');
+function cerrarModalNivel1() {
+    const modalN1 = document.getElementById('modal-nivel1-intro');
+    if (modalN1) modalN1.classList.add('hidden');
 }
 
-function seleccionarGenero(genero) {
-    audioFX.playDrop();
-    datosJugador.genero = genero;
-    datosJugador.avatar = (genero === 'masculino') ? '👨‍⚕️' : '👩‍⚕️';
-    document.getElementById('btn-gender-m').classList.toggle('active', genero === 'masculino');
-    document.getElementById('btn-gender-f').classList.toggle('active', genero === 'femenino');
-}
-
-function confirmarRegistroYComenzar() {
-    const inputNombre = document.getElementById('player-name-input').value.trim();
-    if (!inputNombre) {
-        audioFX.playError();
-        alert("Ingresa tu nombre o código.");
-        return;
-    }
-    datosJugador.nombre = inputNombre;
-    document.getElementById('hud-avatar').innerText = datosJugador.avatar;
-    document.getElementById('hud-username').innerText = datosJugador.nombre;
-
-    tiempoInicioJuego = new Date();
-    timerInterval = setInterval(actualizarCronometro, 1000);
-
-    audioFX.playSuccess();
-    document.getElementById('screen-register').classList.add('hidden');
-    document.getElementById('screen-level-map').classList.remove('hidden');
-    actualizarInterfazMapa();
-}
-
-function actualizarCronometro() {
-    if (!tiempoInicioJuego) return;
-    const ahora = new Date();
-    tiempoTotalSegundos = Math.floor((ahora - tiempoInicioJuego) / 1000);
-    const min = String(Math.floor(tiempoTotalSegundos / 60)).padStart(2, '0');
-    const seg = String(tiempoTotalSegundos % 60).padStart(2, '0');
-    document.getElementById('hud-timer').innerText = `⏱️ ${min}:${seg}`;
-}
-
-// ==================== MAPA ====================
-function seleccionarNivelDesdeMapa(nivel) {
-    if (nivel > nivelMaximoDesbloqueado) {
-        audioFX.playError();
-        alert("🔒 Completa la fase anterior.");
-        return;
-    }
-    audioFX.playDrop();
-    document.getElementById('screen-level-map').classList.add('hidden');
-    document.getElementById('screen-gameplay').classList.remove('hidden');
-
-    if (nivel === 1) iniciarNivel1();
-    else if (nivel === 2) comenzarNivel2();
-    else if (nivel === 3) comenzarNivel3();
-}
-
-function volverAlMapa() {
-    audioFX.playDrop();
-    detenerAnimacionCanvas();
-    document.getElementById('screen-gameplay').classList.add('hidden');
-    document.getElementById('screen-level-map').classList.remove('hidden');
-    actualizarInterfazMapa();
-}
-
-function actualizarInterfazMapa() {
-    for (let i = 1; i <= 3; i++) {
-        const btnNode = document.getElementById(`node-level-${i}`);
-        if (btnNode) {
-            if (i <= nivelMaximoDesbloqueado) {
-                btnNode.classList.remove('locked');
-                btnNode.classList.add('unlocked');
-            } else {
-                btnNode.classList.add('locked');
-                btnNode.classList.remove('unlocked');
-            }
-        }
-    }
-}
-
-// ==================== NIVEL 1 ====================
-function iniciarNivel1() {
-    nivelActual = 1;
-    electrodosColocados = 0;
-    document.getElementById('hud-level-badge').innerText = 'NIVEL 1';
-    document.getElementById('electrode-placement-panel').classList.remove('hidden');
-    document.getElementById('ai-panel').classList.add('hidden');
-    document.getElementById('puzzle-ecg-panel').classList.add('hidden');
-
-    document.querySelectorAll('.electrode-circle').forEach(el => el.style.display = 'flex');
-    document.querySelectorAll('.dropzone-overlay').forEach(z => {
-        z.classList.remove('placed');
-        z.innerText = z.dataset.target;
-    });
-}
-
+// ==================== LÓGICA DEL NIVEL 1: ELECTRODOS ====================
 function inicializarDragAndDropNivel1() {
     const electrodos = document.querySelectorAll('.electrode-circle');
     const zonasDrop = document.querySelectorAll('.dropzone-overlay');
@@ -267,320 +130,342 @@ function inicializarDragAndDropNivel1() {
     electrodos.forEach(el => {
         el.addEventListener('dragstart', (e) => {
             e.dataTransfer.setData('text/plain', el.dataset.lead);
+            el.style.opacity = '0.5';
+        });
+
+        el.addEventListener('dragend', () => {
+            el.style.opacity = '1';
         });
     });
 
     zonasDrop.forEach(zona => {
-        zona.addEventListener('dragover', (e) => e.preventDefault());
+        zona.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            zona.style.transform = 'translate(-50%, -50%) scale(1.2)';
+        });
+
+        zona.addEventListener('dragleave', () => {
+            zona.style.transform = 'translate(-50%, -50%) scale(1.0)';
+        });
+
         zona.addEventListener('drop', (e) => {
             e.preventDefault();
+            zona.style.transform = 'translate(-50%, -50%) scale(1.0)';
+            
             const leadDragged = e.dataTransfer.getData('text/plain');
-            if (leadDragged === zona.dataset.target) {
+            const targetZone = zona.dataset.target;
+
+            if (leadDragged === targetZone) {
                 if (zona.classList.contains('placed')) return;
-                audioFX.playDrop();
+
                 zona.classList.add('placed');
                 zona.innerText = '✓';
+
+                const originalEl = document.querySelector(`.electrode-circle[data-lead="${leadDragged}"]`);
+                if (originalEl) {
+                    originalEl.style.opacity = '0.25';
+                    originalEl.style.cursor = 'not-allowed';
+                    originalEl.setAttribute('draggable', 'false');
+                }
+
                 electrodosColocados++;
 
-                const elArrastrado = document.querySelector(`.electrode-circle[data-lead="${leadDragged}"]`);
-                if (elArrastrado) elArrastrado.style.display = 'none';
+                const scoreBadge = document.getElementById('score-badge');
+                if (scoreBadge) {
+                    scoreBadge.textContent = `🎯 Nivel 1: ${electrodosColocados} / 6`;
+                }
 
                 if (electrodosColocados === 6) {
-                    audioFX.playSuccess();
-                    nivelMaximoDesbloqueado = Math.max(nivelMaximoDesbloqueado, 2);
                     setTimeout(() => {
-                        alert("🎉 ¡Nivel 1 completado!");
-                        volverAlMapa();
+                        const modalN2 = document.getElementById('modal-nivel2');
+                        if (modalN2) modalN2.classList.remove('hidden');
                     }, 400);
                 }
             } else {
-                audioFX.playError();
+                zona.style.borderColor = '#ef4444';
+                setTimeout(() => {
+                    if (!zona.classList.contains('placed')) {
+                        zona.style.borderColor = '#10b981';
+                    }
+                }, 800);
             }
         });
     });
 }
 
-// ==================== NIVEL 2 ====================
+// ==================== LÓGICA DEL NIVEL 2: ANÁLISIS DE ECG Y COMPORTAMIENTO DE IA ====================
 function comenzarNivel2() {
     nivelActual = 2;
     aciertosNivel2 = 0;
-    document.getElementById('hud-level-badge').innerText = 'NIVEL 2';
-    document.getElementById('electrode-placement-panel').classList.add('hidden');
-    document.getElementById('puzzle-ecg-panel').classList.add('hidden');
+    usoSeguidoIA = 0;
+    analisisManualesSeguidos = 0;
+    indiceSesgoIA = 0;
+
+    const modalN2 = document.getElementById('modal-nivel2');
+    if (modalN2) modalN2.classList.add('hidden');
+
+    document.getElementById('level-badge').innerText = 'NIVEL 2';
+    document.getElementById('level-title').innerText = 'Análisis de Señales e Interpretación de ECG';
+
+    const scoreBadge = document.getElementById('score-badge');
+    scoreBadge.classList.remove('hidden');
+    scoreBadge.innerText = `🎯 Aciertos: ${aciertosNivel2} / ${MAX_ACIERTOS_NIVEL2}`;
+
     document.getElementById('ai-panel').classList.remove('hidden');
-    
-    // Forzar el ajuste del canvas tras mostrar el panel para respetar la interfaz original
-    setTimeout(() => {
-        ajustarTamanioCanvas();
-        cargarSiguienteCasoNivel2();
-    }, 50);
+
+    cargarSiguienteCasoNivel2();
 }
 
 function cargarSiguienteCasoNivel2() {
-    const idx = Math.floor(Math.random() * RITMOS_ECG.length);
-    casoActualN2 = RITMOS_ECG[idx];
+    const indiceAleatorio = Math.floor(Math.random() * RITMOS_ECG.length);
+    casoActualN2 = RITMOS_ECG[indiceAleatorio];
 
-    let nombreSugerido = casoActualN2.name;
-    if (contadorAciertosIA >= 2 || indiceSesgoIA > 40) {
-        const casoFalso = RITMOS_ECG[(idx + 3) % RITMOS_ECG.length];
-        nombreSugerido = casoFalso.name;
+    const patientInfo = document.getElementById('patient-info');
+    if (patientInfo) {
+        patientInfo.innerText = `Paciente: ID PAC-${Math.floor(Math.random() * 899 + 100)} (${Math.floor(Math.random() * 50 + 25)} años)`;
     }
 
-    document.getElementById('ai-diagnosis-text').innerText = nombreSugerido;
-    document.getElementById('bpm-display').innerText = `BPM: ${casoActualN2.rate}`;
+    const bpmDisplay = document.getElementById('bpm-display');
+    if (bpmDisplay) {
+        bpmDisplay.innerText = `BPM: ${casoActualN2.rate}`;
+    }
+
+    let laIaSeConfunde = (usoSeguidoIA >= 2) || (indiceSesgoIA >= 40);
+
+    let sugerenciaIA;
+    let confianzaIA;
+
+    if (laIaSeConfunde) {
+        const ritmosIncorrectos = RITMOS_ECG.filter(r => r.name !== casoActualN2.name);
+        sugerenciaIA = ritmosIncorrectos[Math.floor(Math.random() * ritmosIncorrectos.length)].name;
+        confianzaIA = Math.floor(Math.random() * 15 + 80);
+    } else {
+        sugerenciaIA = casoActualN2.name;
+        confianzaIA = Math.floor(Math.random() * 12 + 88);
+    }
+
+    const aiDiagText = document.getElementById('ai-diagnosis-text');
+    aiDiagText.innerText = sugerenciaIA;
+    aiDiagText.dataset.sugerencia = sugerenciaIA;
+
+    const aiConfText = document.getElementById('ai-confidence-text');
+    if (aiConfText) {
+        aiConfText.innerText = "";
+    }
+
     iniciarAnimacionECG(casoActualN2.id);
 }
 
-function calcularOndaECG(tipo, x, scale) {
-    const cycle = (x % 120) / 120;
-    switch (tipo) {
-        case 'vfib': return (Math.sin(x * 0.12) * 0.5 + Math.cos(x * 0.25) * 0.4) * scale;
-        case 'vt_mono': return Math.sin(x * 0.08) * scale * 0.95;
-        case 'aflutter': return (Math.sin(x * 0.2) * 0.25 + (cycle > 0.48 && cycle < 0.52 ? 0.9 : 0)) * scale;
-        default:
-            if (cycle > 0.15 && cycle < 0.25) return Math.sin((cycle - 0.15) * Math.PI / 0.1) * 0.15 * scale;
-            if (cycle > 0.38 && cycle < 0.40) return -0.15 * scale;
-            if (cycle >= 0.40 && cycle < 0.43) return 0.95 * scale;
-            return 0;
-    }
-}
-
-function iniciarAnimacionECG(tipo) {
-    detenerAnimacionCanvas();
-    const canvas = document.getElementById('ecg-wave');
-    if (!canvas) return;
-
-    const parent = canvas.parentElement;
-    if (parent) {
-        canvas.width = parent.clientWidth || 600;
-        canvas.height = parent.clientHeight || 200;
-    }
-
-    const ctx = canvas.getContext('2d');
-    let x = 0;
-
-    function dibujar() {
-        const w = canvas.width;
-        const h = canvas.height;
-        const scale = h * 0.35;
-        const centerY = h / 2;
-
-        ctx.fillStyle = 'rgba(2, 18, 8, 0.15)';
-        ctx.fillRect(x, 0, 4, h);
-
-        const y = centerY - calcularOndaECG(tipo, x, scale);
-        ctx.strokeStyle = '#10b981';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-        ctx.lineTo(x + 2, y);
-        ctx.stroke();
-
-        x = (x + 2) % w;
-        animacionCanvasId = requestAnimationFrame(dibujar);
-    }
-    dibujar();
-}
-
 function tomarDecisionIA() {
-    const sug = document.getElementById('ai-diagnosis-text').innerText;
-    indiceSesgoIA = Math.min(100, indiceSesgoIA + 15);
-    evaluarRespuestaNivel2(sug);
+    const sugerencia = document.getElementById('ai-diagnosis-text').dataset.sugerencia;
+    evaluarRespuestaNivel2(sugerencia, true);
 }
 
-function abrirModalManual() { document.getElementById('modal-manual').classList.remove('hidden'); }
-function cerrarModalManual() { document.getElementById('modal-manual').classList.add('hidden'); }
+function abrirModalManual() {
+    document.getElementById('modal-manual').classList.remove('hidden');
+}
+
+function cerrarModalManual() {
+    document.getElementById('modal-manual').classList.add('hidden');
+}
 
 function evaluarDiagnosticoManual() {
-    const sel = document.getElementById('select-diagnostico').value;
+    const select = document.getElementById('select-diagnostico');
+    const seleccion = select.value;
     cerrarModalManual();
-    contadorAciertosIA = 0;
-    indiceSesgoIA = Math.max(0, indiceSesgoIA - 20);
-    evaluarRespuestaNivel2(sel);
+    evaluarRespuestaNivel2(seleccion, false);
 }
 
-function evaluarRespuestaNivel2(diagnostico) {
-    if (diagnostico === casoActualN2.name) {
-        audioFX.playSuccess();
-        aciertosNivel2++;
-        contadorAciertosIA++;
-        document.getElementById('res-status-title').innerText = "¡Correcto! 🎉";
+function evaluarRespuestaNivel2(diagnosticoPropuesto, provieneDeIA) {
+    const esCorrecto = (diagnosticoPropuesto === casoActualN2.name);
+    const modalRes = document.getElementById('modal-resultado');
+
+    if (provieneDeIA) {
+        usoSeguidoIA++;
+        analisisManualesSeguidos = 0;
+        indiceSesgoIA = Math.min(100, indiceSesgoIA + 25);
     } else {
-        audioFX.playError();
-        document.getElementById('res-status-title').innerText = "Incorrecto ⚠️";
+        analisisManualesSeguidos++;
+        usoSeguidoIA = 0;
+        indiceSesgoIA = Math.max(0, indiceSesgoIA - 30);
     }
+
+    if (esCorrecto) {
+        aciertosNivel2++;
+        document.getElementById('res-status-title').innerText = "¡Diagnóstico Correcto! 🎉";
+        document.getElementById('res-status-badge').innerText = "CORRECTO";
+        document.getElementById('res-status-badge').style.background = "#10b981";
+        document.getElementById('res-status-badge').style.color = "#000";
+    } else {
+        document.getElementById('res-status-title').innerText = provieneDeIA ? "¡La IA te ha confundido! ⚠️" : "Diagnóstico Incorrecto ⚠️";
+        document.getElementById('res-status-badge').innerText = "INCORRECTO";
+        document.getElementById('res-status-badge').style.background = "#ef4444";
+        document.getElementById('res-status-badge').style.color = "#FFF";
+    }
+
+    document.getElementById('score-badge').innerText = `🎯 Aciertos: ${aciertosNivel2} / ${MAX_ACIERTOS_NIVEL2}`;
+    
+    const txtBias = `Dependencia IA: ${indiceSesgoIA}%`;
+    const biasDisplay = document.getElementById('bias-display');
+    const biasFooter = document.getElementById('bias-info-footer');
+
+    if (biasDisplay) biasDisplay.innerText = txtBias;
+    if (biasFooter) biasFooter.innerText = txtBias;
+
     document.getElementById('res-real-diag').innerText = casoActualN2.name;
-    document.getElementById('res-treatment-text').innerText = casoActualN2.treat;
-    document.getElementById('modal-resultado').classList.remove('hidden');
+    document.getElementById('res-treatment-text').innerHTML = `<strong>Conducta / Tratamiento Recomendado:</strong><br>${casoActualN2.treat}`;
+
+    modalRes.classList.remove('hidden');
 }
 
 function siguienteCasoNivel2() {
     document.getElementById('modal-resultado').classList.add('hidden');
+
     if (aciertosNivel2 >= MAX_ACIERTOS_NIVEL2) {
-        nivelMaximoDesbloqueado = Math.max(nivelMaximoDesbloqueado, 3);
-        alert("🏆 ¡Nivel 2 completado!");
-        volverAlMapa();
+        setTimeout(() => {
+            const modalN3Intro = document.getElementById('modal-nivel3-intro');
+            if (modalN3Intro) modalN3Intro.classList.remove('hidden');
+        }, 300);
     } else {
         cargarSiguienteCasoNivel2();
     }
 }
 
-// ==================== NIVEL 3 ====================
+// ==================== LÓGICA DEL NIVEL 3: ROMPECABEZAS & TRATAMIENTO ====================
 function comenzarNivel3() {
     nivelActual = 3;
-    document.getElementById('hud-level-badge').innerText = 'NIVEL 3';
-    document.getElementById('electrode-placement-panel').classList.add('hidden');
+    casoActualN3 = 0;
+
+    const modalN3Intro = document.getElementById('modal-nivel3-intro');
+    if (modalN3Intro) modalN3Intro.classList.add('hidden');
+
+    document.getElementById('level-badge').innerText = 'NIVEL 3';
+    document.getElementById('level-title').innerText = 'Rompecabezas de Continuidad y Tratamiento';
+    document.getElementById('score-badge').classList.add('hidden');
     document.getElementById('ai-panel').classList.add('hidden');
+
+    document.getElementById('electrode-placement-panel').classList.add('hidden');
     document.getElementById('puzzle-ecg-panel').classList.remove('hidden');
-    cargarCasoNivel3(0);
+
+    cargarCasoNivel3(casoActualN3);
 }
 
 function cargarCasoNivel3(index) {
     const caso = CASOS_NIVEL3[index];
     ordenSeleccionadoN3 = [null, null, null, null];
-    document.getElementById('n3-patient-title').innerText = `CASO: ${caso.patologia}`;
-    document.getElementById('n3-patient-desc').innerText = caso.paciente;
 
-    const container = document.getElementById('puzzle-pieces-container');
-    container.innerHTML = '';
-    caso.piezas.forEach(p => {
-        const div = document.createElement('div');
-        div.style.background = '#101929';
-        div.style.padding = '10px';
-        div.style.borderRadius = '8px';
-        div.style.border = '1px solid #23334d';
-        div.style.cursor = 'pointer';
-        div.innerHTML = `${p.svg}<p style="font-size:0.75rem; text-align:center; margin-top:4px;">${p.label}</p>`;
-        div.onclick = () => colocarPiezaN3(p, div);
-        container.appendChild(div);
+    const titleElem = document.getElementById('n3-patient-title');
+    const descElem = document.getElementById('n3-patient-desc');
+    const treatSec = document.getElementById('n3-treatment-section');
+
+    if (titleElem) titleElem.innerText = `CASO CLÍNICO ${index + 1} / 3: ${caso.patologia}`;
+    if (descElem) {
+        descElem.innerHTML = `${caso.paciente}<br><small style="color:#38bdf8;">🧩 Pista de acople: Analiza el tipo de conector y la morfología del segmento para encajar el ciclo cardíaco continuo.</small>`;
+    }
+    if (treatSec) treatSec.classList.add('hidden');
+
+    const slots = document.querySelectorAll('.puzzle-slot');
+    slots.forEach(slot => {
+        slot.innerHTML = `<span class="slot-number">${parseInt(slot.dataset.slot) + 1}</span>`;
+        slot.classList.remove('filled');
     });
+
+    const containerPiezas = document.getElementById('puzzle-pieces-container');
+    if (containerPiezas) {
+        containerPiezas.innerHTML = '';
+        let piezasMezcladas = [...caso.piezas].sort(() => Math.random() - 0.5);
+
+        piezasMezcladas.forEach(p => {
+            const div = document.createElement('div');
+            div.className = 'puzzle-piece';
+            div.style.background = '#1e293b';
+            div.style.border = '1px solid #334155';
+            div.style.padding = '10px';
+            div.style.borderRadius = '8px';
+            div.style.cursor = 'pointer';
+            div.innerHTML = `${p.svg}
+                <p style="font-size:0.75rem; color:#f8fafc; text-align:center; font-weight:bold; margin-top:4px;">${p.label}</p>
+                <p style="font-size:0.65rem; color:#38bdf8; text-align:center;">${p.hint}</p>`;
+            div.onclick = () => colocarPiezaN3(p, div);
+            containerPiezas.appendChild(div);
+        });
+    }
 }
 
-function colocarPiezaN3(pieza, elem) {
-    const slotLibre = ordenSeleccionadoN3.findIndex(v => v === null);
+function colocarPiezaN3(pieza, elementoHTML) {
+    const slotLibre = ordenSeleccionadoN3.findIndex(val => val === null);
+
     if (slotLibre !== -1) {
-        audioFX.playDrop();
         ordenSeleccionadoN3[slotLibre] = pieza.id;
+
         const slotDiv = document.querySelector(`.puzzle-slot[data-slot="${slotLibre}"]`);
-        slotDiv.innerHTML = pieza.svg;
-        elem.style.visibility = 'hidden';
+        if (slotDiv) {
+            slotDiv.innerHTML = `${pieza.svg}`;
+            slotDiv.classList.add('filled');
+        }
+
+        elementoHTML.style.visibility = 'hidden';
 
         if (!ordenSeleccionadoN3.includes(null)) {
-            audioFX.playSuccess();
-            setTimeout(finalizarJuegoYMostrarCertificado, 800);
+            validarEnsambleN3();
         }
     }
 }
 
-// ==================== FIN Y ESTADÍSTICAS ====================
-function finalizarJuegoYMostrarCertificado() {
-    clearInterval(timerInterval);
-    detenerAnimacionCanvas();
-    document.getElementById('screen-gameplay').classList.add('hidden');
-    document.getElementById('screen-congratulations').classList.remove('hidden');
+function validarEnsambleN3() {
+    const caso = CASOS_NIVEL3[casoActualN3];
+    const esCorrecto = ordenSeleccionadoN3.every((val, index) => val === index);
 
-    const min = String(Math.floor(tiempoTotalSegundos / 60)).padStart(2, '0');
-    const seg = String(tiempoTotalSegundos % 60).padStart(2, '0');
-    document.getElementById('final-time').innerText = `${min}:${seg}`;
-
-    const titulo = (datosJugador.genero === 'femenino') 
-        ? `¡Felicidades ${datosJugador.nombre}, Biomédica! 🎓👩‍⚕️`
-        : `¡Felicidades ${datosJugador.nombre}, Biomédico! 🎓👨‍⚕️`;
-    document.getElementById('congrats-title').innerText = titulo;
-
-    guardarEstadisticas({
-        nombre: datosJugador.nombre,
-        genero: datosJugador.genero,
-        avatar: datosJugador.avatar,
-        tiempoSegundos: tiempoTotalSegundos,
-        tiempoTexto: `${min}:${seg}`,
-        sesgoIA: indiceSesgoIA,
-        fecha: new Date().toISOString()
-    });
-}
-
-function guardarEstadisticas(data) {
-    const statusEl = document.getElementById('firebase-sync-status');
-    if (db) {
-        db.collection("ranking_jugadores").add(data)
-            .then(() => { statusEl.innerText = "🟢 Registrado en la base de datos."; })
-            .catch(() => { statusEl.innerText = "🟡 Almacenado localmente."; });
-    } else {
-        let ranking = JSON.parse(localStorage.getItem('ecg_ranking') || '[]');
-        ranking.push(data);
-        localStorage.setItem('ecg_ranking', JSON.stringify(ranking));
-        statusEl.innerText = "🟢 Guardado localmente.";
-    }
-}
-
-function abrirLeaderboard() {
-    audioFX.playDrop();
-    const tbody = document.getElementById('leaderboard-tbody');
-    tbody.innerHTML = '<tr><td colspan="6">Cargando datos...</td></tr>';
-    document.getElementById('modal-leaderboard').classList.remove('hidden');
-
-    if (db) {
-        db.collection("ranking_jugadores").orderBy("tiempoSegundos", "asc").limit(10).get()
-            .then(snapshot => {
-                let html = ''; let i = 1;
-                snapshot.forEach(doc => {
-                    const row = doc.data();
-                    html += `<tr><td>#${i++}</td><td>${row.nombre}</td><td>${row.avatar}</td><td>${row.tiempoTexto}</td><td>100%</td><td>${row.sesgoIA < 30 ? 'Alta' : 'Moderada'}</td></tr>`;
-                });
-                tbody.innerHTML = html || '<tr><td colspan="6">Sin registros.</td></tr>';
+    if (esCorrecto) {
+        const section = document.getElementById('n3-treatment-section');
+        const containerOpciones = document.getElementById('n3-treatment-options');
+        
+        if (containerOpciones) {
+            containerOpciones.innerHTML = '';
+            caso.opcionesTratamiento.forEach((opc, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-ai-confirm';
+                btn.style.margin = "5px 0";
+                btn.style.width = "100%";
+                btn.innerText = opc;
+                btn.onclick = () => evaluarTratamientoN3(i);
+                containerOpciones.appendChild(btn);
             });
+        }
+
+        if (section) section.classList.remove('hidden');
     } else {
-        let ranking = JSON.parse(localStorage.getItem('ecg_ranking') || '[]');
-        ranking.sort((a, b) => a.tiempoSegundos - b.tiempoSegundos);
-        let html = '';
-        ranking.forEach((row, i) => {
-            html += `<tr><td>#${i + 1}</td><td>${row.nombre}</td><td>${row.avatar}</td><td>${row.tiempoTexto}</td><td>100%</td><td>${row.sesgoIA < 30 ? 'Alta' : 'Moderada'}</td></tr>`;
-        });
-        tbody.innerHTML = html || '<tr><td colspan="6">Sin registros locales.</td></tr>';
+        alert("⚠️ La continuidad eléctrica o del ciclo fisiológico es incorrecta. Revisa los conectores y la forma de la señal.");
+        cargarCasoNivel3(casoActualN3);
     }
 }
 
-function cerrarLeaderboard() { document.getElementById('modal-leaderboard').classList.add('hidden'); }
+function evaluarTratamientoN3(opcionSeleccionada) {
+    const caso = CASOS_NIVEL3[casoActualN3];
 
-function poblarSelectDiagnosticos() {
-    const select = document.getElementById('select-diagnostico');
-    if (!select) return;
-    select.innerHTML = '';
-    RITMOS_ECG.forEach(r => {
-        const opt = document.createElement('option');
-        opt.value = r.name;
-        opt.innerText = r.name;
-        select.appendChild(opt);
-    });
+    if (opcionSeleccionada === caso.tratamientoCorrecto) {
+        casoActualN3++;
+        if (casoActualN3 < CASOS_NIVEL3.length) {
+            alert(`✅ ¡Excelente! Has completado la reconstrucción y conducta clínica para ${caso.patologia}. Pasamos al siguiente caso.`);
+            cargarCasoNivel3(casoActualN3);
+        } else {
+            document.getElementById('modal-juego-completado').classList.remove('hidden');
+        }
+    } else {
+        alert("❌ Respuesta incorrecta. Revisa la patología y selecciona la conducta apropiada.");
+    }
 }
 
-function poblarTablaPatologiasInfo() {
-    const container = document.getElementById('lista-patologias-container');
-    if (!container) return;
-    let html = '<table class="patologias-table"><thead><tr><th>Ritmo</th><th>BPM</th><th>QRS</th><th>Onda P</th><th>Manejo</th></tr></thead><tbody>';
-    RITMOS_ECG.forEach(r => {
-        html += `<tr><td><strong>${r.name}</strong></td><td>${r.rate}</td><td>${r.qrs}</td><td>${r.p}</td><td>${r.treat}</td></tr>`;
-    });
-    html += '</tbody></table>';
-    container.innerHTML = html;
+function reiniciarDesdeNivel1() {
+    location.reload();
 }
 
-function abrirModal(tipo) {
-    if (tipo === 'patologias') document.getElementById('modal-patologias-info').classList.remove('hidden');
-    else if (tipo === 'bias') alert(`ℹ️ Dependencia de IA: ${indiceSesgoIA}%`);
-}
-
-function cerrarModalInfoPatologias() { document.getElementById('modal-patologias-info').classList.add('hidden'); }
-
+// ==================== GENERADOR MATEMÁTICO DE ONDAS ECG (CANVAS) ====================
 function ajustarTamanioCanvas() {
     const canvas = document.getElementById('ecg-wave');
     if (canvas && canvas.parentElement) {
-        const w = canvas.parentElement.clientWidth;
-        const h = canvas.parentElement.clientHeight;
-        if (w > 0 && h > 0) {
-            canvas.width = w;
-            canvas.height = h;
-        }
+        canvas.width = canvas.parentElement.clientWidth;
+        canvas.height = canvas.parentElement.clientHeight;
     }
 }
 
@@ -591,9 +476,116 @@ function detenerAnimacionCanvas() {
     }
 }
 
-function toggleAudioGlobal() {
-    const muted = audioFX.toggleMute();
-    document.getElementById('btn-audio-toggle').innerText = muted ? "🔇 Audio: OFF" : "🔊 Audio: ON";
+function iniciarAnimacionECG(tipoRitmo) {
+    detenerAnimacionCanvas();
+    const canvas = document.getElementById('ecg-wave');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    let x = 0;
+    const centerY = canvas.height / 2;
+    const speed = 2.5;
+
+    function dibujarFrame() {
+        ctx.fillStyle = '#051109';
+        ctx.fillRect(x, 0, speed + 2, canvas.height);
+
+        ctx.strokeStyle = 'rgba(0, 255, 102, 0.15)';
+        ctx.lineWidth = 0.5;
+        for (let y = 0; y < canvas.height; y += 15) {
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x + speed + 2, y);
+            ctx.stroke();
+        }
+
+        let yOffset = calcularEcuacionOnda(x, tipoRitmo, canvas.height);
+
+        ctx.strokeStyle = '#10b981';
+        ctx.lineWidth = 2;
+        ctx.shadowColor = '#10b981';
+        ctx.shadowBlur = 8;
+
+        ctx.beginPath();
+        ctx.moveTo(x, centerY);
+        ctx.lineTo(x + speed, centerY - yOffset);
+        ctx.stroke();
+
+        ctx.shadowBlur = 0;
+
+        x += speed;
+        if (x >= canvas.width) x = 0;
+
+        animacionCanvasId = requestAnimationFrame(dibujarFrame);
+    }
+
+    dibujarFrame();
 }
 
-function reiniciarJuegoCompleto() { window.location.reload(); }
+function calcularEcuacionOnda(x, tipo, height) {
+    const scale = height * 0.35;
+    const cycle = (x % 140) / 140;
+
+    switch (tipo) {
+        case 'afib':
+            return (Math.sin(x * 0.3) * 0.1 + (Math.random() - 0.5) * 0.15) * scale + (cycle > 0.45 && cycle < 0.5 ? (Math.random() > 0.5 ? 0.8 : -0.2) : 0) * scale;
+        case 'aflutter':
+            return (Math.sin(x * 0.2) * 0.25 + (cycle > 0.48 && cycle < 0.52 ? 0.9 : 0)) * scale;
+        case 'vt_mono':
+            return Math.sin(x * 0.08) * scale * 0.95;
+        case 'vfib':
+            return (Math.sin(x * 0.12) * 0.5 + Math.cos(x * 0.25) * 0.4 + (Math.random() - 0.5) * 0.3) * scale;
+        case 'sb':
+            const cycleSlow = (x % 240) / 240;
+            if (cycleSlow > 0.1 && cycleSlow < 0.18) return Math.sin((cycleSlow - 0.1) * Math.PI / 0.08) * 0.15 * scale;
+            if (cycleSlow > 0.38 && cycleSlow < 0.42) return (cycleSlow < 0.4 ? -0.15 : 0.9) * scale;
+            return 0;
+        case 'st':
+            const cycleFast = (x % 80) / 80;
+            if (cycleFast > 0.38 && cycleFast < 0.44) return 0.85 * scale;
+            return 0;
+        default:
+            if (cycle > 0.15 && cycle < 0.25) return Math.sin((cycle - 0.15) * Math.PI / 0.1) * 0.15 * scale;
+            if (cycle > 0.38 && cycle < 0.40) return -0.15 * scale;
+            if (cycle >= 0.40 && cycle < 0.43) return 0.95 * scale;
+            if (cycle >= 0.43 && cycle < 0.45) return -0.25 * scale;
+            if (cycle > 0.55 && cycle < 0.70) return Math.sin((cycle - 0.55) * Math.PI / 0.15) * 0.25 * scale;
+            return 0;
+    }
+}
+
+// ==================== UTILIDADES DE MODALES Y TABLAS ====================
+function poblarSelectDiagnosticos() {
+    const select = document.getElementById('select-diagnostico');
+    if (!select) return;
+    select.innerHTML = '';
+    RITMOS_ECG.forEach(ritmo => {
+        const opt = document.createElement('option');
+        opt.value = ritmo.name;
+        opt.innerText = ritmo.name;
+        select.appendChild(opt);
+    });
+}
+
+function poblarTablaPatologiasInfo() {
+    const container = document.getElementById('lista-patologias-container');
+    if (!container) return;
+    let html = '<table class="patologias-table" style="width:100%; text-align:left; border-collapse:collapse;"><thead><tr style="border-bottom:1px solid #334155;"><th>Ritmo</th><th>BPM</th><th>Complejo QRS</th><th>Onda P</th><th>Tratamiento</th></tr></thead><tbody>';
+    RITMOS_ECG.forEach(r => {
+        html += `<tr style="border-bottom:1px solid #1e293b;"><td><strong style="color:#38bdf8;">${r.name}</strong></td><td>${r.rate}</td><td>${r.qrs}</td><td>${r.p}</td><td>${r.treat}</td></tr>`;
+    });
+    html += '</tbody></table>';
+    container.innerHTML = html;
+}
+
+function abrirModal(tipo) {
+    if (tipo === 'patologias') {
+        document.getElementById('modal-patologias-info').classList.remove('hidden');
+    } else if (tipo === 'ajustes' || tipo === 'bias') {
+        alert(`ℹ️ Índice de Dependencia de IA actual: ${indiceSesgoIA}%\n\n• Si confías excesivamente en la IA (2 o más aciertos continuos o >40% de dependencia), la IA comenzará a equivocarse a propósito.\n• Si realizas diagnósticos manuales durante 3 a 4 casos, la IA recobrará la lucidez.`);
+    }
+}
+
+function cerrarModalInfoPatologias() {
+    document.getElementById('modal-patologias-info').classList.add('hidden');
+}
