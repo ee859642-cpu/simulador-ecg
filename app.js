@@ -309,7 +309,7 @@ function comenzarNivel2() {
     document.getElementById('puzzle-ecg-panel').classList.add('hidden');
     document.getElementById('ai-panel').classList.remove('hidden');
     
-    // Forzar el ajuste del canvas tras mostrar el panel para evitar tamaño 0px
+    // Forzar el ajuste del canvas tras mostrar el panel para respetar la interfaz original
     setTimeout(() => {
         ajustarTamanioCanvas();
         cargarSiguienteCasoNivel2();
@@ -349,16 +349,24 @@ function iniciarAnimacionECG(tipo) {
     detenerAnimacionCanvas();
     const canvas = document.getElementById('ecg-wave');
     if (!canvas) return;
+
+    const parent = canvas.parentElement;
+    if (parent) {
+        canvas.width = parent.clientWidth || 600;
+        canvas.height = parent.clientHeight || 200;
+    }
+
     const ctx = canvas.getContext('2d');
     let x = 0;
 
     function dibujar() {
+        const w = canvas.width;
         const h = canvas.height;
-        const scale = h * 0.4;
+        const scale = h * 0.35;
         const centerY = h / 2;
 
-        ctx.fillStyle = 'rgba(2, 18, 8, 0.2)';
-        ctx.fillRect(x, 0, 6, h);
+        ctx.fillStyle = 'rgba(2, 18, 8, 0.15)';
+        ctx.fillRect(x, 0, 4, h);
 
         const y = centerY - calcularOndaECG(tipo, x, scale);
         ctx.strokeStyle = '#10b981';
@@ -368,7 +376,7 @@ function iniciarAnimacionECG(tipo) {
         ctx.lineTo(x + 2, y);
         ctx.stroke();
 
-        x = (x + 2) % canvas.width;
+        x = (x + 2) % w;
         animacionCanvasId = requestAnimationFrame(dibujar);
     }
     dibujar();
@@ -572,9 +580,6 @@ function ajustarTamanioCanvas() {
         if (w > 0 && h > 0) {
             canvas.width = w;
             canvas.height = h;
-        } else {
-            canvas.width = 620;
-            canvas.height = 280;
         }
     }
 }
