@@ -1,4 +1,4 @@
-/* ==================== VARIABLES Y ESTILOS GENERALES ==================== */
+/* ==================== VARIABLES Y ESTILOS BASE ==================== */
 :root {
     --bg-dark: #051109;
     --card-bg: #0b1e12;
@@ -27,7 +27,12 @@ body {
     flex-direction: column;
 }
 
-/* ==================== ENCABEZADO Y STATS ==================== */
+/* ==================== REGLA CRÍTICA DE OCULTAMIENTO ==================== */
+.hidden {
+    display: none !important;
+}
+
+/* ==================== ENCABEZADO Y ESTADÍSTICAS ==================== */
 .app-header {
     background-color: var(--card-bg);
     border-bottom: 2px solid var(--border-color);
@@ -72,7 +77,7 @@ body {
     border-color: var(--accent-yellow);
 }
 
-/* ==================== BOTONES Y UTILIDADES ==================== */
+/* ==================== BOTONES Y ACCIONES ==================== */
 .btn-primary, .btn-secondary, .btn-success, .btn-warning {
     padding: 10px 18px;
     border: none;
@@ -110,10 +115,6 @@ body {
 .btn-warning {
     background-color: var(--accent-yellow);
     color: #000;
-}
-
-.hidden {
-    display: none !important;
 }
 
 /* ==================== CONTENEDOR PRINCIPAL ==================== */
@@ -231,7 +232,7 @@ body {
 
 .torso-container {
     position: relative;
-    background-color: var(--card-bg);
+    background-color: #020804;
     border: 1px solid var(--border-color);
     border-radius: 10px;
     padding: 20px;
@@ -239,13 +240,16 @@ body {
     justify-content: center;
     align-items: center;
     min-height: 480px;
+    overflow: hidden;
 }
 
 .torso-img {
     max-height: 440px;
     width: auto;
     object-fit: contain;
-    filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.8));
+    opacity: 0.85;
+    filter: contrast(1.1) brightness(0.9);
+    display: block;
 }
 
 .dropzone {
@@ -263,6 +267,7 @@ body {
     font-size: 0.8rem;
     color: #000;
     transition: all 0.3s ease;
+    z-index: 10;
 }
 
 .dropzone.placed {
@@ -271,7 +276,7 @@ body {
     box-shadow: 0 0 12px var(--primary-green);
 }
 
-/* ==================== PANEL NIVEL 3: PUZZLE Y TRATAMIENTO ==================== */
+/* ==================== PANEL NIVEL 3: ROMPECABEZAS FISIOLÓGICO ==================== */
 .patient-card-n3 {
     background-color: var(--card-bg);
     border: 1px solid var(--border-color);
@@ -376,7 +381,7 @@ body {
     gap: 10px;
 }
 
-/* ==================== PANEL DE ASISTENCIA IA (NIVEL 2) ==================== */
+/* ==================== PANEL ASISTENCIA IA (NIVEL 2) ==================== */
 .ai-assistant-card {
     background-color: var(--card-bg);
     border: 1px solid var(--border-color);
@@ -412,7 +417,7 @@ body {
     gap: 15px;
 }
 
-/* ==================== FOOTER ==================== */
+/* ==================== FOOTER DE ESTADO ==================== */
 .app-footer {
     background-color: var(--card-bg);
     border-top: 1px solid var(--border-color);
@@ -423,7 +428,7 @@ body {
     color: var(--text-muted);
 }
 
-/* ==================== MODALES Y OVERLAYS ==================== */
+/* ==================== MODALES Y VENTANAS FLOTANTES ==================== */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -521,7 +526,7 @@ body {
     color: var(--primary-green);
 }
 
-/* ==================== ADAPTACIÓN RESPONSIVE ==================== */
+/* ==================== ADAPTACIÓN RESPONSIVA ==================== */
 @media (max-width: 768px) {
     .interactor-grid {
         grid-template-columns: 1fr;
