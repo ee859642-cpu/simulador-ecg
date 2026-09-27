@@ -37,19 +37,24 @@ let electrodosColocados = 0;
 let casoActualN2 = null;
 
 // Lógica de dependencia y confusión de IA
-let usoSeguidoIA = 0;           // Cuántas veces seguidas confió en la IA
-let analisisManualesSeguidos = 0; // Cuántas veces analizó manualmente
-let indiceSesgoIA = 0;          // Porcentaje de dependencia (0% - 100%)
+let usoSeguidoIA = 0;
+let analisisManualesSeguidos = 0;
+let indiceSesgoIA = 0;
 
 let animacionCanvasId = null;
 
-// ==================== NUEVO: ESTADO DE JUGADOR, TIEMPO Y ESTADÍSTICAS ====================
+// ==================== ESTADO DE JUGADOR, TIEMPO Y ESTADÍSTICAS ====================
 let jugadorNombre = '';
 let jugadorGenero = '';
 let horaInicioJuego = null;
-let intentosNivel2 = 0; // Total de diagnósticos intentados en Nivel 2 (para calcular precisión)
+let intentosNivel2 = 0;
 
-// ==================== NUEVO: SONIDO (WEB AUDIO API, SIN ARCHIVOS EXTERNOS) ====================
+// ==================== NUEVO: FLAGS DE PROGRESO PARA EL MAPA DE NIVELES ====================
+let nivel1Terminado = false;
+let nivel2Terminado = false;
+let nivel3Terminado = false;
+
+// ==================== SONIDO (WEB AUDIO API, SIN ARCHIVOS EXTERNOS) ====================
 let audioCtx = null;
 let latidoIntervalId = null;
 
@@ -106,14 +111,147 @@ function detenerLatidoSonoro() {
     }
 }
 
+// NUEVO: alarma sonora para ritmos de "Emergencia" o "Paro Cardíaco"
+function reproducirAlarma() {
+    try {
+        const ctx = obtenerAudioCtx();
+        const frecuencias = [1200, 900];
+        frecuencias.forEach((freq, i) => {
+            setTimeout(() => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(freq, ctx.currentTime);
+                gain.gain.setValueAtTime(0.12, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.15);
+            }, i * 180);
+        });
+    } catch (e) { /* Audio no soportado en este navegador */ }
+}
+
 // Sonido de clic global: se activa en cualquier botón, electrodo o pieza de rompecabezas
-// sin necesidad de tocar los onclick ya existentes en el HTML.
 document.addEventListener('click', (e) => {
     const elementoClic = e.target.closest('button, .electrode-circle, .puzzle-piece');
     if (elementoClic) reproducirClic();
 });
 
-// ==================== NUEVO: REGISTRO DE JUGADOR Y AVATAR ====================
+// ==================== NUEVO: MODO DOCENTE / EXPORTAR RESULTADOS A CSV ====================
+function exportarResultadosCSV() {
+    try {
+        const datos = JSON.parse(localStorage.getItem('ecg_leaderboard') || '[]');
+        if (datos.length === 0) {
+            alert('ℹ️ Aún no hay resultados guardados para exportar.');
+            return;
+        }
+        let csv = 'Nombre,Genero,TiempoMs,Precision,Autonomia,Fecha\n';
+        datos.forEach(r => {
+            csv += `${r.nombre},${r.genero},${r.tiempoMs},${r.precision},${r.autonomia},${r.fecha}\n`;
+        });
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `resultados_ecg_${Date.now()}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    } catch (e) {
+        console.error('Error al exportar CSV:', e);
+        alert('⚠️ No se pudo exportar el archivo CSV.');
+    }
+}
+
+// Atajo de teclado oculto para el modo docente: Ctrl + Shift + E
+document.addEventListener('keydown', (e) => {
+    if (e.ctrlKey && e.shiftKey && e.key.toUpperCase() === 'E') {
+        exportarResultadosCSV();
+    }
+});
+
+// ==================== NUEVO: PANTALLA DE BIENVENIDA Y MAPA DE NIVELES ====================
+function iniciarJuegoDesdeSplash() {
+    const modalSplash = document.getElementById('modal-splash');
+    if (modalSplash) modalSplash.classList.add('hidden');
+
+    const modalRegistro = document.getElementById('modal-registro');
+    if (modalRegistro) modalRegistro.classList.remove('hidden');
+}
+
+function obtenerEstadoNivel(n) {
+    if (n === 1) return nivel1Terminado ? 'completado' : 'actual';
+    if (n === 2) {
+        if (nivel2Terminado) return 'completado';
+        return nivel1Terminado ? 'actual' : 'bloqueado';
+    }
+    if (n === 3) {
+        if (nivel3Terminado) return 'completado';
+        return nivel2Terminado ? 'actual' : 'bloqueado';
+    }
+    return 'bloqueado';
+}
+
+function renderizarMapaNiveles() {
+    const contenedor = document.getElementById('mapa-contenedor');
+    if (!contenedor) return;
+
+    const infoNiveles = [
+        { n: 1, titulo: 'Nivel 1', desc: 'Colocación de Electrodos' },
+        { n: 2, titulo: 'Nivel 2', desc: 'Diagnóstico con IA' },
+        { n: 3, titulo: 'Nivel 3', desc: 'Rompecabezas y Tratamiento' }
+    ];
+
+    contenedor.innerHTML = '';
+    infoNiveles.forEach(info => {
+        const estado = obtenerEstadoNivel(info.n);
+        const icono = estado === 'completado' ? '✅' : (estado === 'bloqueado' ? '🔒' : '▶️');
+        const btn = document.createElement('button');
+        btn.className = `mapa-nodo mapa-nodo-${estado}`;
+        btn.innerHTML = `<span class="mapa-nodo-icono">${icono}</span><strong>${info.titulo}</strong><span>${info.desc}</span>`;
+        btn.onclick = () => seleccionarNodoMapa(info.n);
+        contenedor.appendChild(btn);
+    });
+}
+
+function abrirModalMapa() {
+    renderizarMapaNiveles();
+    const modalMapa = document.getElementById('modal-mapa-niveles');
+    if (modalMapa) modalMapa.classList.remove('hidden');
+}
+
+function cerrarModalMapa() {
+    const modalMapa = document.getElementById('modal-mapa-niveles');
+    if (modalMapa) modalMapa.classList.add('hidden');
+}
+
+function seleccionarNodoMapa(n) {
+    const estado = obtenerEstadoNivel(n);
+
+    if (estado === 'bloqueado') {
+        alert('🔒 Todavía no has desbloqueado este nivel. Completa el nivel anterior primero.');
+        return;
+    }
+
+    cerrarModalMapa();
+
+    if (estado === 'completado') {
+        alert('✅ Ya completaste este nivel. ¡Buen trabajo!');
+        return;
+    }
+
+    // estado === 'actual': si el Nivel 1 no ha comenzado, se abre su introducción
+    if (n === 1 && electrodosColocados === 0) {
+        const modalN1 = document.getElementById('modal-nivel1-intro');
+        if (modalN1) modalN1.classList.remove('hidden');
+    }
+    // Si el nivel ya está en curso, el mapa solo se cierra y el jugador continúa donde estaba.
+}
+
+// ==================== REGISTRO DE JUGADOR Y AVATAR ====================
 function seleccionarGenero(genero, btnEl) {
     jugadorGenero = genero;
     document.querySelectorAll('.btn-genero').forEach(b => b.classList.remove('genero-selected'));
@@ -147,11 +285,11 @@ function registrarJugador() {
     const modalRegistro = document.getElementById('modal-registro');
     if (modalRegistro) modalRegistro.classList.add('hidden');
 
-    const modalN1 = document.getElementById('modal-nivel1-intro');
-    if (modalN1) modalN1.classList.remove('hidden');
+    // NUEVO: en vez de ir directo al Nivel 1, ahora se muestra el mapa de niveles
+    abrirModalMapa();
 }
 
-// ==================== NUEVO: ESTADÍSTICAS Y PANTALLA FINAL PERSONALIZADA ====================
+// ==================== ESTADÍSTICAS Y PANTALLA FINAL PERSONALIZADA ====================
 function mostrarPantallaFinal() {
     detenerLatidoSonoro();
 
@@ -179,29 +317,63 @@ function mostrarPantallaFinal() {
         finalTitulo.innerText = `🏆 ¡Felicidades ${nombreMostrado}, eres tod${terminacion} un${terminacion} ${tituloAvatar}!`;
     }
 
-    const finalStats = document.getElementById('final-stats');
-    if (finalStats) {
-        finalStats.innerHTML = `
-            <p>⏱ Tiempo total: <strong>${tiempoFormateado}</strong></p>
-            <p>🎯 Precisión diagnóstica: <strong>${precisionNivel2}%</strong></p>
-            <p>🧠 Autonomía frente al sesgo de la IA: <strong>${autonomiaIA}%</strong></p>
-        `;
-    }
-
-    guardarResultadoLocal({
+    const resultadoActual = {
         nombre: nombreMostrado,
         genero: jugadorGenero,
         tiempoMs: tiempoTotalMs,
         precision: precisionNivel2,
         autonomia: autonomiaIA,
         fecha: new Date().toISOString()
+    };
+
+    const leaderboard = guardarResultadoLocal(resultadoActual);
+
+    // NUEVO: tabla de clasificación ordenada por precisión y, en empate, por tiempo
+    const clasificacion = [...leaderboard]
+        .sort((a, b) => (b.precision !== a.precision) ? (b.precision - a.precision) : (a.tiempoMs - b.tiempoMs))
+        .slice(0, 5);
+
+    let filasTabla = '';
+    clasificacion.forEach((r, i) => {
+        const avatarFila = r.genero === 'femenino' ? '👩‍⚕️' : '🧑‍⚕️';
+        const esJugadorActual = (r.fecha === resultadoActual.fecha && r.nombre === resultadoActual.nombre);
+        filasTabla += `<tr class="${esJugadorActual ? 'fila-jugador-actual' : ''}">
+            <td>${i + 1}</td>
+            <td>${avatarFila} ${r.nombre}</td>
+            <td>${r.precision}%</td>
+            <td>${Math.floor(r.tiempoMs / 60000)}m ${Math.floor((r.tiempoMs % 60000) / 1000)}s</td>
+        </tr>`;
     });
+
+    // NUEVO: insignias/logros según el desempeño
+    let insignias = '';
+    if (precisionNivel2 === 100) insignias += '<span class="badge-logro">🎯 Precisión de Élite</span>';
+    if (autonomiaIA >= 80) insignias += '<span class="badge-logro">🧠 Diagnosticador Autónomo</span>';
+    if (clasificacion.length > 0 && clasificacion[0].nombre === resultadoActual.nombre && clasificacion[0].fecha === resultadoActual.fecha) {
+        insignias += '<span class="badge-logro">🥇 Primer Lugar</span>';
+    }
+
+    const finalStats = document.getElementById('final-stats');
+    if (finalStats) {
+        finalStats.innerHTML = `
+            <p>⏱ Tiempo total: <strong>${tiempoFormateado}</strong></p>
+            <p>🎯 Precisión diagnóstica: <strong>${precisionNivel2}%</strong></p>
+            <p>🧠 Autonomía frente al sesgo de la IA: <strong>${autonomiaIA}%</strong></p>
+            <div class="badges-container">${insignias}</div>
+            <h4 style="margin-top:14px; color:#38bdf8;">🏆 Tabla de Clasificación (Top 5)</h4>
+            <table class="leaderboard-table">
+                <thead><tr><th>#</th><th>Jugador</th><th>Precisión</th><th>Tiempo</th></tr></thead>
+                <tbody>${filasTabla}</tbody>
+            </table>
+        `;
+    }
 }
 
 function guardarResultadoLocal(resultado) {
+    let datosPrevios = [];
     try {
         const clave = 'ecg_leaderboard';
-        const datosPrevios = JSON.parse(localStorage.getItem(clave) || '[]');
+        datosPrevios = JSON.parse(localStorage.getItem(clave) || '[]');
         datosPrevios.push(resultado);
         localStorage.setItem(clave, JSON.stringify(datosPrevios));
     } catch (e) {
@@ -209,8 +381,9 @@ function guardarResultadoLocal(resultado) {
     }
 
     // OPCIONAL: envío a Firebase para tabla de posiciones en tiempo real del docente.
-    // Descomenta la línea de abajo solo después de configurar firebase-config.js:
     // guardarEnFirebase(resultado);
+
+    return datosPrevios;
 }
 
 // ==================== INICIALIZACIÓN DE LA APLICACIÓN ====================
@@ -220,9 +393,9 @@ window.addEventListener('DOMContentLoaded', () => {
     poblarTablaPatologiasInfo();
     ajustarTamanioCanvas();
 
-    // Antes se mostraba directo el modal de Nivel 1; ahora primero se registra al jugador.
-    const modalRegistro = document.getElementById('modal-registro');
-    if (modalRegistro) modalRegistro.classList.remove('hidden');
+    // NUEVO: ahora se muestra primero la pantalla de bienvenida
+    const modalSplash = document.getElementById('modal-splash');
+    if (modalSplash) modalSplash.classList.remove('hidden');
 
     const aiPanel = document.getElementById('ai-panel');
     if (aiPanel) aiPanel.classList.add('hidden');
@@ -289,6 +462,7 @@ function inicializarDragAndDropNivel1() {
                 }
 
                 if (electrodosColocados === 6) {
+                    nivel1Terminado = true; // NUEVO: marca el Nivel 1 como completado para el mapa
                     setTimeout(() => {
                         const modalN2 = document.getElementById('modal-nivel2');
                         if (modalN2) modalN2.classList.remove('hidden');
@@ -339,26 +513,21 @@ function cargarSiguienteCasoNivel2() {
         patientInfo.innerText = `Paciente: ID PAC-${Math.floor(Math.random() * 899 + 100)} (${Math.floor(Math.random() * 50 + 25)} años)`;
     }
 
-    // Corregido: Muestra explícitamente "BPM: (NÚMERO)"
     const bpmDisplay = document.getElementById('bpm-display');
     if (bpmDisplay) {
         bpmDisplay.innerText = `BPM: ${casoActualN2.rate}`;
     }
 
-    // REGLA DE COMPORTAMIENTO DE IA:
-    // Si confía 2 o más veces seguidas en la IA O si el índice de dependencia supera el 40%, la IA SE CONFUNDE (falla a propósito)
     let laIaSeConfunde = (usoSeguidoIA >= 2) || (indiceSesgoIA >= 40);
 
     let sugerenciaIA;
     let confianzaIA;
 
     if (laIaSeConfunde) {
-        // La IA comete un error deliberado
         const ritmosIncorrectos = RITMOS_ECG.filter(r => r.name !== casoActualN2.name);
         sugerenciaIA = ritmosIncorrectos[Math.floor(Math.random() * ritmosIncorrectos.length)].name;
-        confianzaIA = Math.floor(Math.random() * 15 + 80); // Muestra alta confianza errónea para simular "alucinación"
+        confianzaIA = Math.floor(Math.random() * 15 + 80);
     } else {
-        // La IA funciona correctamente
         sugerenciaIA = casoActualN2.name;
         confianzaIA = Math.floor(Math.random() * 12 + 88);
     }
@@ -369,11 +538,16 @@ function cargarSiguienteCasoNivel2() {
 
     const aiConfText = document.getElementById('ai-confidence-text');
     if (aiConfText) {
-        aiConfText.innerText = ""; // Se limpia el texto para que permanezca oculto
+        aiConfText.innerText = "";
     }
 
     iniciarAnimacionECG(casoActualN2.id);
-    iniciarLatidoSonoro(casoActualN2.rate); // NUEVO: latido sincronizado con el BPM del caso
+    iniciarLatidoSonoro(casoActualN2.rate);
+
+    // NUEVO: alarma sonora adicional para ritmos de Emergencia o Paro Cardíaco
+    if (casoActualN2.status === 'Emergencia' || casoActualN2.status === 'Paro Cardíaco') {
+        reproducirAlarma();
+    }
 }
 
 function tomarDecisionIA() {
@@ -397,7 +571,7 @@ function evaluarDiagnosticoManual() {
 }
 
 function evaluarRespuestaNivel2(diagnosticoPropuesto, provieneDeIA) {
-    intentosNivel2++; // NUEVO: cuenta cada intento para calcular precisión final
+    intentosNivel2++;
 
     const esCorrecto = (diagnosticoPropuesto === casoActualN2.name);
     const modalRes = document.getElementById('modal-resultado');
@@ -405,13 +579,10 @@ function evaluarRespuestaNivel2(diagnosticoPropuesto, provieneDeIA) {
     if (provieneDeIA) {
         usoSeguidoIA++;
         analisisManualesSeguidos = 0;
-        // Aumenta el índice de dependencia
         indiceSesgoIA = Math.min(100, indiceSesgoIA + 25);
     } else {
         analisisManualesSeguidos++;
-        usoSeguidoIA = 0; // Se resetea el contador de abuso de IA
-        
-        // Reducción paulatina de la dependencia al analizar manualmente a 3 o 4 pacientes
+        usoSeguidoIA = 0;
         indiceSesgoIA = Math.max(0, indiceSesgoIA - 30);
     }
 
@@ -430,7 +601,6 @@ function evaluarRespuestaNivel2(diagnosticoPropuesto, provieneDeIA) {
 
     document.getElementById('score-badge').innerText = `🎯 Aciertos: ${aciertosNivel2} / ${MAX_ACIERTOS_NIVEL2}`;
     
-    // Actualizar badges de dependencia
     const txtBias = `Dependencia IA: ${indiceSesgoIA}%`;
     const biasDisplay = document.getElementById('bias-display');
     const biasFooter = document.getElementById('bias-info-footer');
@@ -448,6 +618,7 @@ function siguienteCasoNivel2() {
     document.getElementById('modal-resultado').classList.add('hidden');
 
     if (aciertosNivel2 >= MAX_ACIERTOS_NIVEL2) {
+        nivel2Terminado = true; // NUEVO: marca el Nivel 2 como completado para el mapa
         setTimeout(() => {
             const modalN3Intro = document.getElementById('modal-nivel3-intro');
             if (modalN3Intro) modalN3Intro.classList.remove('hidden');
@@ -462,7 +633,7 @@ function comenzarNivel3() {
     nivelActual = 3;
     casoActualN3 = 0;
 
-    detenerLatidoSonoro(); // NUEVO: detiene el latido del Nivel 2 al pasar de nivel
+    detenerLatidoSonoro();
 
     const modalN3Intro = document.getElementById('modal-nivel3-intro');
     if (modalN3Intro) modalN3Intro.classList.add('hidden');
@@ -577,7 +748,8 @@ function evaluarTratamientoN3(opcionSeleccionada) {
             alert(`✅ ¡Excelente! Has completado la reconstrucción y conducta clínica para ${caso.patologia}. Pasamos al siguiente caso.`);
             cargarCasoNivel3(casoActualN3);
         } else {
-            mostrarPantallaFinal(); // NUEVO: calcula y muestra estadísticas antes del modal final
+            nivel3Terminado = true; // NUEVO: marca el Nivel 3 como completado para el mapa
+            mostrarPantallaFinal();
             document.getElementById('modal-juego-completado').classList.remove('hidden');
         }
     } else {
