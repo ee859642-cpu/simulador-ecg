@@ -254,13 +254,12 @@ function cargarSiguienteCasoNivel2() {
     aiDiagText.dataset.sugerencia = sugerenciaIA;
 
     const aiConfText = document.getElementById('ai-confidence-text');
-    if (laIaSeConfunde) {
-        aiConfText.innerText = `Confianza: ${confianzaIA}% ⚠️ (Sobrecargada/Sesgada)`;
-        aiConfText.style.color = "#f59e0b";
-    } else {
-        aiConfText.innerText = `Confianza: ${confianzaIA}%`;
-        aiConfText.style.color = "#10b981";
+    if (aiConfText) {
+        aiConfText.innerText = ""; // Se limpia el texto para que permanezca oculto
     }
+
+
+
 
     iniciarAnimacionECG(casoActualN2.id);
 }
