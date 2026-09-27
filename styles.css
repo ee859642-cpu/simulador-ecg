@@ -169,7 +169,6 @@ body {
 }
 
 /* POSICIONAMIENTO ANATÓMICO EXACTO EN LA FIGURA VECTORIAL */
-/* Ajusta 'top' y 'left' si deseas mover algún punto en particular */
 .target-v1 { top: 40%; left: 42%; }
 .target-v2 { top: 40%; left: 51%; }
 .target-v3 { top: 47%; left: 47%; }
