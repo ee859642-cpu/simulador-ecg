@@ -88,6 +88,14 @@ html, body {
     font-weight: bold;
 }
 
+/* NUEVO: distintivo de jugador (nombre + avatar) en el encabezado */
+.player-badge {
+    color: #38bdf8;
+    font-size: 0.85rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
 .main-workspace {
     flex: 1;
     display: flex;
@@ -358,4 +366,40 @@ html, body {
     padding: 24px;
     max-width: 480px;
     width: 90%;
+}
+
+/* NUEVO: registro de jugador y avatar */
+.input-registro {
+    width: 100%;
+    padding: 10px;
+    background: #0f172a;
+    color: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+.btn-genero {
+    flex: 1;
+    background-color: #1c2a40;
+    color: var(--text-light);
+    border: 1px solid var(--border-color);
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-genero.genero-selected {
+    background-color: rgba(56, 189, 248, 0.15);
+    border-color: #38bdf8;
+    color: #fff;
+}
+
+/* NUEVO: estadísticas de la pantalla final */
+.final-stats p {
+    color: #cbd5e1;
+    font-size: 0.9rem;
+    margin: 6px 0;
 }
