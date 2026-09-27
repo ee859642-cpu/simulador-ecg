@@ -123,37 +123,34 @@ body {
     align-items: center;
 }
 
-/* ==================== NIVEL 1: TORSO Y POSICIONAMIENTO ANATÓMICO ==================== */
+/* ==================== NIVEL 1: TORSO VECTORIAL SVG ==================== */
 .torso-image-container {
     position: relative;
-    width: 380px;
-    height: 420px;
+    width: 320px;
+    height: 380px;
     margin: 20px auto;
     border-radius: 12px;
-    overflow: hidden;
-    background-color: #ffffff;
+    background-color: #0f172a;
+    border: 1px solid #334155;
     display: flex;
     justify-content: center;
     align-items: center;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
 }
 
-.torso-bg {
+.torso-svg {
     width: 100%;
     height: 100%;
-    object-fit: contain;
-    user-select: none;
-    pointer-events: none;
 }
 
-/* ZONAS DE SOLTADO (CÍRCULOS EN EL TÓRAX) */
+/* ZONAS DE SOLTADO (PUNTOS EN EL PECHO) */
 .dropzone {
     position: absolute;
     width: 32px;
     height: 32px;
-    border: 2px dashed #2563eb;
+    border: 2px dashed #38bdf8;
     border-radius: 50%;
-    background-color: rgba(255, 255, 255, 0.5);
+    background-color: rgba(15, 23, 42, 0.7);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -163,7 +160,7 @@ body {
 
 .dropzone:hover {
     border-color: #00ff66;
-    transform: scale(1.1);
+    transform: scale(1.15);
 }
 
 .dropzone.occupied {
@@ -171,13 +168,14 @@ body {
     background-color: rgba(0, 255, 102, 0.3);
 }
 
-/* POSICIONES ANATÓMICAS EXACTAS (MODIFICA ESTOS % PARA AJUSTAR LA UBICACIÓN) */
-.target-v1 { top: 48%; left: 42%; }
-.target-v2 { top: 49%; left: 51%; }
-.target-v3 { top: 54%; left: 55%; }
-.target-v4 { top: 60%; left: 59%; }
-.target-v5 { top: 58%; left: 65%; }
-.target-v6 { top: 54%; left: 70%; }
+/* POSICIONAMIENTO ANATÓMICO EXACTO EN LA FIGURA VECTORIAL */
+/* Ajusta 'top' y 'left' si deseas mover algún punto en particular */
+.target-v1 { top: 40%; left: 42%; }
+.target-v2 { top: 40%; left: 51%; }
+.target-v3 { top: 47%; left: 47%; }
+.target-v4 { top: 54%; left: 44%; }
+.target-v5 { top: 53%; left: 56%; }
+.target-v6 { top: 51%; left: 66%; }
 
 /* POOL DE ELECTRODOS ARRASTRABLES */
 .electrodes-pool {
@@ -198,7 +196,7 @@ body {
     justify-content: center;
     cursor: grab;
     user-select: none;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
     transition: transform 0.15s ease;
 }
 
@@ -360,7 +358,7 @@ body {
     text-align: center;
 }
 
-/* CLASE DE OCULTACIÓN UTILITARIA */
+/* CLASE UTILITARIA */
 .hidden {
     display: none !important;
 }
