@@ -11,7 +11,7 @@
     <!-- ENCABEZADO SUPERIOR -->
     <header class="app-header">
         <div class="header-left">
-            <button class="btn-header">⚙ Ajustes</button>
+            <button class="btn-header" onclick="abrirModal('bias')">⚙ Ajustes</button>
             <button class="btn-header" onclick="abrirModal('patologias')">📜 27 Ritmos Oficiales</button>
         </div>
         
@@ -26,44 +26,71 @@
         </div>
     </header>
 
-    <!-- ÁREA DE TRABAJO PRINCIPAL (INTERACTOR DE NIVELES) -->
+    <!-- ÁREA DE TRABAJO PRINCIPAL -->
     <main class="main-workspace">
 
-        <!-- BARRA LATERAL IZQUIERDA: ELECTRODOS CIRCULARES -->
-        <aside id="sidebar-electrodes" class="electrodes-sidebar">
-            <div class="electrode-circle" draggable="true" data-lead="V1">V1</div>
-            <div class="electrode-circle" draggable="true" data-lead="V2">V2</div>
-            <div class="electrode-circle" draggable="true" data-lead="V3">V3</div>
-            <div class="electrode-circle" draggable="true" data-lead="V4">V4</div>
-            <div class="electrode-circle" draggable="true" data-lead="V5">V5</div>
-            <div class="electrode-circle" draggable="true" data-lead="V6">V6</div>
-        </aside>
+        <!-- PANEL DE COLOCACIÓN DE ELECTRODOS (NIVEL 1 Y 2) -->
+        <div id="electrode-placement-panel" class="workspace-layout">
+            <!-- BARRA LATERAL IZQUIERDA: ELECTRODOS ARRASTRABLES -->
+            <aside id="sidebar-electrodes" class="electrodes-sidebar">
+                <div class="electrode-circle electrode" draggable="true" data-lead="V1">V1</div>
+                <div class="electrode-circle electrode" draggable="true" data-lead="V2">V2</div>
+                <div class="electrode-circle electrode" draggable="true" data-lead="V3">V3</div>
+                <div class="electrode-circle electrode" draggable="true" data-lead="V4">V4</div>
+                <div class="electrode-circle electrode" draggable="true" data-lead="V5">V5</div>
+                <div class="electrode-circle electrode" draggable="true" data-lead="V6">V6</div>
+            </aside>
 
-        <!-- ÁREA CENTRAL: VISOR ANATÓMICO (TORSO Y DROPZONES) -->
-        <section id="center-viewport" class="center-viewport">
-            <p id="instruction-text" class="instruction-banner">Arrastra los electrodos precordiales a su posición anatómica correcta:</p>
+            <!-- ÁREA CENTRAL: VISOR ANATÓMICO (SIN TEXTO EN TORAX) -->
+            <section id="center-viewport" class="center-viewport">
+                <p id="instruction-text" class="instruction-banner">Arrastra los electrodos precordiales a su posición anatómica correcta:</p>
 
-            <div class="torso-wrapper">
-                <!-- Silueta SVG Anatómica -->
-                <svg class="torso-svg-container" viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M100 20 C115 20 125 32 125 48 C125 64 115 76 100 76 C85 76 75 64 75 48 C75 32 85 20 100 20 Z" fill="#243044" stroke="#38bdf8" stroke-width="1.5"/>
-                    <path d="M60 95 C60 85 80 80 100 80 C120 80 140 85 140 95 L155 170 C160 195 145 270 140 280 L60 280 C55 270 40 195 45 170 Z" fill="#162032" stroke="#38bdf8" stroke-width="2"/>
-                    <!-- Costillas y Caja Torácica -->
-                    <path d="M75 110 Q100 125 125 110 M72 130 Q100 148 128 130 M70 150 Q100 170 130 150 M72 170 Q100 190 128 170" stroke="#243044" stroke-width="2" fill="none"/>
-                </svg>
+                <div class="torso-wrapper">
+                    <!-- Silueta SVG Anatómica -->
+                    <svg class="torso-svg-container" viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M100 20 C115 20 125 32 125 48 C125 64 115 76 100 76 C85 76 75 64 75 48 C75 32 85 20 100 20 Z" fill="#243044" stroke="#38bdf8" stroke-width="1.5"/>
+                        <path d="M60 95 C60 85 80 80 100 80 C120 80 140 85 140 95 L155 170 C160 195 145 270 140 280 L60 280 C55 270 40 195 45 170 Z" fill="#162032" stroke="#38bdf8" stroke-width="2"/>
+                        <path d="M75 110 Q100 125 125 110 M72 130 Q100 148 128 130 M70 150 Q100 170 130 150 M72 170 Q100 190 128 170" stroke="#243044" stroke-width="2" fill="none"/>
+                    </svg>
 
-                <!-- Puntos Anatómicos de Soltado (Puntos vacíos sin texto adentro) -->
-                <div class="dropzone-overlay" data-target="V1" style="top: 38%; left: 43%;" title="4º Espacio Intercostal Derecho"></div>
-                <div class="dropzone-overlay" data-target="V2" style="top: 38%; left: 57%;" title="4º Espacio Intercostal Izquierdo"></div>
-                <div class="dropzone-overlay" data-target="V3" style="top: 47%; left: 52%;" title="Entre V2 y V4"></div>
-                <div class="dropzone-overlay" data-target="V4" style="top: 55%; left: 45%;" title="5º Espacio Intercostal Izquierdo Línea Medioclavicular"></div>
-                <div class="dropzone-overlay" data-target="V5" style="top: 55%; left: 60%;" title="5º Espacio Intercostal Línea Axilar Anterior"></div>
-                <div class="dropzone-overlay" data-target="V6" style="top: 55%; left: 72%;" title="5º Espacio Intercostal Línea Axilar Media"></div>
+                    <!-- Puntos Anatómicos de Soltado (Puntos sin texto) -->
+                    <div class="dropzone-overlay dropzone" data-target="V1" style="top: 38%; left: 43%;" title="4º Espacio Intercostal Derecho"></div>
+                    <div class="dropzone-overlay dropzone" data-target="V2" style="top: 38%; left: 57%;" title="4º Espacio Intercostal Izquierdo"></div>
+                    <div class="dropzone-overlay dropzone" data-target="V3" style="top: 47%; left: 52%;" title="Entre V2 y V4"></div>
+                    <div class="dropzone-overlay dropzone" data-target="V4" style="top: 55%; left: 45%;" title="5º Espacio Intercostal Izquierdo Línea Medioclavicular"></div>
+                    <div class="dropzone-overlay dropzone" data-target="V5" style="top: 55%; left: 60%;" title="5º Espacio Intercostal Línea Axilar Anterior"></div>
+                    <div class="dropzone-overlay dropzone" data-target="V6" style="top: 55%; left: 72%;" title="5º Espacio Intercostal Línea Axilar Media"></div>
+                </div>
+            </section>
+        </div>
+
+        <!-- PANEL DE ROMPECABEZAS (NIVEL 3) -->
+        <div id="puzzle-ecg-panel" class="workspace-layout hidden">
+            <div style="width: 100%; padding: 20px; color: #fff;">
+                <h2 id="n3-patient-title" style="color: #38bdf8; margin-bottom: 5px;">CASO CLÍNICO DE NIVEL 3</h2>
+                <p id="n3-patient-desc" style="color: #94a3b8; margin-bottom: 20px;"></p>
+                
+                <!-- Slots de la onda -->
+                <div class="puzzle-slots-container" style="display: flex; gap: 10px; margin-bottom: 25px;">
+                    <div class="puzzle-slot" data-slot="0"></div>
+                    <div class="puzzle-slot" data-slot="1"></div>
+                    <div class="puzzle-slot" data-slot="2"></div>
+                    <div class="puzzle-slot" data-slot="3"></div>
+                </div>
+
+                <!-- Piezas desordenadas -->
+                <div id="puzzle-pieces-container" style="display: flex; gap: 15px; margin-bottom: 25px;"></div>
+
+                <!-- Sección de Tratamiento -->
+                <div id="n3-treatment-section" class="hidden">
+                    <h3 style="color: #10b981;">✓ Orden Correcto. Selecciona la Conducta Clínica / Tratamiento:</h3>
+                    <div id="n3-treatment-options" style="margin-top: 10px;"></div>
+                </div>
             </div>
-        </section>
+        </div>
 
         <!-- PANEL DERECHO: ASISTENTE IA (NIVEL 2) -->
-        <aside id="ai-panel" class="right-sidebar">
+        <aside id="ai-panel" class="right-sidebar hidden">
             <div class="ai-card">
                 <div class="ai-card-header">
                     <span>💻 ASISTENTE DIAGNÓSTICO IA</span>
@@ -82,27 +109,42 @@
     <!-- MONITOR ELECTROCARDIOGRÁFICO INFERIOR -->
     <footer class="bottom-ecg-section">
         <div class="ecg-top-bar">
-            <span id="patient-info">Paciente: ID PAC-650 (39 años)</span>
-            <span>BPM: <strong id="bpm-display" class="bpm-highlight">75</strong></span>
+            <span id="patient-info">Paciente: Selecciona los electrodos para iniciar</span>
+            <span id="bpm-display">BPM: --</span>
             <span id="bias-info-footer">Índice Dependencia IA: 0%</span>
         </div>
         <div class="canvas-wrapper">
-            <canvas id="ecg-canvas"></canvas>
+            <canvas id="ecg-wave"></canvas>
         </div>
     </footer>
 
-    <!-- MODAL DE INICIO DE NIVEL 1 -->
-    <div id="modal-nivel1-intro" class="modal-overlay">
+    <!-- MODALES DE CONTROL -->
+    <div id="modal-nivel1-intro" class="modal-overlay hidden">
         <div class="modal-content">
             <h2 style="color: #38bdf8; margin-bottom: 10px;">⚡ Nivel 1: Posicionamiento Precordial</h2>
             <p style="color: #94a3b8; font-size: 0.9rem; line-height: 1.4; margin-bottom: 15px;">
-                Bienvenido al simulador. Tu primera tarea es colocar correctamente los 6 electrodos precordiales (V1 a V6) sobre el torso del paciente.
+                Arrastra los 6 electrodos precordiales (V1 a V6) hasta su ubicación anatómica correcta en el torso.
             </p>
             <button class="btn-ai-confirm" onclick="cerrarModalNivel1()">Comenzar Nivel 1</button>
         </div>
     </div>
 
-    <!-- MODAL DIAGNÓSTICO MANUAL -->
+    <div id="modal-nivel2" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2 style="color: #10b981; margin-bottom: 10px;">🎉 Nivel 1 Completado</h2>
+            <p style="color: #94a3b8; margin-bottom: 15px;">Ahora pasarás al Nivel 2: Diagnóstico de Ondas e Interpretación Asistida por IA.</p>
+            <button class="btn-ai-confirm" onclick="comenzarNivel2()">Iniciar Nivel 2</button>
+        </div>
+    </div>
+
+    <div id="modal-nivel3-intro" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2 style="color: #f59e0b; margin-bottom: 10px;">🧩 ¡Nivel 2 Superado!</h2>
+            <p style="color: #94a3b8; margin-bottom: 15px;">Avanzando al Nivel 3: Ensamble de Ondas ECG y Conducta Terapéutica.</p>
+            <button class="btn-ai-confirm" onclick="comenzarNivel3()">Iniciar Nivel 3</button>
+        </div>
+    </div>
+
     <div id="modal-manual" class="modal-overlay hidden">
         <div class="modal-content">
             <h3 style="color: #38bdf8; margin-bottom: 10px;">Evaluación Clínica Manual</h3>
@@ -112,6 +154,32 @@
                 <button class="btn-ai-manual" onclick="cerrarModalManual()">Cancelar</button>
                 <button class="btn-ai-confirm" style="width: auto; padding: 8px 16px;" onclick="evaluarDiagnosticoManual()">Confirmar</button>
             </div>
+        </div>
+    </div>
+
+    <div id="modal-resultado" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2 id="res-status-title" style="margin-bottom: 5px;"></h2>
+            <span id="res-status-badge" style="padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 0.8rem;"></span>
+            <p style="margin-top: 15px; color: #94a3b8;">Ritmo Real: <strong id="res-real-diag" style="color: #fff;"></strong></p>
+            <p id="res-treatment-text" style="color: #cbd5e1; margin-top: 10px; font-size: 0.9rem; line-height: 1.4;"></p>
+            <button class="btn-ai-confirm" style="margin-top: 15px;" onclick="siguienteCasoNivel2()">Siguiente Paciente</button>
+        </div>
+    </div>
+
+    <div id="modal-patologias-info" class="modal-overlay hidden">
+        <div class="modal-content" style="max-width: 800px; max-height: 80vh; overflow-y: auto;">
+            <h3 style="color: #38bdf8; margin-bottom: 10px;">Catálogo de 27 Ritmos Electrocardiográficos</h3>
+            <div id="lista-patologias-container"></div>
+            <button class="btn-ai-manual" style="margin-top: 15px;" onclick="cerrarModalInfoPatologias()">Cerrar</button>
+        </div>
+    </div>
+
+    <div id="modal-juego-completado" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2 style="color: #10b981; margin-bottom: 10px;">🏆 ¡Simulación Finalizada!</h2>
+            <p style="color: #94a3b8; margin-bottom: 15px;">Has completado exitosamente los 3 niveles del simulador clínico.</p>
+            <button class="btn-ai-confirm" onclick="reiniciarDesdeNivel1()">Reiniciar Simulador</button>
         </div>
     </div>
 
