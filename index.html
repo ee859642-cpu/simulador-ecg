@@ -37,15 +37,38 @@
         <!-- PANEL DE CONTROL Y ACCIONES DINÁMICAS -->
         <section class="controls-section">
 
-            <!-- INTERFAZ NIVEL 1: TORSO Y ELECTRODOS (POSICIONAMIENTO ANATÓMICO) -->
+            <!-- INTERFAZ NIVEL 1: TORSO VECTORIAL Y ELECTRODOS -->
             <div id="electrode-placement-panel" class="control-panel">
                 <h3>Arrastra los electrodos precordiales a su posición anatómica correcta:</h3>
                 
-                <!-- Contenedor con la imagen del torso de fondo -->
+                <!-- SILUETA VECTORIAL DEL TORSO EN CÓDIGO SVG -->
                 <div class="torso-image-container">
-                    <img src="torso.png" alt="Torso Anatómico" class="torso-bg">
+                    <svg class="torso-svg" viewBox="0 0 300 380" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Cabeza y Cuello -->
+                        <circle cx="150" cy="50" r="32" fill="#334155" stroke="#475569" stroke-width="2"/>
+                        <path d="M 138 80 L 138 98 L 162 98 L 162 80 Z" fill="#334155"/>
+                        
+                        <!-- Torso / Espalda -->
+                        <path d="M 80 130 C 80 98, 120 95, 150 95 C 180 95, 220 98, 220 130 L 210 280 C 210 320, 90 320, 90 280 Z" fill="#1e293b" stroke="#334155" stroke-width="2"/>
+                        
+                        <!-- Esternón -->
+                        <rect x="146" y="125" width="8" height="110" rx="4" fill="#475569"/>
+                        
+                        <!-- Caja Torácica / Costillas -->
+                        <path d="M 145 135 C 110 135, 100 155, 100 165 C 100 175, 120 175, 145 160" fill="none" stroke="#334155" stroke-width="3" stroke-linecap="round"/>
+                        <path d="M 155 135 C 190 135, 200 155, 200 165 C 200 175, 180 175, 155 160" fill="none" stroke="#334155" stroke-width="3" stroke-linecap="round"/>
+                        
+                        <path d="M 145 160 C 105 165, 95 185, 95 195 C 95 205, 115 205, 145 185" fill="none" stroke="#334155" stroke-width="3" stroke-linecap="round"/>
+                        <path d="M 155 160 C 195 165, 205 185, 205 195 C 205 205, 185 205, 155 185" fill="none" stroke="#334155" stroke-width="3" stroke-linecap="round"/>
+                        
+                        <path d="M 145 185 C 100 190, 90 210, 90 220 C 90 230, 110 230, 145 210" fill="none" stroke="#334155" stroke-width="3" stroke-linecap="round"/>
+                        <path d="M 155 185 C 200 190, 210 210, 210 220 C 210 230, 190 230, 155 210" fill="none" stroke="#334155" stroke-width="3" stroke-linecap="round"/>
+                        
+                        <!-- Silueta del Corazón (Guía sutil) -->
+                        <path d="M 145 170 C 130 150, 115 170, 135 195 C 145 205, 148 208, 150 210 C 152 208, 155 205, 165 195 C 185 170, 170 150, 155 170 Z" fill="rgba(239, 68, 68, 0.15)" stroke="rgba(239, 68, 68, 0.3)" stroke-width="1.5"/>
+                    </svg>
                     
-                    <!-- Puntos/Zonas donde encajarán los electrodos (Sin texto impreso) -->
+                    <!-- ZONAS DE SOLTADO SIN TEXTO IMPRESO (Dificultad de juego) -->
                     <div class="dropzone target-v1" data-target="V1"></div>
                     <div class="dropzone target-v2" data-target="V2"></div>
                     <div class="dropzone target-v3" data-target="V3"></div>
@@ -54,7 +77,7 @@
                     <div class="dropzone target-v6" data-target="V6"></div>
                 </div>
 
-                <!-- Electrodos disponibles (Conservan sus etiquetas V1-V6) -->
+                <!-- Electrodos disponibles (Mantienen sus etiquetas V1-V6) -->
                 <div class="electrodes-pool">
                     <div class="electrode" data-lead="V1">V1</div>
                     <div class="electrode" data-lead="V2">V2</div>
