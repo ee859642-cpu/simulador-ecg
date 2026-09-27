@@ -3,139 +3,136 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulador ECG - Yachay Tech</title>
-    <link rel="stylesheet" href="./styles.css">
+    <title>Simulador de ECG y Diagnóstico Clínico</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- ENCABEZADO SUPERIOR -->
-    <header class="top-bar">
-        <div class="top-left">
-            <button class="btn-head" onclick="abrirModal('ajustes')">⚙ Ajustes</button>
-            <button class="btn-head" onclick="abrirModal('patologias')">📋 27 Ritmos Oficiales</button>
-        </div>
-
-        <div class="top-center">
+    <!-- ENCABEZADO Y PANEL DE CONTROL GLOBAL -->
+    <header class="app-header">
+        <div class="header-titles">
             <span id="level-badge" class="badge">NIVEL 1</span>
-            <h2 id="level-title">Posicionamiento Anatómico de Electrodos</h2>
-            <span id="score-badge" class="score-tag hidden">🎯 Aciertos: 0 / 10</span>
+            <h1 id="level-title">Colocación Anatómica de Electrodos</h1>
         </div>
-
-        <div class="top-right">
-            <span id="bias-display" class="bias-tag">Índice Dependencia IA: 0%</span>
+        <div class="header-stats">
+            <span id="score-badge" class="badge score-badge hidden">🎯 Aciertos: 0 / 10</span>
+            <span id="bias-display" class="badge bias-badge">Índice Dependencia IA: 0%</span>
+            <button class="btn-secondary" onclick="abrirModal('patologias')">📚 Guía de Patologías</button>
         </div>
     </header>
 
-    <!-- ÁREA PRINCIPAL DEL SIMULADOR -->
-    <main class="app-workspace">
+    <!-- CONTENEDOR PRINCIPAL -->
+    <main class="main-container">
 
-        <!-- 1. BARRA LATERAL IZQUIERDA: ELECTRODOS -->
-        <aside class="sidebar-electrodes">
-            <div class="electrodes-pool" id="electrodes-container">
-                <div class="electrode" data-lead="V1">V1</div>
-                <div class="electrode" data-lead="V2">V2</div>
-                <div class="electrode" data-lead="V3">V3</div>
-                <div class="electrode" data-lead="V4">V4</div>
-                <div class="electrode" data-lead="V5">V5</div>
-                <div class="electrode" data-lead="V6">V6</div>
-            </div>
-        </aside>
-
-        <!-- 2. ZONA CENTRAL: SILUETA ANATÓMICA SVG VECTORIAL -->
-        <section class="center-stage">
-            <div id="electrode-placement-panel" class="stage-content">
-                <h3 class="instruction-text">Arrastra los electrodos precordiales a su posición anatómica correcta:</h3>
-                
-                <div class="torso-image-container">
-                    <svg class="torso-svg" viewBox="0 0 300 380" xmlns="http://www.w3.org/2000/svg">
-                        <!-- Cabeza y Cuello -->
-                        <circle cx="150" cy="50" r="32" fill="#334155" stroke="#475569" stroke-width="2"/>
-                        <path d="M 138 80 L 138 98 L 162 98 L 162 80 Z" fill="#334155"/>
-                        
-                        <!-- Torso -->
-                        <path d="M 80 130 C 80 98, 120 95, 150 95 C 180 95, 220 98, 220 130 L 210 280 C 210 320, 90 320, 90 280 Z" fill="#1e293b" stroke="#334155" stroke-width="2"/>
-                        
-                        <!-- Esternón -->
-                        <rect x="146" y="125" width="8" height="110" rx="4" fill="#475569"/>
-                        
-                        <!-- Caja Torácica / Costillas -->
-                        <path d="M 145 135 C 110 135, 100 155, 100 165 C 100 175, 120 175, 145 160" fill="none" stroke="#334155" stroke-width="3" stroke-linecap="round"/>
-                        <path d="M 155 135 C 190 135, 200 155, 200 165 C 200 175, 180 175, 155 160" fill="none" stroke="#334155" stroke-width="3" stroke-linecap="round"/>
-                        
-                        <path d="M 145 160 C 105 165, 95 185, 95 195 C 95 205, 115 205, 145 185" fill="none" stroke="#334155" stroke-width="3" stroke-linecap="round"/>
-                        <path d="M 155 160 C 195 165, 205 185, 205 195 C 205 205, 185 205, 155 185" fill="none" stroke="#334155" stroke-width="3" stroke-linecap="round"/>
-                        
-                        <path d="M 145 185 C 100 190, 90 210, 90 220 C 90 230, 110 230, 145 210" fill="none" stroke="#334155" stroke-width="3" stroke-linecap="round"/>
-                        <path d="M 155 185 C 200 190, 210 210, 210 220 C 210 230, 190 230, 155 210" fill="none" stroke="#334155" stroke-width="3" stroke-linecap="round"/>
-                        
-                        <!-- Corazón -->
-                        <path d="M 145 170 C 130 150, 115 170, 135 195 C 145 205, 148 208, 150 210 C 152 208, 155 205, 165 195 C 185 170, 170 150, 155 170 Z" fill="rgba(239, 68, 68, 0.15)" stroke="rgba(239, 68, 68, 0.3)" stroke-width="1.5"/>
-                    </svg>
-                    
-                    <!-- ZONAS DE SOLTADO SIN ETIQUETAS IMPRESAS -->
-                    <div class="dropzone target-v1" data-target="V1"></div>
-                    <div class="dropzone target-v2" data-target="V2"></div>
-                    <div class="dropzone target-v3" data-target="V3"></div>
-                    <div class="dropzone target-v4" data-target="V4"></div>
-                    <div class="dropzone target-v5" data-target="V5"></div>
-                    <div class="dropzone target-v6" data-target="V6"></div>
+        <!-- VISOR ELECTROCARDIOGRÁFICO EN TIEMPO REAL (CANVAS) -->
+        <section class="ecg-display-card">
+            <div class="ecg-header">
+                <div class="patient-details">
+                    <span id="patient-info">Paciente: Selecciona los electrodos para iniciar</span>
+                </div>
+                <div class="ecg-status">
+                    <span id="bpm-display">BPM: --</span>
+                    <span class="lead-label">Derivación II</span>
                 </div>
             </div>
-
-            <!-- INTERFAZ NIVEL 3: ROMPECABEZAS -->
-            <div id="puzzle-ecg-panel" class="stage-content hidden">
-                <h3>🧩 Rompecabezas Fisiológico: Reconstruye la Onda ECG</h3>
-                <div id="puzzle-drop-container" class="puzzle-dropzone">
-                    <p class="placeholder-text">Haz clic en las piezas para reconstruir el trazado...</p>
-                </div>
-                <div id="puzzle-pieces-container" class="puzzle-grid"></div>
+            
+            <div class="canvas-container">
+                <canvas id="ecg-wave"></canvas>
             </div>
         </section>
 
-        <!-- 3. PANEL DERECHO: ASISTENTE DE IA (NIVEL 2 Y 3) -->
-        <aside id="ai-panel" class="sidebar-ai hidden">
-            <div class="ai-card">
-                <div class="ai-header">
-                    <span>💻 ASISTENTE DIAGNÓSTICO IA</span>
+        <!-- PANELES INTERACTIVOS SEGÚN EL NIVEL -->
+
+        <!-- PANEL NIVEL 1: POSICIONAMIENTO ANATÓMICO -->
+        <section id="electrode-placement-panel" class="stage-content">
+            <div class="interactor-grid">
+                <!-- BANCO DE ELECTRODOS (DRAGGABLE) -->
+                <div class="electrodes-bank">
+                    <h3>Electrodos Precordiales</h3>
+                    <p class="sub-text">Arrastra cada electrodo a su posición correcta en el torso:</p>
+                    <div class="electrodes-list">
+                        <div class="electrode" data-lead="V1">V1</div>
+                        <div class="electrode" data-lead="V2">V2</div>
+                        <div class="electrode" data-lead="V3">V3</div>
+                        <div class="electrode" data-lead="V4">V4</div>
+                        <div class="electrode" data-lead="V5">V5</div>
+                        <div class="electrode" data-lead="V6">V6</div>
+                    </div>
                 </div>
-                <div class="ai-body">
-                    <p class="sub-title">Sugerencia IA:</p>
-                    <h3 id="ai-diagnosis-text" class="ai-diag">Analizando...</h3>
-                    <p id="ai-confidence-text" class="ai-conf">Confianza: --</p>
+
+                <!-- TORSO INTERACTIVO (DROP ZONES) -->
+                <div class="torso-container">
+                    <img src="torso.png" alt="Torso Humano" class="torso-img" id="torso-img" onerror="this.src='https://via.placeholder.com/350x450/051109/00ff66?text=Torso+Anatomico'">
                     
-                    <button class="btn-ai-accept" onclick="tomarDecisionIA()">✓ Confiar en la IA</button>
-                    <button class="btn-ai-manual" onclick="abrirModalManual()">✍ Análisis Manual / Cuestionar</button>
+                    <!-- PUNTOS ANATÓMICOS DE SOLTADO -->
+                    <div class="dropzone" data-target="V1" style="top: 38%; left: 42%;" title="4º Espacio Intercostal Derecho"></div>
+                    <div class="dropzone" data-target="V2" style="top: 38%; left: 54%;" title="4º Espacio Intercostal Izquierdo"></div>
+                    <div class="dropzone" data-target="V3" style="top: 45%; left: 51%;" title="Entre V2 y V4"></div>
+                    <div class="dropzone" data-target="V4" style="top: 51%; left: 45%;" title="5º Espacio Intercostal Izquierdo Línea Medioclavicular"></div>
+                    <div class="dropzone" data-target="V5" style="top: 51%; left: 57%;" title="5º Espacio Intercostal Línea Axilar Anterior"></div>
+                    <div class="dropzone" data-target="V6" style="top: 51%; left: 66%;" title="5º Espacio Intercostal Línea Axilar Media"></div>
                 </div>
             </div>
-        </aside>
+        </section>
+
+        <!-- PANEL NIVEL 3: ROMPECABEZAS FISIOLÓGICO Y TRATAMIENTO -->
+        <section id="puzzle-ecg-panel" class="stage-content hidden">
+            <div class="patient-card-n3">
+                <span id="n3-patient-title" class="badge">CASO CLÍNICO 1/3</span>
+                <h3 id="n3-patient-desc">Cargando datos del paciente...</h3>
+            </div>
+
+            <h4 class="instruction-text">1. Reconstruye el trazado electrocardiográfico de 4 piezas en el orden fisiológico correcto:</h4>
+            
+            <!-- CONTENEDOR DE SOLTADO (4 SLOTS) -->
+            <div id="puzzle-drop-container" class="puzzle-dropzone">
+                <div class="puzzle-slot" data-slot="0"><span class="slot-number">1</span></div>
+                <div class="puzzle-slot" data-slot="1"><span class="slot-number">2</span></div>
+                <div class="puzzle-slot" data-slot="2"><span class="slot-number">3</span></div>
+                <div class="puzzle-slot" data-slot="3"><span class="slot-number">4</span></div>
+            </div>
+
+            <!-- PIEZAS DESORDENADAS -->
+            <div id="puzzle-pieces-container" class="puzzle-grid"></div>
+
+            <!-- SECCIÓN DE TRATAMIENTO Y CONDUCTA CLÍNICA -->
+            <div id="n3-treatment-section" class="treatment-box hidden">
+                <h4>2. 🩺 ¡Trazado Correcto! Selecciona la conducta o tratamiento de primera línea:</h4>
+                <div id="n3-treatment-options" class="treatment-options-grid"></div>
+            </div>
+        </section>
+
+        <!-- PANEL INFERIOR DE ASISTENCIA IA (ACTIVO EN NIVEL 2) -->
+        <section id="ai-panel" class="ai-assistant-card hidden">
+            <div class="ai-header">
+                <span class="ai-title">🤖 Sugerencia del Modelo IA:</span>
+                <span id="ai-confidence-text" class="ai-confidence">Confianza: --%</span>
+            </div>
+            <div class="ai-body">
+                <h2 id="ai-diagnosis-text" data-sugerencia="">Analizando señal ECG...</h2>
+            </div>
+            <div class="ai-actions">
+                <button class="btn-success" onclick="tomarDecisionIA()">Aceptar Diagnóstico IA</button>
+                <button class="btn-warning" onclick="abrirModalManual()">Revisar Manualmente</button>
+            </div>
+        </section>
 
     </main>
 
-    <!-- 4. MONITOR ECG INFERIOR -->
-    <footer id="monitor-panel" class="bottom-monitor">
-        <div class="monitor-bar-info">
-            <span id="patient-info">Paciente: Selecciona los electrodos para iniciar</span>
-            <span id="bpm-display" class="bpm-tag">BPM: --</span>
-            <span id="bias-info-footer" class="bias-tag">Índice Dependencia IA: 0%</span>
-        </div>
-        
-        <div class="canvas-wrapper">
-            <canvas id="ecg-wave"></canvas>
-        </div>
-
-        <div class="monitor-footer-controls">
-            <button class="btn-foot" onclick="abrirModal('bias')">🧠 Modelo IA & Bias</button>
-            <button class="btn-foot" onclick="reiniciarNivel1()">🔄 Reiniciar Posicionamiento</button>
-        </div>
+    <!-- FOOTER DE ESTADO -->
+    <footer class="app-footer">
+        <span id="bias-info-footer">Índice Dependencia IA: 0%</span>
+        <span>Simulador de Fisiología Electrocardiográfica © 2026</span>
     </footer>
 
-    <!-- MODALES Y VENTANAS EMERGENTES -->
+    <!-- ==================== MODALES Y VENTANAS EMERGENTES ==================== -->
 
-    <!-- VENTANA 1 INICIAL: INSTRUCCIONES NIVEL 1 -->
+    <!-- VENTANA 1: INSTRUCCIONES NIVEL 1 -->
     <div id="modal-nivel1-intro" class="modal-overlay">
         <div class="modal-card">
-            <h2>🫀 Nivel 1: Posicionamiento Anatómico</h2>
-            <p>Bienvenido al Simulador ECG. Arrastra los 6 electrodos precordiales (V1 a V6) desde el panel izquierdo hacia sus posiciones anatómicas correctas sobre el torso.</p>
+            <h2>⚡ Nivel 1: Posicionamiento Precordial</h2>
+            <p>Bienvenido al simulador. Tu primera tarea es colocar correctamente los 6 electrodos precordiales (V1 a V6) sobre el torso del paciente.</p>
+            <p>Arrastra cada electrodo desde el panel lateral hacia el punto anatómico correcto.</p>
             <button class="btn-primary" onclick="cerrarModalNivel1()">Comenzar Nivel 1</button>
         </div>
     </div>
@@ -143,58 +140,67 @@
     <!-- VENTANA 2: TRANSICIÓN A NIVEL 2 -->
     <div id="modal-nivel2" class="modal-overlay hidden">
         <div class="modal-card">
-            <h2>✅ Electrodos Posicionados Correctamente</h2>
-            <p>Has completado el posicionamiento del Nivel 1. A continuación pasarás al <strong>Nivel 2: Análisis de Señales e Interpretación de ECG</strong>.</p>
-            <p>Deberás lograr <strong>10 aciertos</strong> para desbloquear el Nivel 3.</p>
+            <h2>🎉 ¡Electrodos Colocados con Éxito!</h2>
+            <p>Has completado la derivación precordial correctamente. Ahora estás listo para el <strong>Nivel 2: Análisis e Interpretación de ECG</strong>.</p>
+            <p>Deberás lograr <strong>10 aciertos</strong> analizando el trazado de señal en tiempo real. Puedes apoyarte en el Asistente de IA o evaluar el caso manualmente.</p>
             <button class="btn-primary" onclick="comenzarNivel2()">Iniciar Nivel 2</button>
         </div>
     </div>
 
-    <!-- VENTANA 3: TRANSICIÓN A NIVEL 3 -->
-    <div id="modal-nivel3-intro" class="modal-overlay hidden">
-        <div class="modal-card">
-            <h2>🧩 Nivel 3: Rompecabezas Fisiológico</h2>
-            <p>¡Excelente trabajo! Has alcanzado los 10 aciertos en el Nivel 2.</p>
-            <p>En este nivel reconstruirás el trazado electrocardiográfico a partir de sus componentes primarios.</p>
-            <button class="btn-primary" onclick="comenzarNivel3()">Iniciar Nivel 3</button>
-        </div>
-    </div>
-
+    <!-- SELECCIÓN MANUAL DE DIAGNÓSTICO (NIVEL 2) -->
     <div id="modal-manual" class="modal-overlay hidden">
         <div class="modal-card">
-            <h3>🩺 Selección de Diagnóstico Clínico</h3>
-            <p>Selecciona el ritmo correspondiente a la señal observada:</p>
+            <h2>🩺 Evaluación Clínica Manual</h2>
+            <p>Selecciona el diagnóstico electrocardiográfico correspondiente al trazado actual:</p>
             <select id="select-diagnostico" class="select-full"></select>
-            <div class="modal-actions">
+            <div class="modal-buttons">
                 <button class="btn-primary" onclick="evaluarDiagnosticoManual()">Confirmar Diagnóstico</button>
                 <button class="btn-secondary" onclick="cerrarModalManual()">Cancelar</button>
             </div>
         </div>
     </div>
 
+    <!-- RESULTADO DE DIAGNÓSTICO (NIVEL 2) -->
     <div id="modal-resultado" class="modal-overlay hidden">
         <div class="modal-card">
             <h2 id="res-status-title">Resultado</h2>
-            <div id="res-status-badge" class="result-badge">--</div>
-            <p><strong>Ritmo Confirmado:</strong> <span id="res-real-diag">--</span></p>
-            <div id="res-treatment-text" class="treatment-info"></div>
-            <button class="btn-primary" onclick="siguienteCasoNivel2()">Siguiente Paciente</button>
+            <span id="res-status-badge" class="badge">--</span>
+            <p><strong>Ritmo Diagnosticado:</strong> <span id="res-real-diag">--</span></p>
+            <div id="res-treatment-text" class="treatment-info-box"></div>
+            <button class="btn-primary" onclick="siguienteCasoNivel2()">Siguiente Paciente ➔</button>
         </div>
     </div>
 
+    <!-- VENTANA 3: TRANSICIÓN A NIVEL 3 -->
+    <div id="modal-nivel3-intro" class="modal-overlay hidden">
+        <div class="modal-card">
+            <h2>🏆 ¡Excelencia Clínica Alcanzada!</h2>
+            <p>Has completado con éxito los 10 diagnósticos del Nivel 2. Pasamos al <strong>Nivel 3: Rompecabezas Fisiológico y Conducta Clínica</strong>.</p>
+            <p>En este nivel reconstruirás el trazado alterado de patologías críticas uniendo sus 4 componentes y determinarás el tratamiento de primera línea.</p>
+            <button class="btn-primary" onclick="comenzarNivel3()">Iniciar Nivel 3</button>
+        </div>
+    </div>
+
+    <!-- JUEGO COMPLETADO FINAL -->
+    <div id="modal-juego-completado" class="modal-overlay hidden">
+        <div class="modal-card">
+            <h2>🎓 ¡Felicidades, eres todo un Experto Biomédico!</h2>
+            <p>Has superado satisfactoriamente los 3 niveles del simulador electrocardiográfico:</p>
+            <ul>
+                <li>✅ Posicionamiento anatómico de derivaciones precordiales.</li>
+                <li>✅ Interpretación de 27 ritmos electrocardiográficos.</li>
+                <li>✅ Reconstrucción de trazados patológicos y decisiones terapéuticas.</li>
+            </ul>
+            <button class="btn-primary" onclick="reiniciarDesdeNivel1()">Reiniciar Simulador 🔄</button>
+        </div>
+    </div>
+
+    <!-- MODAL INFORMATIVO DE PATOLOGÍAS -->
     <div id="modal-patologias-info" class="modal-overlay hidden">
         <div class="modal-card modal-large">
-            <h3>📋 Base de Datos de Ritmos Electrocardiográficos</h3>
-            <div id="lista-patologias-container" class="patologias-scroll"></div>
-            <button class="btn-secondary" onclick="cerrarModalInfoPatologias()">Cerrar Consulta</button>
-        </div>
-    </div>
-
-    <div id="modal-juego-completado" class="modal-overlay hidden">
-        <div class="modal-card text-center">
-            <h1 style="color: #00FF66;">🏆 ¡Felicidades, eres todo un biomédico!</h1>
-            <p>Has completado con éxito todos los niveles del simulador ECG.</p>
-            <button class="btn-primary" onclick="reiniciarDesdeNivel1()">Volver a Jugar</button>
+            <h2>📚 Guía Fisiológica de Ritmos Electrocardiográficos</h2>
+            <div id="lista-patologias-container" class="table-container"></div>
+            <button class="btn-secondary" onclick="cerrarModalInfoPatologias()">Cerrar Guía</button>
         </div>
     </div>
 
