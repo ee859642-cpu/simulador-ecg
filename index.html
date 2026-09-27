@@ -3,256 +3,271 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulador Clínico ECG & Biomédica</title>
+    <title>Simulador Clínico ECG - Tesis Biomedicina</title>
+    <!-- Firebase App y Firestore -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <link rel="stylesheet" href="styles.css">
-
-    <!-- Firebase SDK (Version 9 compat para fácil integración) -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
-    <!-- HUD SUPERIOR / BARRA DE JUGADOR Y AUDIO -->
-    <header id="hud-bar" class="hud-bar hidden">
-        <div class="user-profile">
-            <span id="hud-avatar" class="hud-avatar">👨‍⚕️</span>
-            <span id="hud-username" class="hud-username">Jugador</span>
+    <!-- ENCABEZADO SUPERIOR / HUD -->
+    <header class="app-header">
+        <div class="header-left">
+            <span id="hud-avatar" class="hud-avatar-icon">👨‍⚕️</span>
+            <span id="hud-username" class="hud-user-name">Invitado</span>
         </div>
-        <div class="hud-stats">
-            <span id="hud-timer">⏱️ 00:00</span>
-            <span id="score-badge" class="score-badge">🎯 Nivel 1: 0 / 6</span>
-            <button id="btn-audio-toggle" onclick="toggleAudioGlobal()">🔊 Audio: ON</button>
-            <button id="btn-leaderboard" onclick="abrirLeaderboard()">🏆 Ranking Docente</button>
+        <div class="header-center">
+            <h1 class="app-title">SIMULADOR CLÍNICO ELECTROCARDIOGRÁFICO</h1>
+        </div>
+        <div class="header-right">
+            <span id="hud-timer" class="hud-badge">⏱️ 00:00</span>
+            <span id="hud-level-badge" class="hud-badge level-badge">NIVEL 1</span>
+            <button id="btn-audio-toggle" class="btn-header" onclick="toggleAudioGlobal()">🔊 Audio: ON</button>
+            <button class="btn-header" onclick="abrirLeaderboard()">🏆 Ranking</button>
         </div>
     </header>
 
-    <!-- PANTALLA 1: PORTADA PRINCIPAL / START MENU -->
-    <section id="screen-welcome" class="screen">
-        <div class="welcome-box">
-            <h1 class="game-title">GAMING</h1>
-            <div class="subtitle-badge">INTERFACE STYLE THESIS - ECG SIMULATOR</div>
-            <p class="welcome-desc">Aprende la colocación de electrodos, interpretación de ritmos y resolución de casos clínicos en cardiología.</p>
-            <button class="btn-start" onclick="mostrarPantallaRegistro()">START / INICIAR JUEGO</button>
-        </div>
-    </section>
+    <!-- CONTENEDOR PRINCIPAL DE PANTALLAS -->
+    <main class="main-container">
 
-    <!-- PANTALLA 1.5: REGISTRO DE JUGADOR Y SELECCIÓN DE AVATAR -->
-    <section id="screen-register" class="screen hidden">
-        <div class="register-card">
-            <h2>Registro de Biomédico / Biomédica</h2>
-            <p>Ingresa tus datos para personalizar tu avatar y registrar tus estadísticas en el servidor:</p>
-
-            <div class="input-group">
-                <label for="player-name-input">Nombre completo o Código:</label>
-                <input type="text" id="player-name-input" placeholder="Ej. Carlos Mendoza" autocomplete="off" />
+        <!-- PANTALLA 1: BIENVENIDA / GAMING -->
+        <section id="screen-welcome" class="screen-panel">
+            <div class="welcome-card">
+                <h1 class="welcome-title">GAMING</h1>
+                <div class="welcome-subtitle-badge">INTERFACE STYLE THESIS - ECG SIMULATOR</div>
+                <p class="welcome-description">
+                    Aprende la colocación de electrodos, interpretación de ritmos y resolución de casos clínicos en cardiología.
+                </p>
+                <button class="btn-start" onclick="mostrarPantallaRegistro()">START / INICIAR JUEGO</button>
             </div>
+        </section>
 
-            <div class="gender-selection">
-                <p>Selecciona tu Género / Avatar:</p>
-                <div class="gender-options">
-                    <button type="button" class="gender-btn active" id="btn-gender-m" onclick="seleccionarGenero('masculino')">
-                        <span class="avatar-icon">👨‍⚕️</span>
-                        <span>Biomédico (Masculino)</span>
-                    </button>
-                    <button type="button" class="gender-btn" id="btn-gender-f" onclick="seleccionarGenero('femenino')">
-                        <span class="avatar-icon">👩‍⚕️</span>
-                        <span>Biomédica (Femenino)</span>
-                    </button>
+        <!-- PANTALLA 2: REGISTRO DE BIOMÉDICO / BIOMÉDICA -->
+        <section id="screen-register" class="screen-panel hidden">
+            <div class="register-card">
+                <h2>Registro de Biomédico / Biomédica</h2>
+                <p class="register-sub">Ingresa tus datos para personalizar tu avatar y registrar tus estadísticas en el servidor:</p>
+
+                <div class="form-group">
+                    <label for="player-name-input">Nombre completo o Código:</label>
+                    <input type="text" id="player-name-input" placeholder="Ej: Erick Yamberla" autocomplete="off">
+                </div>
+
+                <div class="form-group">
+                    <label>Selecciona tu Género / Avatar:</label>
+                    <div class="gender-selector">
+                        <button type="button" id="btn-gender-m" class="btn-gender active" onclick="seleccionarGenero('masculino')">
+                            <span class="gender-avatar">👨‍⚕️</span>
+                            <span class="gender-label">Biomédico (Masculino)</span>
+                        </button>
+                        <button type="button" id="btn-gender-f" class="btn-gender" onclick="seleccionarGenero('femenino')">
+                            <span class="gender-avatar">👩‍⚕️</span>
+                            <span class="gender-label">Biomédica (Femenino)</span>
+                        </button>
+                    </div>
+                </div>
+
+                <button class="btn-start btn-confirm-reg" onclick="confirmarRegistroYComenzar()">COMENZAR AVENTURA 🚀</button>
+            </div>
+        </section>
+
+        <!-- PANTALLA 3: MAPA DE NIVELES -->
+        <section id="screen-level-map" class="screen-panel hidden">
+            <div class="map-card">
+                <h2>Mapa de Fases de Entrenamiento</h2>
+                <p class="map-sub">Completa cada nivel secuencialmente para demostrar tu competencia clínica:</p>
+
+                <div class="nodes-container">
+                    <div id="node-level-1" class="map-node unlocked" onclick="seleccionarNivelDesdeMapa(1)">
+                        <div class="node-icon">📍</div>
+                        <div class="node-info">
+                            <h3>Fase 1: Derivaciones</h3>
+                            <p>Colocación de electrodos precordiales $V_1$ a $V_6$</p>
+                        </div>
+                    </div>
+
+                    <div id="node-level-2" class="map-node locked" onclick="seleccionarNivelDesdeMapa(2)">
+                        <div class="node-icon">🧠</div>
+                        <div class="node-info">
+                            <h3>Fase 2: Interpretación e IA</h3>
+                            <p>Análisis de 27 ritmos y calibración del sesgo médico</p>
+                        </div>
+                    </div>
+
+                    <div id="node-level-3" class="map-node locked" onclick="seleccionarNivelDesdeMapa(3)">
+                        <div class="node-icon">🧩</div>
+                        <div class="node-info">
+                            <h3>Fase 3: Casos Clínicos</h3>
+                            <p>Ensamblaje del trazado y conducta terapéutica</p>
+                        </div>
+                    </div>
                 </div>
             </div>
+        </section>
 
-            <button class="btn-primary" onclick="confirmarRegistroYComenzar()">COMENZAR AVENTURA 🚀</button>
-        </div>
-    </section>
+        <!-- PANTALLA 4: GAMEPLAY DE NIVELES -->
+        <section id="screen-gameplay" class="screen-panel hidden">
 
-    <!-- PANTALLA 2: MAPA DE PROGRESIÓN DE NIVELES -->
-    <section id="screen-level-map" class="screen hidden">
-        <div class="map-container">
-            <h2>Mapa de Progresión de Niveles</h2>
-            <p>Selecciona la fase correspondiente para continuar tu simulación:</p>
-
-            <div class="map-path">
-                <button id="node-level-1" class="level-node unlocked" onclick="seleccionarNivelDesdeMapa(1)">
-                    <span class="star-rating">⭐ ⭐ ⭐</span>
-                    <span class="node-title">Nivel 1</span>
-                    <small>Electrodos Precordiales</small>
-                </button>
-
-                <div class="path-line"></div>
-
-                <button id="node-level-2" class="level-node locked" onclick="seleccionarNivelDesdeMapa(2)">
-                    <span class="star-rating">🔒</span>
-                    <span class="node-title">Nivel 2</span>
-                    <small>Análisis e IA Médica</small>
-                </button>
-
-                <div class="path-line"></div>
-
-                <button id="node-level-3" class="level-node locked" onclick="seleccionarNivelDesdeMapa(3)">
-                    <span class="star-rating">🔒</span>
-                    <span class="node-title">Nivel 3</span>
-                    <small>Rompecabezas Clínico</small>
-                </button>
-            </div>
-        </div>
-    </section>
-
-    <!-- PANTALLA 3: GAMEPLAY (SIMULACIÓN DE NIVELES) -->
-    <section id="screen-gameplay" class="screen hidden">
-        <div class="gameplay-header">
-            <button class="btn-back" onclick="volverAlMapa()">⬅️ Volver al Mapa</button>
-            <span id="level-badge" class="level-badge">NIVEL 1</span>
-            <h3 id="level-title">Colocación de Electrodos y Derivaciones</h3>
-            <button class="btn-info" onclick="abrirModal('patologias')">📋 Info Ritmos</button>
-        </div>
-
-        <div class="main-game-area">
-            <!-- CANVA ECG Y DATOS DE PACIENTE -->
-            <div class="ecg-monitor-card">
-                <div class="patient-bar">
-                    <span id="patient-info">Paciente: ID PAC-101 (45 años)</span>
-                    <span id="bpm-display">BPM: --</span>
-                    <span id="bias-display">Dependencia IA: 0%</span>
+            <!-- NIVEL 1: COLOCACIÓN DE ELECTRODOS (VECTORIAL SVG) -->
+            <div id="electrode-placement-panel" class="level-subpanel hidden">
+                <div class="level-header-bar">
+                    <button class="btn-header" onclick="volverAlMapa()">← Volver al Mapa</button>
+                    <h2 class="level-sub-title">Colocación de Electrodos y Derivaciones</h2>
+                    <button class="btn-header" onclick="abrirModal('patologias')">📑 Info Ritmos</button>
                 </div>
-                <div class="canvas-container">
-                    <canvas id="ecg-wave"></canvas>
-                </div>
-            </div>
 
-            <!-- PANEL NIVEL 1: COLOCACIÓN DE ELECTRODOS -->
-            <div id="electrode-placement-panel" class="panel-section">
-                <h4>Arrastra cada electrodo a su ubicación precordial exacta:</h4>
-                <div class="torso-container">
-                    <img src="torso-schema.png" alt="Torso Anatómico" class="torso-img" id="torso-img">
-                    <div class="dropzone-overlay" data-target="V1" style="top: 35%; left: 45%;">V1</div>
-                    <div class="dropzone-overlay" data-target="V2" style="top: 35%; left: 53%;">V2</div>
-                    <div class="dropzone-overlay" data-target="V3" style="top: 43%; left: 50%;">V3</div>
-                    <div class="dropzone-overlay" data-target="V4" style="top: 50%; left: 45%;">V4</div>
-                    <div class="dropzone-overlay" data-target="V5" style="top: 52%; left: 38%;">V5</div>
-                    <div class="dropzone-overlay" data-target="V6" style="top: 53%; left: 30%;">V6</div>
-                </div>
-                <div class="electrodes-draggables-bar">
-                    <div class="electrode-circle" draggable="true" data-lead="V1" style="background:#ef4444;">V1</div>
-                    <div class="electrode-circle" draggable="true" data-lead="V2" style="background:#f59e0b;">V2</div>
-                    <div class="electrode-circle" draggable="true" data-lead="V3" style="background:#10b981;">V3</div>
-                    <div class="electrode-circle" draggable="true" data-lead="V4" style="background:#3b82f6;">V4</div>
-                    <div class="electrode-circle" draggable="true" data-lead="V5" style="background:#8b5cf6;">V5</div>
-                    <div class="electrode-circle" draggable="true" data-lead="V6" style="background:#ec4899;">V6</div>
-                </div>
-            </div>
+                <div class="gameplay-container">
+                    <!-- Torso Anatómico SVG (Sin imágenes externas) -->
+                    <div class="torso-container">
+                        <svg viewBox="0 0 300 400" class="torso-svg">
+                            <path d="M 100 40 C 120 20, 180 20, 200 40 C 230 60, 260 100, 250 180 C 240 260, 230 350, 220 390 L 80 390 C 70 350, 60 260, 50 180 C 40 100, 70 60, 100 40 Z" fill="#101929" stroke="#38bdf8" stroke-width="3"/>
+                            <path d="M 110 65 Q 150 85 190 65 M 150 75 L 150 200" fill="none" stroke="#23334d" stroke-width="2" stroke-dasharray="4"/>
+                        </svg>
 
-            <!-- PANEL NIVEL 2: ASISTENCIA IA -->
-            <div id="ai-panel" class="panel-section hidden">
-                <div class="ai-box">
-                    <h4>🤖 Diagnóstico Asistido por Inteligencia Artificial:</h4>
-                    <p id="ai-diagnosis-text" class="ai-suggestion">Analizando trazado ECG...</p>
-                    <div class="ai-buttons">
-                        <button class="btn-ai-confirm" onclick="tomarDecisionIA()">Aceptar Diagnóstico IA</button>
-                        <button class="btn-ai-manual" onclick="abrirModalManual()">Análisis Manual Experto</button>
+                        <!-- Puntos Drop Precordiales -->
+                        <div class="dropzone-overlay" data-target="V1" style="top: 34%; left: 44%;">V1</div>
+                        <div class="dropzone-overlay" data-target="V2" style="top: 34%; left: 54%;">V2</div>
+                        <div class="dropzone-overlay" data-target="V3" style="top: 44%; left: 49%;">V3</div>
+                        <div class="dropzone-overlay" data-target="V4" style="top: 52%; left: 44%;">V4</div>
+                        <div class="dropzone-overlay" data-target="V5" style="top: 54%; left: 32%;">V5</div>
+                        <div class="dropzone-overlay" data-target="V6" style="top: 54%; left: 20%;">V6</div>
+                    </div>
+
+                    <!-- Paleta de Electrodos -->
+                    <div class="side-panel">
+                        <p class="instruction-text">Arrastra cada electrodo a su ubicación precordial exacta:</p>
+                        <div class="electrodes-palette">
+                            <div class="electrode-circle" draggable="true" data-lead="V1">V1</div>
+                            <div class="electrode-circle" draggable="true" data-lead="V2">V2</div>
+                            <div class="electrode-circle" draggable="true" data-lead="V3">V3</div>
+                            <div class="electrode-circle" draggable="true" data-lead="V4">V4</div>
+                            <div class="electrode-circle" draggable="true" data-lead="V5">V5</div>
+                            <div class="electrode-circle" draggable="true" data-lead="V6">V6</div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- PANEL NIVEL 3: PUZZLE CLÍNICO -->
-            <div id="puzzle-ecg-panel" class="panel-section hidden">
-                <div class="case-header">
-                    <h4 id="n3-patient-title">CASO CLÍNICO</h4>
-                    <p id="n3-patient-desc">Descripción del caso...</p>
+            <!-- NIVEL 2: ANÁLISIS E IA -->
+            <div id="ai-panel" class="level-subpanel hidden">
+                <div class="level-header-bar">
+                    <button class="btn-header" onclick="volverAlMapa()">← Volver al Mapa</button>
+                    <h2 class="level-sub-title">Análisis de Ritmo Asistido por IA</h2>
+                    <button class="btn-header" onclick="abrirModal('bias')">⚙️ Sesgo IA</button>
                 </div>
-                <div class="puzzle-slots-container">
-                    <div class="puzzle-slot" data-slot="0"><span class="slot-number">1</span></div>
-                    <div class="puzzle-slot" data-slot="1"><span class="slot-number">2</span></div>
-                    <div class="puzzle-slot" data-slot="2"><span class="slot-number">3</span></div>
-                    <div class="puzzle-slot" data-slot="3"><span class="slot-number">4</span></div>
-                </div>
-                <p class="puzzle-instruction">Haz clic en los segmentos en el orden correcto para ensamblar el ECG:</p>
-                <div id="puzzle-pieces-container" class="puzzle-pieces-grid"></div>
 
-                <div id="n3-treatment-section" class="treatment-section hidden">
-                    <h5>✅ Ensamble Correcto. Selecciona la conducta clínica apropiada:</h5>
-                    <div id="n3-treatment-options" class="treatment-options-grid"></div>
+                <div class="gameplay-container">
+                    <div class="ecg-monitor-box">
+                        <div class="monitor-top-bar">
+                            <span id="bpm-display">BPM: 72</span>
+                            <span class="lead-tag">Derivación II</span>
+                        </div>
+                        <canvas id="ecg-wave"></canvas>
+                    </div>
+
+                    <div class="ai-decision-box">
+                        <h3>Propuesta de la IA:</h3>
+                        <div id="ai-diagnosis-text" class="ai-suggestion-badge">Cargando diagnóstico...</div>
+                        <div class="ai-actions">
+                            <button class="btn-start btn-ai-confirm" onclick="tomarDecisionIA()">Aceptar Sugerencia de la IA</button>
+                            <button class="btn-header btn-ai-manual" onclick="abrirModalManual()">Diagnosticar Manualmente</button>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </section>
 
-    <!-- PANTALLA 4: FELICITACIÓN Y CERTIFICACIÓN FINAL -->
-    <section id="screen-congratulations" class="screen hidden">
-        <div class="congrats-card">
-            <div id="final-avatar-display" class="final-avatar">👨‍⚕️</div>
-            <h1 id="congrats-title">¡Felicidades!</h1>
-            <p id="congrats-message" class="congrats-text">Has completado con éxito la simulación clínica.</p>
-            
-            <div class="stats-summary-box">
-                <h3>📊 Resumen de Rendimiento Clínico:</h3>
-                <ul>
-                    <li><strong>Tiempo Total de Juego:</strong> <span id="final-time">00:00</span></li>
-                    <li><strong>Precisión Médica:</strong> <span id="final-accuracy">100%</span></li>
-                    <li><strong>Índice de Autonomía IA:</strong> <span id="final-autonomy">Alta</span></li>
-                </ul>
+            <!-- NIVEL 3: PUZZLE CLÍNICO -->
+            <div id="puzzle-ecg-panel" class="level-subpanel hidden">
+                <div class="level-header-bar">
+                    <button class="btn-header" onclick="volverAlMapa()">← Volver al Mapa</button>
+                    <h2 class="level-sub-title">Ensamblaje del Trazado y Manejo Clínico</h2>
+                </div>
+
+                <div class="puzzle-layout">
+                    <div class="patient-card-info">
+                        <h3 id="n3-patient-title">CASO CLÍNICO: Atrial Fibrillation</h3>
+                        <p id="n3-patient-desc">Paciente de 68 años con arritmia y mareos.</p>
+                    </div>
+
+                    <div class="puzzle-slots-grid">
+                        <div class="puzzle-slot" data-slot="0">Pauta 1</div>
+                        <div class="puzzle-slot" data-slot="1">Pauta 2</div>
+                        <div class="puzzle-slot" data-slot="2">Pauta 3</div>
+                        <div class="puzzle-slot" data-slot="3">Pauta 4</div>
+                    </div>
+
+                    <div id="puzzle-pieces-container" class="puzzle-pieces-palette"></div>
+                </div>
             </div>
 
-            <p class="sync-status" id="firebase-sync-status">🟢 Registrando resultados en el servidor del docente...</p>
+        </section>
 
-            <button class="btn-primary" onclick="reiniciarJuegoCompleto()">🔄 Volver al Inicio</button>
-        </div>
-    </section>
-
-    <!-- MODAL DE DIAGNÓSTICO MANUAL (NIVEL 2) -->
-    <div id="modal-manual" class="modal-overlay hidden">
-        <div class="modal-content">
-            <h3>Selecciona el Diagnóstico Clínico</h3>
-            <select id="select-diagnostico" class="full-select"></select>
-            <div class="modal-actions">
-                <button onclick="evaluarDiagnosticoManual()" class="btn-primary">Confirmar</button>
-                <button onclick="cerrarModalManual()" class="btn-secondary">Cancelar</button>
+        <!-- PANTALLA FINAL DE FELICITACIONES -->
+        <section id="screen-congratulations" class="screen-panel hidden">
+            <div class="congrats-card">
+                <span id="final-avatar-display" class="final-avatar">👨‍⚕️</span>
+                <h1 id="congrats-title">¡Felicidades!</h1>
+                <p>Has completado con éxito la simulación clínica electrocardiográfica.</p>
+                <div class="final-stats-box">
+                    <p>Tiempo Total: <strong id="final-time">00:00</strong></p>
+                    <p id="firebase-sync-status" class="sync-status">Guardando registro en el servidor...</p>
+                </div>
+                <button class="btn-start" onclick="reiniciarJuegoCompleto()">REINICIAR SIMULADOR</button>
             </div>
-        </div>
-    </div>
+        </section>
 
-    <!-- MODAL DE RESULTADOS (NIVEL 2) -->
+    </main>
+
+    <!-- VENTANAS MODALES -->
     <div id="modal-resultado" class="modal-overlay hidden">
         <div class="modal-content">
-            <h3 id="res-status-title">Resultado</h3>
-            <span id="res-status-badge" class="badge">--</span>
-            <p><strong>Diagnóstico Real:</strong> <span id="res-real-diag">--</span></p>
-            <p id="res-treatment-text">--</p>
-            <button onclick="siguienteCasoNivel2()" class="btn-primary">Siguiente Caso</button>
+            <h2 id="res-status-title"></h2>
+            <p>Ritmo Real: <strong id="res-real-diag"></strong></p>
+            <p id="res-treatment-text" class="modal-subtext"></p>
+            <button class="btn-start btn-modal-action" onclick="siguienteCasoNivel2()">Siguiente Paciente</button>
         </div>
     </div>
 
-    <!-- MODAL TABLA DE INFORMACIÓN DE PATOLOGÍAS -->
+    <div id="modal-manual" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h3>Selección de Diagnóstico Manual</h3>
+            <p class="modal-subtext">Elige el ritmo correcto del catálogo de 27 patologías:</p>
+            <select id="select-diagnostico" class="modal-select"></select>
+            <div class="modal-actions-row">
+                <button class="btn-start" onclick="evaluarDiagnosticoManual()">Confirmar</button>
+                <button class="btn-header" onclick="cerrarModalManual()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
     <div id="modal-patologias-info" class="modal-overlay hidden">
-        <div class="modal-content large">
-            <h3>Compendio de Patologías Cardíacas</h3>
-            <div id="lista-patologias-container" class="table-scroll"></div>
-            <button onclick="cerrarModalInfoPatologias()" class="btn-secondary">Cerrar</button>
+        <div class="modal-content modal-large">
+            <h3>Catálogo Electrocardiográfico (27 Ritmos)</h3>
+            <div id="lista-patologias-container" class="scrollable-table-box"></div>
+            <button class="btn-header" onclick="cerrarModalInfoPatologias()">Cerrar</button>
         </div>
     </div>
 
-    <!-- MODAL DE TABLA DE POSICIONES / LEADERBOARD (PARA LAPTOP PRINCIPAL) -->
     <div id="modal-leaderboard" class="modal-overlay hidden">
-        <div class="modal-content large">
-            <h3>🏆 Ranking y Tiempos de Jugadores en Tiempo Real</h3>
-            <p><small>Sincronizado automáticamente mediante Firebase Firestore.</small></p>
-            <div class="table-scroll">
-                <table class="leaderboard-table">
+        <div class="modal-content modal-large">
+            <h3>🏆 Ranking General de Biomédicos</h3>
+            <div class="scrollable-table-box">
+                <table class="patologias-table">
                     <thead>
                         <tr>
-                            <th>Lugar</th>
-                            <th>Jugador</th>
+                            <th>#</th>
+                            <th>Biomédico/a</th>
                             <th>Avatar</th>
                             <th>Tiempo</th>
                             <th>Precisión</th>
                             <th>Autonomía</th>
                         </tr>
                     </thead>
-                    <tbody id="leaderboard-tbody">
-                        <tr><td colspan="6">Cargando registros del servidor...</td></tr>
-                    </tbody>
+                    <tbody id="leaderboard-tbody"></tbody>
                 </table>
             </div>
-            <button onclick="cerrarLeaderboard()" class="btn-secondary">Cerrar Ranking</button>
+            <button class="btn-header" onclick="cerrarLeaderboard()">Cerrar</button>
         </div>
     </div>
 
