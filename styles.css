@@ -43,6 +43,7 @@ body {
     justify-content: space-between;
     align-items: center;
     height: 56px;
+    flex-shrink: 0;
 }
 
 .header-left, .header-center, .header-right {
@@ -97,6 +98,7 @@ body {
     display: flex;
     position: relative;
     overflow: hidden;
+    width: 100%;
 }
 
 /* BARRA LATERAL ELECTRODOS */
@@ -109,6 +111,8 @@ body {
     align-items: center;
     padding: 20px 0;
     gap: 16px;
+    flex-shrink: 0;
+    z-index: 10;
 }
 
 .electrode-circle {
@@ -142,27 +146,45 @@ body {
     align-items: center;
     justify-content: center;
     position: relative;
+    height: 100%;
+    padding: 20px;
 }
 
 .instruction-banner {
     position: absolute;
-    top: 25px;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
     color: var(--text-light);
     font-size: 0.95rem;
+    text-align: center;
+    z-index: 5;
+    width: 100%;
+    pointer-events: none;
 }
 
 .torso-wrapper {
     position: relative;
-    width: 260px;
-    height: 360px;
+    width: 280px;
+    height: 380px;
     display: flex;
     justify-content: center;
     align-items: center;
+    margin: auto;
 }
 
 .torso-svg-container {
     width: 100%;
     height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.torso-svg-container svg {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
 }
 
 .dropzone-overlay {
@@ -195,6 +217,7 @@ body {
     padding: 20px;
     display: flex;
     flex-direction: column;
+    flex-shrink: 0;
 }
 
 .ai-card {
@@ -259,6 +282,7 @@ body {
     border-top: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
+    flex-shrink: 0;
 }
 
 .ecg-top-bar {
