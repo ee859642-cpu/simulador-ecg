@@ -1,32 +1,32 @@
-// ==================== BASE DE DATOS DE RITMOS (27 RITMOS) ====================
+// ==================== BASE DE DATOS DE RITMOS (27 RITMOS CON BPM EXACTOS) ====================
 const RITMOS_ECG = [
-    { id: "sr", name: "Ritmo Sinusal Normal", rate: "60-100", qrs: "Normal", p: "Presente", st: "Isoeléctrico", treat: "Ninguno (Ritmo Fisiológico Normal)", status: "Fisiológico", type: "sinusal" },
-    { id: "sb", name: "Bradicardia Sinusal", rate: "<60", qrs: "Normal", p: "Presente", st: "Isoeléctrico", treat: "Observación / Atropina si sintomático", status: "Sintomático", type: "sinusal" },
-    { id: "st", name: "Taquicardia Sinusal", rate: ">100", qrs: "Normal", p: "Presente", st: "Isoeléctrico", treat: "Tratar causa subyacente (Fiebre, Dolor, Anemia)", status: "Secundario", type: "sinusal" },
-    { id: "sa", name: "Arritmia Sinusal", rate: "Variable", qrs: "Normal", p: "Presente", st: "Isoeléctrico", treat: "Ninguno (Variación fásica respiratoria normal)", status: "Benigno", type: "sinusal" },
-    { id: "pac", name: "Contracción Auricular Prematura (PAC)", rate: "Variable", qrs: "Estrecho", p: "Prematura/Anormal", st: "Isoeléctrico", treat: "Tranquilizar al paciente / Evitar estimulantes", status: "Benigno", type: "auricular" },
-    { id: "svt", name: "Taquicardia Supraventricular (TSVP)", rate: "150-250", qrs: "Estrecho", p: "Oculta o retrograda", st: "Infradesnivel en crisis", treat: "Maniobras vagales / Adenosina IV", status: "Urgencia", type: "auricular" },
-    { id: "aflutter", name: "Aleteo Auricular (Atrial Flutter)", rate: "250-350 (Auricular)", qrs: "Estrecho", p: "Dientes de Sierra (Ondas F)", st: "Variable", treat: "Control de frecuencia / Cardioversión / Ablación", status: "Patológico", type: "auricular" },
-    { id: "afib", name: "Fibrilación Auricular (AFib)", rate: "Irregular", qrs: "Estrecho", p: "Ausente (Ondas f caóticas)", st: "Variable", treat: "Control de Frecuencia + Anticoagulación", status: "Patológico", type: "auricular" },
-    { id: "mat", name: "Taquicardia Auricular Multifocal", rate: ">100", qrs: "Estrecho", p: "≥3 morfologías distintas", st: "Variable", treat: "Optimizar función pulmonar (Oxígeno, Verapamilo)", status: "Patológico", type: "auricular" },
-    { id: "pvc", name: "Contracción Ventricular Prematura (PVC)", rate: "Variable", qrs: "Ancho y aberrante", p: "Ausente en PVC", st: "Oposición T-QRS", treat: "Betabloqueantes si sintomático", status: "Variable", type: "ventricular" },
-    { id: "vt_mono", name: "Taquicardia Ventricular Monomórfica", rate: "140-220", qrs: "Ancho idéntico", p: "Disociación AV", st: "Alterado", treat: "Cardioversión eléctrica / Amiodarona", status: "Emergencia", type: "ventricular" },
-    { id: "vt_poly", name: "Taquicardia Ventricular Polimórfica", rate: "150-250", qrs: "Ancho variable", p: "Indiscernible", st: "Alterado", treat: "Desfibrilación si inestable / Sulfato de Magnesio", status: "Emergencia", type: "ventricular" },
-    { id: "torsades", name: "Torsades de Pointes", rate: "200-250", qrs: "En hélice/torsión", p: "Ausente", st: "QT Prolongado previo", treat: "Sulfato de Magnesio IV 2g", status: "Emergencia", type: "ventricular" },
-    { id: "vfib", name: "Fibrilación Ventricular (VFib)", rate: "Caótico", qrs: "Ausente / Caótico", p: "Ausente", st: "Ausente", treat: "Desfibrilación inmediata + RCP de alta calidad", status: "Paro Cardíaco", type: "ventricular" },
-    { id: "idioventricular", name: "Ritmo Idioventricular Acelerado", rate: "40-100", qrs: "Ancho", p: "Ausente/Disociada", st: "Alterado", treat: "Observación (Ritmo de reperfusión)", status: "Post-Reperfusión", type: "ventricular" },
-    { id: "avb1", name: "Bloqueo AV de Primer Grado", rate: "Normal", qrs: "Estrecho", p: "PR Prolongado (>0.20s)", st: "Isoeléctrico", treat: "Observación (Monitorización)", status: "Benigno", type: "bloqueo" },
-    { id: "avb2_1", name: "Bloqueo AV 2º Grado Mobitz I (Wenckebach)", rate: "Lento/Normal", qrs: "Estrecho", p: "PR se alarga progresivamente", st: "Isoeléctrico", treat: "Observación / Revertir causas", status: "Generalmente Benigno", type: "bloqueo" },
-    { id: "avb2_2", name: "Bloqueo AV 2º Grado Mobitz II", rate: "Lento", qrs: "Ancho/Estrecho", p: "PR constante con P bloqueada", st: "Isoeléctrico", treat: "Marcapasos Temporal / Definitivo", status: "Peligroso", type: "bloqueo" },
-    { id: "avb3", name: "Bloqueo AV de Tercer Grado (Completo)", rate: "20-40", qrs: "Ancho (Escape Ventricular)", p: "Disociada por completo", st: "Isoeléctrico", treat: "Marcapasos de Emergencia + Isoproterenol", status: "Emergencia", type: "bloqueo" },
-    { id: "lbbb", name: "Bloqueo de Rama Izquierda (LBBB)", rate: "Normal", qrs: "Ancho (>0.12s) M en V5-V6", p: "Presente", st: "Depresión/Inversión T", treat: "Evaluar isquemia aguda / Marcapasos", status: "Patológico", type: "bloqueo" },
-    { id: "rbbb", name: "Bloqueo de Rama Derecha (RBBB)", rate: "Normal", qrs: "Ancho (>0.12s) rsR' en V1", p: "Presente", st: "Isoeléctrico", treat: "Evaluar patología pulmonar o estructural", status: "Frecuente", type: "bloqueo" },
-    { id: "stemi_ant", name: "STEMI Anteroseptal (Infarto Agudo)", rate: "Variable", qrs: "Q de necrosis", p: "Presente", st: "Elevación ST V1-V4", treat: "Angioplastia Primaria (ACTP) / Trombólisis", status: "Emergencia Médica", type: "isquemia" },
-    { id: "stemi_inf", name: "STEMI Inferior", rate: "Tendencia a Bradicardia", qrs: "Normal/Q", p: "Presente", st: "Elevación ST en II, III, aVF", treat: "Angioplastia Primaria + Hidratación", status: "Emergencia Médica", type: "isquemia" },
-    { id: "nstemi", name: "NSTEMI / Angina Inestable", rate: "Variable", qrs: "Normal", p: "Presente", st: "Infradesnivel ST / Inversión T", treat: "Antiagregación + Anticoagulación + Cateterismo", status: "Urgencia", type: "isquemia" },
-    { id: "wpw", name: "Síndrome Wolff-Parkinson-White", rate: "Normal/Taquicárdico", qrs: "Ancho con Onda Delta", p: "PR Corto (<0.12s)", st: "Alterado", treat: "Ablación por radiofrecuencia", status: "Congénito", type: "preexitacion" },
-    { id: "hyperkalemia", name: "Hiperpotasemia Severa", rate: "Lento", qrs: "Ancho picudo", p: "Aplanada/Ausente", st: "Ondas T Picudas", treat: "Gluconato de Calcio IV + Insulina/Glucosa", status: "Emergencia Metabólica", type: "metabolico" },
-    { id: "long_qt", name: "Síndrome de QT Largo", rate: "Normal", qrs: "Normal", p: "Presente", st: "QTc Prolongado (>470ms)", treat: "Betabloqueantes / Evitar fármacos que alarguen QT", status: "Riesgo de Arritmia", type: "canalopatia" }
+    { id: "sr", name: "Sinus rhythm", rate: 72, qrs: "Normal", p: "Presente", st: "Isoeléctrico", treat: "Ninguno (Ritmo Fisiológico Normal)", status: "Fisiológico", type: "sinusal" },
+    { id: "sb", name: "Sinus bradycardia", rate: 54, qrs: "Normal", p: "Presente", st: "Isoeléctrico", treat: "Observación / Atropina si sintomático", status: "Sintomático", type: "sinusal" },
+    { id: "st", name: "Sinus Tachycardia", rate: 138, qrs: "Normal", p: "Presente", st: "Isoeléctrico", treat: "Tratar causa subyacente (Fiebre, Dolor, Anemia)", status: "Secundario", type: "sinusal" },
+    { id: "sa", name: "Sinus Arhythmia", rate: 78, qrs: "Normal", p: "Presente", st: "Isoeléctrico", treat: "Ninguno (Variación fásica respiratoria normal)", status: "Benigno", type: "sinusal" },
+    { id: "s_block", name: "Sinus exits block", rate: 48, qrs: "Normal", p: "Pausas/Ausente", st: "Isoeléctrico", treat: "Evaluación clínica / Marcapasos si sintomático", status: "Sintomático", type: "sinusal" },
+    { id: "s_arrest", name: "Sinus arrest", rate: 54, qrs: "Normal", p: "Pausa prolongada", st: "Isoeléctrico", treat: "Evaluación médica / Marcapasos", status: "Sintomático", type: "sinusal" },
+    { id: "pac", name: "NSR with PAC(PJC) NSR with premature atrial", rate: 84, qrs: "Estrecho", p: "Prematura/Anormal", st: "Isoeléctrico", treat: "Tranquilizar al paciente / Evitar estimulantes", status: "Benigno", type: "auricular" },
+    { id: "svt", name: "Supraventricular tachycardia", rate: 180, qrs: "Estrecho", p: "Oculta o retrograda", st: "Infradesnivel en crisis", treat: "Maniobras vagales / Adenosina IV", status: "Urgencia", type: "auricular" },
+    { id: "afib", name: "Atrial Fibrillallation", rate: 90, qrs: "Estrecho", p: "Ausente (Ondas f caóticas)", st: "Variable", treat: "Control de Frecuencia + Anticoagulación", status: "Patológico", type: "auricular" },
+    { id: "aflutter", name: "Atrial Flutter", rate: 75, qrs: "Estrecho", p: "Dientes de Sierra (Ondas F)", st: "Variable", treat: "Control de frecuencia / Cardioversión / Ablación", status: "Patológico", type: "auricular" },
+    { id: "paced_a", name: "Paced Atrial rhythm", rate: 60, qrs: "Estrecho", p: "Spike de Marcapasos", st: "Isoeléctrico", treat: "Monitoreo de Marcapasos", status: "Controlado", type: "auricular" },
+    { id: "avb1", name: "NSR with 1 AVB(NSR with first degree AV Block)", rate: 74, qrs: "Estrecho", p: "PR Prolongado (>0.20s)", st: "Isoeléctrico", treat: "Observación (Monitorización)", status: "Benigno", type: "bloqueo" },
+    { id: "avb2_1", name: "2 AVB type I", rate: 48, qrs: "Estrecho", p: "PR se alarga progresivamente", st: "Isoeléctrico", treat: "Observación / Revertir causas", status: "Generalmente Benigno", type: "bloqueo" },
+    { id: "avb2_2", name: "2 AVB type II", rate: 60, qrs: "Ancho/Estrecho", p: "PR constante con P bloqueada", st: "Isoeléctrico", treat: "Marcapasos Temporal / Definitivo", status: "Peligroso", type: "bloqueo" },
+    { id: "avb2_21", name: "2 AVB 2:1", rate: 38, qrs: "Ancho/Estrecho", p: "Conducción 2:1", st: "Isoeléctrico", treat: "Marcapasos Temporal / Definitivo", status: "Peligroso", type: "bloqueo" },
+    { id: "avb3", name: "3 AV Block", rate: 36, qrs: "Ancho (Escape Ventricular)", p: "Disociada por completo", st: "Isoeléctrico", treat: "Marcapasos de Emergencia + Isoproterenol", status: "Emergencia", type: "bloqueo" },
+    { id: "pjc", name: "NSR with PJC(Premature Junctional Complex)", rate: 84, qrs: "Estrecho", p: "Invertida/Oculta", st: "Isoeléctrico", treat: "Observación / Evitar estimulantes", status: "Benigno", type: "nodal" },
+    { id: "j_rhythm", name: "Junctional Rhythm", rate: 48, qrs: "Estrecho", p: "Invertida/Oculta", st: "Isoeléctrico", treat: "Tratar causa subyacente / Atropina si sintomático", status: "Pasivo", type: "nodal" },
+    { id: "acc_junct", name: "Accelerated Junctional", rate: 82, qrs: "Estrecho", p: "Invertida/Oculta", st: "Isoeléctrico", treat: "Monitorización / Evaluar toxicidad digitálica", status: "Patológico", type: "nodal" },
+    { id: "j_tach", name: "Junctional Tachycardia", rate: 186, qrs: "Estrecho", p: "Invertida/Oculta", st: "Isoeléctrico", treat: "Betabloqueantes / Antiarrítmicos", status: "Urgencia", type: "nodal" },
+    { id: "wandering", name: "Wandering Pacemaker", rate: 78, qrs: "Estrecho", p: "Variables en forma", st: "Isoeléctrico", treat: "Tratamiento conservador", status: "Benigno", type: "auricular" },
+    { id: "pvc", name: "NSR with PVC(Sinus Rhythm with Premature ventricular complex)", rate: 68, qrs: "Ancho y aberrante", p: "Ausente en PVC", st: "Oposición T-QRS", treat: "Betabloqueantes si sintomático", status: "Variable", type: "ventricular" },
+    { id: "idiov", name: "Idioventricular rhythm", rate: 36, qrs: "Ancho", p: "Ausente/Disociada", st: "Alterado", treat: "Marcapasos / Atropina / Soporte Vital", status: "Emergencia", type: "ventricular" },
+    { id: "acc_idiov", name: "Accelerated dioventricular rhythm", rate: 84, qrs: "Ancho", p: "Ausente/Disociada", st: "Alterado", treat: "Observación (Ritmo de reperfusión)", status: "Post-Reperfusión", type: "ventricular" },
+    { id: "vt_mono", name: "Ventricular tachycardia(VTach)", rate: 210, qrs: "Ancho idéntico", p: "Disociación AV", st: "Alterado", treat: "Cardioversión eléctrica / Amiodarona", status: "Emergencia", type: "ventricular" },
+    { id: "vfib", name: "Ventricular fibrillation", rate: 0, qrs: "Ausente / Caótico", p: "Ausente", st: "Ausente", treat: "Desfibrilación inmediata + RCP de alta calidad", status: "Paro Cardíaco", type: "ventricular" },
+    { id: "paced_v", name: "Paced Ventricula", rate: 80, qrs: "Ancho (Spike previo)", p: "Variable", st: "Alterado secundario", treat: "Monitoreo de Marcapasos Ventricular", status: "Controlado", type: "ventricular" }
 ];
 
 // ==================== VARIABLES DE ESTADO GLOBAL ====================
@@ -43,7 +43,7 @@ const CASOS_NIVEL3 = [
     {
         id: 1,
         paciente: "Paciente masculino de 68 años con palpitaciones, mareos y pulso irregularmente irregular.",
-        patologia: "Fibrilación Auricular (AFib)",
+        patologia: "Atrial Fibrillallation",
         piezas: [
             { id: 0, label: "Inicio: Ondas f caóticas sin onda P", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 Q10,15 20,25 T40,20 T60,25 T80,18 L100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
             { id: 1, label: "QRS Angosto Irregular #1", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 L20,20 L25,35 L30,5 L35,25 L40,20 L100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
@@ -60,7 +60,7 @@ const CASOS_NIVEL3 = [
     {
         id: 2,
         paciente: "Paciente femenina de 55 años con dolor torácico opresivo de 2 horas de evolución e irradiado a brazo izquierdo.",
-        patologia: "STEMI Anteroseptal (Infarto Agudo)",
+        patologia: "Ventricular tachycardia(VTach)",
         piezas: [
             { id: 0, label: "Onda P y Segmento PR Normal", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 Q15,12 30,20 L50,20 L100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
             { id: 1, label: "QRS Prominente", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 L20,20 L25,35 L30,0 L35,15 L100,15" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
@@ -77,7 +77,7 @@ const CASOS_NIVEL3 = [
     {
         id: 3,
         paciente: "Paciente masculino de 60 años con antecedente de miocardiopatía que presenta taquicardia sostenida y presíncope.",
-        patologia: "Taquicardia Ventricular Monomórfica",
+        patologia: "Ventricular tachycardia(VTach)",
         piezas: [
             { id: 0, label: "Onda Ancha QRS Monomórfica #1", svg: '<svg viewBox="0 0 100 40"><path d="M0,30 Q25,0 50,30 T100,30" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
             { id: 1, label: "Onda Ancha QRS Monomórfica #2", svg: '<svg viewBox="0 0 100 40"><path d="M0,30 Q25,0 50,30 T100,30" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
@@ -212,8 +212,16 @@ function cargarSiguienteCasoNivel2() {
     const indiceAleatorio = Math.floor(Math.random() * RITMOS_ECG.length);
     casoActualN2 = RITMOS_ECG[indiceAleatorio];
 
-    document.getElementById('patient-info').innerText = `Paciente: ID PAC-${Math.floor(Math.random() * 899 + 100)} (${Math.floor(Math.random() * 50 + 25)} años)`;
-    document.getElementById('bpm-display').innerText = `BPM: ${casoActualN2.rate}`;
+    const patientInfo = document.getElementById('patient-info');
+    if (patientInfo) {
+        patientInfo.innerText = `Paciente: ID PAC-${Math.floor(Math.random() * 899 + 100)} (${Math.floor(Math.random() * 50 + 25)} años)`;
+    }
+
+    // Actualiza el elemento de BPM en la interfaz inferior respetando el ID "bpm-display"
+    const bpmDisplay = document.getElementById('bpm-display');
+    if (bpmDisplay) {
+        bpmDisplay.innerText = casoActualN2.rate;
+    }
 
     const aciertoIA = Math.random() < 0.85;
     const sugerenciaIA = aciertoIA ? casoActualN2.name : RITMOS_ECG[Math.floor(Math.random() * RITMOS_ECG.length)].name;
@@ -494,10 +502,6 @@ function calcularEcuacionOnda(x, tipo, height) {
             return Math.sin(x * 0.08) * scale * 0.95;
         case 'vfib':
             return (Math.sin(x * 0.12) * 0.5 + Math.cos(x * 0.25) * 0.4 + (Math.random() - 0.5) * 0.3) * scale;
-        case 'stemi_ant':
-            if (cycle > 0.35 && cycle < 0.4) return 0.9 * scale;
-            if (cycle >= 0.4 && cycle < 0.7) return 0.45 * scale;
-            return 0;
         case 'sb':
             const cycleSlow = (x % 240) / 240;
             if (cycleSlow > 0.1 && cycleSlow < 0.18) return Math.sin((cycleSlow - 0.1) * Math.PI / 0.08) * 0.15 * scale;
