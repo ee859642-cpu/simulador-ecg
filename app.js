@@ -35,20 +35,25 @@ let aciertosNivel2 = 0;
 const MAX_ACIERTOS_NIVEL2 = 10;
 let electrodosColocados = 0;
 let casoActualN2 = null;
-let indiceSesgoIA = 0;
+
+// Lógica de dependencia y confusión de IA
+let usoSeguidoIA = 0;           // Cuántas veces seguidas confió en la IA
+let analisisManualesSeguidos = 0; // Cuántas veces analizó manualmente
+let indiceSesgoIA = 0;          // Porcentaje de dependencia (0% - 100%)
+
 let animacionCanvasId = null;
 
-// ==================== CASOS CLINICOS NIVEL 3 ====================
+// ==================== CASOS CLÍNICOS NIVEL 3 (ROMPECABEZAS VISUAL CON PISTAS DE CONTINUIDAD) ====================
 const CASOS_NIVEL3 = [
     {
         id: 1,
         paciente: "Paciente masculino de 68 años con palpitaciones, mareos y pulso irregularmente irregular.",
         patologia: "Atrial Fibrillallation",
         piezas: [
-            { id: 0, label: "Inicio: Ondas f caóticas sin onda P", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 Q10,15 20,25 T40,20 T60,25 T80,18 L100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
-            { id: 1, label: "QRS Angosto Irregular #1", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 L20,20 L25,35 L30,5 L35,25 L40,20 L100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
-            { id: 2, label: "Intervalo R-R Irregular y Ausencia de P", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 Q15,23 30,17 T60,22 L100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
-            { id: 3, label: "QRS Angosto Irregular #2", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 L50,20 L55,35 L60,5 L65,25 L70,20 L100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' }
+            { id: 0, label: "Inicio (Línea plana): Ondas f caóticas iniciales", hint: "Conector: Borde Izquierdo", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 Q10,15 20,25 T40,20 T60,25 T80,18 L100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
+            { id: 1, label: "Despolarización Ventricular #1", hint: "Conector: Empalme con línea plana previa", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 L20,20 L25,35 L30,5 L35,25 L40,20 L100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
+            { id: 2, label: "Pausa Inter-R-R Irregular", hint: "Conector: Salida de QRS anterior", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 Q15,23 30,17 T60,22 L100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
+            { id: 3, label: "Despolarización Ventricular #2", hint: "Conector: Borde Derecho / Salida", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 L50,20 L55,35 L60,5 L65,25 L70,20 L100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' }
         ],
         tratamientoCorrecto: 1,
         opcionesTratamiento: [
@@ -60,12 +65,12 @@ const CASOS_NIVEL3 = [
     {
         id: 2,
         paciente: "Paciente femenina de 55 años con dolor torácico opresivo de 2 horas de evolución e irradiado a brazo izquierdo.",
-        patologia: "Ventricular tachycardia(VTach)",
+        patologia: "Infarto Agudo de Miocardio (Supradesnivel ST)",
         piezas: [
-            { id: 0, label: "Onda P y Segmento PR Normal", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 Q15,12 30,20 L50,20 L100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
-            { id: 1, label: "QRS Prominente", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 L20,20 L25,35 L30,0 L35,15 L100,15" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
-            { id: 2, label: "Elevación Supradesnivel del Segmento ST", svg: '<svg viewBox="0 0 100 40"><path d="M0,15 L40,15 C60,15 70,30 100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
-            { id: 3, label: "Onda T Invertida / Isoeléctrica Final", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 Q25,30 50,20 L100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' }
+            { id: 0, label: "Onda P y Segmento PR Isoeléctrico", hint: "Conector: Borde Izquierdo", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 Q15,12 30,20 L50,20 L100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
+            { id: 1, label: "Complejo QRS con ascenso agudo", hint: "Conector: Empalme PR", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 L20,20 L25,35 L30,0 L35,15 L100,15" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
+            { id: 2, label: "Elevación Supradesnivel del Segmento ST", hint: "Conector: Salida de QRS elevado", svg: '<svg viewBox="0 0 100 40"><path d="M0,15 L40,15 C60,15 70,30 100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
+            { id: 3, label: "Onda T Terminal / Retorno a línea de base", hint: "Conector: Borde Derecho / Final", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 Q25,30 50,20 L100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' }
         ],
         tratamientoCorrecto: 0,
         opcionesTratamiento: [
@@ -76,13 +81,13 @@ const CASOS_NIVEL3 = [
     },
     {
         id: 3,
-        paciente: "Paciente masculino de 60 años con antecedente de miocardiopatía que presenta taquicardia sostenida y presíncope.",
+        paciente: "Paciente masculino de 60 años con antecedente de miocardiopatía que presenta taquicardia sostenida de QRS ancho y presíncope.",
         patologia: "Ventricular tachycardia(VTach)",
         piezas: [
-            { id: 0, label: "Onda Ancha QRS Monomórfica #1", svg: '<svg viewBox="0 0 100 40"><path d="M0,30 Q25,0 50,30 T100,30" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
-            { id: 1, label: "Onda Ancha QRS Monomórfica #2", svg: '<svg viewBox="0 0 100 40"><path d="M0,30 Q25,0 50,30 T100,30" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
-            { id: 2, label: "Onda Ancha QRS Monomórfica #3", svg: '<svg viewBox="0 0 100 40"><path d="M0,30 Q25,0 50,30 T100,30" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
-            { id: 3, label: "Onda Ancha QRS Monomórfica #4", svg: '<svg viewBox="0 0 100 40"><path d="M0,30 Q25,0 50,30 T100,30" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' }
+            { id: 0, label: "Inicio: Onda Ancha Monomórfica V1", hint: "Conector: Borde Izquierdo", svg: '<svg viewBox="0 0 100 40"><path d="M0,30 Q25,0 50,30 L100,30" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
+            { id: 1, label: "Ciclo Intermedio: Onda Ancha Monomórfica V2", hint: "Conector: Continuidad V1-V2", svg: '<svg viewBox="0 0 100 40"><path d="M0,30 Q25,0 50,30 L100,30" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
+            { id: 2, label: "Ciclo Intermedio: Onda Ancha Monomórfica V3", hint: "Conector: Continuidad V2-V3", svg: '<svg viewBox="0 0 100 40"><path d="M0,30 Q25,0 50,30 L100,30" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
+            { id: 3, label: "Final del Trazado: Onda Ancha Monomórfica V4", hint: "Conector: Borde Derecho / Final", svg: '<svg viewBox="0 0 100 40"><path d="M0,30 Q25,0 50,30 L100,30" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' }
         ],
         tratamientoCorrecto: 2,
         opcionesTratamiento: [
@@ -188,10 +193,13 @@ function inicializarDragAndDropNivel1() {
     });
 }
 
-// ==================== LÓGICA DEL NIVEL 2: ANÁLISIS DE ECG ====================
+// ==================== LÓGICA DEL NIVEL 2: ANÁLISIS DE ECG Y COMPORTAMIENTO DE IA ====================
 function comenzarNivel2() {
     nivelActual = 2;
     aciertosNivel2 = 0;
+    usoSeguidoIA = 0;
+    analisisManualesSeguidos = 0;
+    indiceSesgoIA = 0;
 
     const modalN2 = document.getElementById('modal-nivel2');
     if (modalN2) modalN2.classList.add('hidden');
@@ -217,19 +225,42 @@ function cargarSiguienteCasoNivel2() {
         patientInfo.innerText = `Paciente: ID PAC-${Math.floor(Math.random() * 899 + 100)} (${Math.floor(Math.random() * 50 + 25)} años)`;
     }
 
-    // Actualiza el elemento de BPM en la interfaz inferior respetando el ID "bpm-display"
+    // Corregido: Muestra explícitamente "BPM: (NÚMERO)"
     const bpmDisplay = document.getElementById('bpm-display');
     if (bpmDisplay) {
         bpmDisplay.innerText = `BPM: ${casoActualN2.rate}`;
     }
 
-    const aciertoIA = Math.random() < 0.85;
-    const sugerenciaIA = aciertoIA ? casoActualN2.name : RITMOS_ECG[Math.floor(Math.random() * RITMOS_ECG.length)].name;
-    const confianzaIA = Math.floor(Math.random() * 15 + 83);
+    // REGLA DE COMPORTAMIENTO DE IA:
+    // Si confía 2 o más veces seguidas en la IA O si el índice de dependencia supera el 40%, la IA SE CONFUNDE (falla a propósito)
+    let laIaSeConfunde = (usoSeguidoIA >= 2) || (indiceSesgoIA >= 40);
 
-    document.getElementById('ai-diagnosis-text').innerText = sugerenciaIA;
-    document.getElementById('ai-confidence-text').innerText = `Confianza: ${confianzaIA}%`;
-    document.getElementById('ai-diagnosis-text').dataset.sugerencia = sugerenciaIA;
+    let sugerenciaIA;
+    let confianzaIA;
+
+    if (laIaSeConfunde) {
+        // La IA comete un error deliberado
+        const ritmosIncorrectos = RITMOS_ECG.filter(r => r.name !== casoActualN2.name);
+        sugerenciaIA = ritmosIncorrectos[Math.floor(Math.random() * ritmosIncorrectos.length)].name;
+        confianzaIA = Math.floor(Math.random() * 15 + 80); // Muestra alta confianza errónea para simular "alucinación"
+    } else {
+        // La IA funciona correctamente
+        sugerenciaIA = casoActualN2.name;
+        confianzaIA = Math.floor(Math.random() * 12 + 88);
+    }
+
+    const aiDiagText = document.getElementById('ai-diagnosis-text');
+    aiDiagText.innerText = sugerenciaIA;
+    aiDiagText.dataset.sugerencia = sugerenciaIA;
+
+    const aiConfText = document.getElementById('ai-confidence-text');
+    if (laIaSeConfunde) {
+        aiConfText.innerText = `Confianza: ${confianzaIA}% ⚠️ (Sobrecargada/Sesgada)`;
+        aiConfText.style.color = "#f59e0b";
+    } else {
+        aiConfText.innerText = `Confianza: ${confianzaIA}%`;
+        aiConfText.style.color = "#10b981";
+    }
 
     iniciarAnimacionECG(casoActualN2.id);
 }
@@ -258,30 +289,41 @@ function evaluarRespuestaNivel2(diagnosticoPropuesto, provieneDeIA) {
     const esCorrecto = (diagnosticoPropuesto === casoActualN2.name);
     const modalRes = document.getElementById('modal-resultado');
 
+    if (provieneDeIA) {
+        usoSeguidoIA++;
+        analisisManualesSeguidos = 0;
+        // Aumenta el índice de dependencia
+        indiceSesgoIA = Math.min(100, indiceSesgoIA + 25);
+    } else {
+        analisisManualesSeguidos++;
+        usoSeguidoIA = 0; // Se resetea el contador de abuso de IA
+        
+        // Reducción paulatina de la dependencia al analizar manualmente a 3 o 4 pacientes
+        indiceSesgoIA = Math.max(0, indiceSesgoIA - 30);
+    }
+
     if (esCorrecto) {
         aciertosNivel2++;
         document.getElementById('res-status-title').innerText = "¡Diagnóstico Correcto! 🎉";
         document.getElementById('res-status-badge').innerText = "CORRECTO";
         document.getElementById('res-status-badge').style.background = "#10b981";
         document.getElementById('res-status-badge').style.color = "#000";
-
-        if (provieneDeIA) {
-            indiceSesgoIA = Math.min(100, indiceSesgoIA + 10);
-        }
     } else {
-        document.getElementById('res-status-title').innerText = "Diagnóstico Incorrecto ⚠️";
+        document.getElementById('res-status-title').innerText = provieneDeIA ? "¡La IA te ha confundido! ⚠️" : "Diagnóstico Incorrecto ⚠️";
         document.getElementById('res-status-badge').innerText = "INCORRECTO";
         document.getElementById('res-status-badge').style.background = "#ef4444";
         document.getElementById('res-status-badge').style.color = "#FFF";
-
-        if (!provieneDeIA) {
-            indiceSesgoIA = Math.max(0, indiceSesgoIA - 5);
-        }
     }
 
     document.getElementById('score-badge').innerText = `🎯 Aciertos: ${aciertosNivel2} / ${MAX_ACIERTOS_NIVEL2}`;
-    document.getElementById('bias-display').innerText = `Índice Dependencia IA: ${indiceSesgoIA}%`;
-    document.getElementById('bias-info-footer').innerText = `Índice Dependencia IA: ${indiceSesgoIA}%`;
+    
+    // Actualizar badges de dependencia
+    const txtBias = `Dependencia IA: ${indiceSesgoIA}%`;
+    const biasDisplay = document.getElementById('bias-display');
+    const biasFooter = document.getElementById('bias-info-footer');
+
+    if (biasDisplay) biasDisplay.innerText = txtBias;
+    if (biasFooter) biasFooter.innerText = txtBias;
 
     document.getElementById('res-real-diag').innerText = casoActualN2.name;
     document.getElementById('res-treatment-text').innerHTML = `<strong>Conducta / Tratamiento Recomendado:</strong><br>${casoActualN2.treat}`;
@@ -311,7 +353,7 @@ function comenzarNivel3() {
     if (modalN3Intro) modalN3Intro.classList.add('hidden');
 
     document.getElementById('level-badge').innerText = 'NIVEL 3';
-    document.getElementById('level-title').innerText = 'Rompecabezas y Tratamiento Fisiológico';
+    document.getElementById('level-title').innerText = 'Rompecabezas de Continuidad y Tratamiento';
     document.getElementById('score-badge').classList.add('hidden');
     document.getElementById('ai-panel').classList.add('hidden');
 
@@ -330,7 +372,9 @@ function cargarCasoNivel3(index) {
     const treatSec = document.getElementById('n3-treatment-section');
 
     if (titleElem) titleElem.innerText = `CASO CLÍNICO ${index + 1} / 3: ${caso.patologia}`;
-    if (descElem) descElem.innerText = caso.paciente;
+    if (descElem) {
+        descElem.innerHTML = `${caso.paciente}<br><small style="color:#38bdf8;">🧩 Pista de acople: Analiza el tipo de conector y la morfología del segmento para encajar el ciclo cardíaco continuo.</small>`;
+    }
     if (treatSec) treatSec.classList.add('hidden');
 
     const slots = document.querySelectorAll('.puzzle-slot');
@@ -352,7 +396,9 @@ function cargarCasoNivel3(index) {
             div.style.padding = '10px';
             div.style.borderRadius = '8px';
             div.style.cursor = 'pointer';
-            div.innerHTML = `${p.svg}<p style="font-size:0.75rem; color:#94a3b8; text-align:center;">${p.label}</p>`;
+            div.innerHTML = `${p.svg}
+                <p style="font-size:0.75rem; color:#f8fafc; text-align:center; font-weight:bold; margin-top:4px;">${p.label}</p>
+                <p style="font-size:0.65rem; color:#38bdf8; text-align:center;">${p.hint}</p>`;
             div.onclick = () => colocarPiezaN3(p, div);
             containerPiezas.appendChild(div);
         });
@@ -402,7 +448,7 @@ function validarEnsambleN3() {
 
         if (section) section.classList.remove('hidden');
     } else {
-        alert("⚠️ El orden de la señal electrocardiográfica es incorrecto. Inténtalo de nuevo.");
+        alert("⚠️ La continuidad eléctrica o del ciclo fisiológico es incorrecta. Revisa los conectores y la forma de la señal.");
         cargarCasoNivel3(casoActualN3);
     }
 }
@@ -413,13 +459,13 @@ function evaluarTratamientoN3(opcionSeleccionada) {
     if (opcionSeleccionada === caso.tratamientoCorrecto) {
         casoActualN3++;
         if (casoActualN3 < CASOS_NIVEL3.length) {
-            alert(`✅ ¡Excelente! Has resuelto el caso de ${caso.patologia}. Pasamos al siguiente caso.`);
+            alert(`✅ ¡Excelente! Has completado la reconstrucción y conducta clínica para ${caso.patologia}. Pasamos al siguiente caso.`);
             cargarCasoNivel3(casoActualN3);
         } else {
             document.getElementById('modal-juego-completado').classList.remove('hidden');
         }
     } else {
-        alert("❌ Respuesta incorrecta. Revisa el diagnóstico y selecciona la conducta indicada.");
+        alert("❌ Respuesta incorrecta. Revisa la patología y selecciona la conducta apropiada.");
     }
 }
 
@@ -549,7 +595,7 @@ function abrirModal(tipo) {
     if (tipo === 'patologias') {
         document.getElementById('modal-patologias-info').classList.remove('hidden');
     } else if (tipo === 'ajustes' || tipo === 'bias') {
-        alert(`ℹ️ Índice de Dependencia de IA actual: ${indiceSesgoIA}%\nEl modelo asistente tiene una precisión base del 85%.`);
+        alert(`ℹ️ Índice de Dependencia de IA actual: ${indiceSesgoIA}%\n\n• Si confías excesivamente en la IA (2 o más aciertos continuos o >40% de dependencia), la IA comenzará a equivocarse a propósito.\n• Si realizas diagnósticos manuales durante 3 a 4 casos, la IA recobrará la lucidez.`);
     }
 }
 
