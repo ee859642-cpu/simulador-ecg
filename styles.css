@@ -1,15 +1,19 @@
-/* ==================== VARIABLES Y ESTILOS BASE ==================== */
+/* ==================== PALETA DE COLORES Y ESTILOS BASE ==================== */
 :root {
-    --bg-dark: #051109;
-    --card-bg: #0b1e12;
-    --border-color: #1a3d24;
-    --primary-green: #00FF66;
-    --primary-green-hover: #00cc52;
-    --accent-red: #FF0055;
-    --accent-yellow: #FFCC00;
-    --text-light: #e0f2e9;
-    --text-muted: #8ab89a;
-    --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    --bg-main: #0a0f1d;
+    --panel-bg: #111827;
+    --card-bg: #1a2332;
+    --border-color: #243044;
+    
+    --primary-cyan: #38bdf8;
+    --primary-green: #10b981;
+    --accent-blue: #2563eb;
+    --accent-red: #ef4444;
+    --accent-orange: #f97316;
+    
+    --text-white: #ffffff;
+    --text-light: #94a3b8;
+    --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 * {
@@ -20,528 +24,299 @@
 }
 
 body {
-    background-color: var(--bg-dark);
-    color: var(--text-light);
-    min-height: 100vh;
+    background-color: var(--bg-main);
+    color: var(--text-white);
+    height: 100vh;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 }
 
-/* ==================== REGLA CRÍTICA DE OCULTAMIENTO ==================== */
 .hidden {
     display: none !important;
 }
 
-/* ==================== ENCABEZADO Y ESTADÍSTICAS ==================== */
+/* ==================== ENCABEZADO SUPERIOR ==================== */
 .app-header {
-    background-color: var(--card-bg);
-    border-bottom: 2px solid var(--border-color);
-    padding: 15px 30px;
+    background-color: var(--panel-bg);
+    border-bottom: 1px solid var(--border-color);
+    padding: 10px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap;
-    gap: 15px;
+    height: 55px;
 }
 
-.header-titles h1 {
-    font-size: 1.4rem;
-    color: var(--primary-green);
-    margin-top: 5px;
-}
-
-.header-stats {
+.header-left, .header-center, .header-right {
     display: flex;
     align-items: center;
     gap: 12px;
 }
 
-.badge {
-    background-color: var(--border-color);
-    color: var(--primary-green);
-    padding: 5px 12px;
-    border-radius: 12px;
-    font-size: 0.85rem;
-    font-weight: bold;
-    border: 1px solid var(--primary-green);
-    display: inline-block;
-}
-
-.score-badge {
-    background-color: rgba(0, 255, 102, 0.1);
-}
-
-.bias-badge {
-    background-color: rgba(255, 204, 0, 0.1);
-    color: var(--accent-yellow);
-    border-color: var(--accent-yellow);
-}
-
-/* ==================== BOTONES Y ACCIONES ==================== */
-.btn-primary, .btn-secondary, .btn-success, .btn-warning {
-    padding: 10px 18px;
-    border: none;
-    border-radius: 6px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.btn-primary {
-    background-color: var(--primary-green);
-    color: #000;
-}
-
-.btn-primary:hover {
-    background-color: var(--primary-green-hover);
-    transform: translateY(-1px);
-}
-
-.btn-secondary {
-    background-color: transparent;
+.btn-header {
+    background-color: var(--card-bg);
     color: var(--text-light);
     border: 1px solid var(--border-color);
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
 }
 
-.btn-secondary:hover {
-    background-color: var(--border-color);
+.badge-level {
+    background-color: #0284c7;
+    color: #fff;
+    font-weight: bold;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
 }
 
-.btn-success {
-    background-color: var(--primary-green);
-    color: #000;
+.header-title {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--text-white);
 }
 
-.btn-warning {
-    background-color: var(--accent-yellow);
-    color: #000;
-}
-
-/* ==================== CONTENEDOR PRINCIPAL ==================== */
-.main-container {
-    padding: 20px 30px;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    max-width: 1200px;
-    margin: 0 auto;
-    width: 100%;
-}
-
-/* ==================== MONITOR ECG (CANVAS) ==================== */
-.ecg-display-card {
-    background-color: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 10px;
-    padding: 15px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-}
-
-.ecg-header {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
-    font-size: 0.95rem;
-    color: var(--text-muted);
-}
-
-.ecg-status {
-    display: flex;
-    gap: 15px;
-}
-
-#bpm-display {
-    color: var(--primary-green);
+.badge-score {
+    background-color: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+    border: 1px solid #10b981;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.8rem;
     font-weight: bold;
 }
 
-.lead-label {
-    background-color: var(--border-color);
-    padding: 2px 8px;
-    border-radius: 4px;
-    color: var(--primary-green);
+.ia-dependency-text {
+    color: var(--accent-orange);
+    font-size: 0.85rem;
+    font-weight: bold;
 }
 
-.canvas-container {
-    width: 100%;
-    height: 160px;
-    background-color: #020804;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
+/* ==================== ÁREA PRINCIPAL (INTERACTOR) ==================== */
+.main-workspace {
+    flex: 1;
+    display: flex;
+    position: relative;
     overflow: hidden;
 }
 
-#ecg-wave {
+/* Barra Lateral Izquierda: Electrodos Circulares */
+.electrodes-sidebar {
+    width: 80px;
+    background-color: var(--panel-bg);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 0;
+    gap: 15px;
+}
+
+.electrode-circle {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 2px solid #2563eb;
+    background-color: rgba(37, 99, 235, 0.1);
+    color: #60a5fa;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    font-size: 0.9rem;
+    cursor: grab;
+    user-select: none;
+    transition: all 0.2s;
+}
+
+.electrode-circle:hover {
+    border-color: #38bdf8;
+    color: #fff;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+}
+
+/* Área Central: Torso SVG */
+.center-viewport {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.instruction-banner {
+    position: absolute;
+    top: 20px;
+    color: var(--text-light);
+    font-size: 0.95rem;
+}
+
+.torso-wrapper {
+    position: relative;
+    width: 280px;
+    height: 380px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.torso-svg-container {
+    width: 100%;
+    height: 100%;
+}
+
+.dropzone-overlay {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    border: 2px dashed #10b981;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #10b981;
+    font-size: 0.75rem;
+    font-weight: bold;
+    background-color: rgba(16, 185, 129, 0.1);
+}
+
+.dropzone-overlay.placed {
+    background-color: rgba(16, 185, 129, 0.8);
+    border-style: solid;
+    color: #000;
+}
+
+/* Panel Derecho: Asistente IA */
+.right-sidebar {
+    width: 320px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.ai-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 18px;
+}
+
+.ai-card-header {
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: #38bdf8;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ai-label {
+    font-size: 0.8rem;
+    color: var(--text-light);
+}
+
+.ai-suggestion {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #38bdf8;
+    margin: 4px 0;
+}
+
+.ai-confidence {
+    font-size: 0.85rem;
+    color: #0284c7;
+    margin-bottom: 15px;
+}
+
+.btn-ai-confirm {
+    width: 100%;
+    background-color: #10b981;
+    color: #000;
+    font-weight: bold;
+    border: none;
+    padding: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-bottom: 8px;
+}
+
+.btn-ai-manual {
+    width: 100%;
+    background-color: #1e293b;
+    color: #cbd5e1;
+    border: 1px solid var(--border-color);
+    padding: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+/* ==================== MONITOR ECG INFERIOR ==================== */
+.bottom-ecg-section {
+    height: 180px;
+    background-color: #030712;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+}
+
+.ecg-top-bar {
+    padding: 6px 20px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--text-light);
+    background-color: var(--panel-bg);
+}
+
+.bpm-highlight {
+    color: var(--accent-red);
+    font-weight: bold;
+}
+
+.canvas-wrapper {
+    flex: 1;
+    width: 100%;
+    position: relative;
+    /* Fondo con rejilla médica */
+    background-color: #020d08;
+    background-image: 
+        linear-gradient(rgba(16, 185, 129, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(16, 185, 129, 0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+#ecg-canvas {
     width: 100%;
     height: 100%;
     display: block;
 }
 
-/* ==================== PANEL NIVEL 1: TORSO Y ELECTRODOS ==================== */
-.interactor-grid {
-    display: grid;
-    grid-template-columns: 280px 1fr;
-    gap: 20px;
-    align-items: start;
-}
-
-.electrodes-bank {
-    background-color: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 10px;
-    padding: 20px;
-}
-
-.electrodes-bank h3 {
-    color: var(--primary-green);
-    margin-bottom: 5px;
-    font-size: 1.1rem;
-}
-
-.sub-text {
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    margin-bottom: 20px;
-}
-
-.electrodes-list {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
-}
-
-.electrode {
-    background-color: #12301c;
-    border: 2px solid var(--primary-green);
-    color: var(--primary-green);
-    padding: 12px;
-    border-radius: 8px;
-    text-align: center;
-    font-weight: bold;
-    cursor: grab;
-    user-select: none;
-    box-shadow: 0 0 8px rgba(0, 255, 102, 0.2);
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.electrode:hover {
-    transform: scale(1.05);
-    box-shadow: 0 0 12px rgba(0, 255, 102, 0.4);
-}
-
-.torso-container {
-    position: relative;
-    background-color: #020804;
-    border: 1px solid var(--border-color);
-    border-radius: 10px;
-    padding: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 480px;
-    overflow: hidden;
-}
-
-.torso-img {
-    max-height: 440px;
-    width: auto;
-    object-fit: contain;
-    opacity: 0.85;
-    filter: contrast(1.1) brightness(0.9);
-    display: block;
-}
-
-.dropzone {
-    position: absolute;
-    width: 32px;
-    height: 32px;
-    border: 2px dashed var(--primary-green);
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    background-color: rgba(0, 255, 102, 0.1);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-weight: bold;
-    font-size: 0.8rem;
-    color: #000;
-    transition: all 0.3s ease;
-    z-index: 10;
-}
-
-.dropzone.placed {
-    background-color: var(--primary-green);
-    border-style: solid;
-    box-shadow: 0 0 12px var(--primary-green);
-}
-
-/* ==================== PANEL NIVEL 3: ROMPECABEZAS FISIOLÓGICO ==================== */
-.patient-card-n3 {
-    background-color: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-left: 4px solid var(--primary-green);
-    border-radius: 8px;
-    padding: 15px 20px;
-    margin-bottom: 20px;
-}
-
-.instruction-text {
-    color: var(--text-muted);
-    margin-bottom: 15px;
-    font-weight: normal;
-}
-
-.puzzle-dropzone {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-    margin-bottom: 25px;
-}
-
-.puzzle-slot {
-    height: 110px;
-    background-color: #020804;
-    border: 2px dashed var(--border-color);
-    border-radius: 8px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-    padding: 8px;
-}
-
-.puzzle-slot.filled {
-    border-style: solid;
-    border-color: var(--primary-green);
-    background-color: rgba(0, 255, 102, 0.05);
-}
-
-.slot-number {
-    position: absolute;
-    top: 5px;
-    left: 8px;
-    font-size: 0.75rem;
-    color: var(--text-muted);
-}
-
-.puzzle-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-    margin-bottom: 25px;
-}
-
-.puzzle-piece {
-    height: 110px;
-    background-color: var(--card-bg);
-    border: 1px solid var(--primary-green);
-    border-radius: 8px;
-    padding: 8px;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.puzzle-piece:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 4px 12px rgba(0, 255, 102, 0.25);
-}
-
-.puzzle-piece svg, .puzzle-slot svg {
-    width: 100%;
-    height: 60px;
-}
-
-.puzzle-piece p {
-    font-size: 0.75rem;
-    text-align: center;
-    color: var(--text-light);
-}
-
-.treatment-box {
-    background-color: var(--card-bg);
-    border: 1px solid var(--primary-green);
-    border-radius: 10px;
-    padding: 20px;
-    margin-top: 15px;
-}
-
-.treatment-box h4 {
-    color: var(--primary-green);
-    margin-bottom: 15px;
-}
-
-.treatment-options-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-/* ==================== PANEL ASISTENCIA IA (NIVEL 2) ==================== */
-.ai-assistant-card {
-    background-color: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 10px;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-.ai-header {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.9rem;
-}
-
-.ai-title {
-    color: var(--primary-green);
-    font-weight: bold;
-}
-
-.ai-confidence {
-    color: var(--accent-yellow);
-}
-
-#ai-diagnosis-text {
-    font-size: 1.4rem;
-    color: #fff;
-}
-
-.ai-actions {
-    display: flex;
-    gap: 15px;
-}
-
-/* ==================== FOOTER DE ESTADO ==================== */
-.app-footer {
-    background-color: var(--card-bg);
-    border-top: 1px solid var(--border-color);
-    padding: 12px 30px;
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.8rem;
-    color: var(--text-muted);
-}
-
-/* ==================== MODALES Y VENTANAS FLOTANTES ==================== */
+/* ==================== MODALES ==================== */
 .modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
-    background-color: rgba(0, 0, 0, 0.85);
-    backdrop-filter: blur(4px);
+    background-color: rgba(0, 0, 0, 0.8);
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 1000;
-    padding: 20px;
+    z-index: 9999;
 }
 
-.modal-card {
+.modal-content {
     background-color: var(--card-bg);
-    border: 1px solid var(--primary-green);
-    border-radius: 12px;
-    padding: 30px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 25px;
+    width: 90%;
     max-width: 500px;
-    width: 100%;
-    box-shadow: 0 10px 30px rgba(0, 255, 102, 0.15);
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-.modal-card.modal-large {
-    max-width: 800px;
-}
-
-.modal-card h2 {
-    color: var(--primary-green);
-    font-size: 1.3rem;
-}
-
-.modal-card p, .modal-card li {
-    font-size: 0.95rem;
-    line-height: 1.4;
-    color: var(--text-light);
-}
-
-.modal-card ul {
-    padding-left: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.select-full {
-    width: 100%;
-    padding: 10px;
-    background-color: #020804;
-    border: 1px solid var(--border-color);
-    color: var(--text-light);
-    border-radius: 6px;
-    font-size: 0.95rem;
-}
-
-.modal-buttons {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-}
-
-.treatment-info-box {
-    background-color: #020804;
-    border-left: 3px solid var(--primary-green);
-    padding: 10px 15px;
-    border-radius: 4px;
-    font-size: 0.9rem;
-    color: var(--text-light);
-}
-
-.table-container {
-    max-height: 400px;
-    overflow-y: auto;
-}
-
-.patologias-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.85rem;
-}
-
-.patologias-table th, .patologias-table td {
-    padding: 10px;
-    border: 1px solid var(--border-color);
-    text-align: left;
-}
-
-.patologias-table th {
-    background-color: #020804;
-    color: var(--primary-green);
-}
-
-/* ==================== ADAPTACIÓN RESPONSIVA ==================== */
-@media (max-width: 768px) {
-    .interactor-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .puzzle-dropzone, .puzzle-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .ai-actions {
-        flex-direction: column;
-    }
-
-    .app-header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
 }
