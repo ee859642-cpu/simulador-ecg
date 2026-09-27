@@ -1,106 +1,283 @@
-/* ==================== ESTILOS GENERALES Y RESETS ==================== */
+/* ==================== RESETS Y FUENTES ==================== */
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 body {
-    background-color: #0f172a;
-    color: #f8fafc;
-    min-height: 100vh;
+    background-color: #0a0f1d;
+    color: #e2e8f0;
+    height: 100vh;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 }
 
-/* ==================== ENCABEZADO Y STATUS BAR ==================== */
+/* ==================== TOP BAR ==================== */
 .top-bar {
-    background-color: #1e293b;
-    padding: 15px 30px;
+    background-color: #0f172a;
+    height: 55px;
+    padding: 0 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 2px solid #334155;
+    border-bottom: 1px solid #1e293b;
 }
 
-.level-info {
+.top-left, .top-right {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 10px;
+}
+
+.top-center {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.btn-head {
+    background-color: #1e293b;
+    color: #94a3b8;
+    border: 1px solid #334155;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
 }
 
 .badge {
-    background-color: #2563eb;
-    color: #ffffff;
-    padding: 6px 14px;
-    border-radius: 20px;
+    background-color: #0284c7;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
     font-weight: bold;
-    font-size: 0.85rem;
-    letter-spacing: 1px;
-}
-
-.stats-container {
-    display: flex;
-    gap: 15px;
-    align-items: center;
-}
-
-.bias-tag {
-    background-color: #334155;
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    color: #cbd5e1;
 }
 
 .score-tag {
     background-color: #059669;
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-weight: bold;
-    font-size: 0.9rem;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
 }
 
-/* ==================== CONTENEDOR PRINCIPAL ==================== */
-.main-container {
+.bias-tag {
+    color: #f59e0b;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+/* ==================== APP WORKSPACE (3 COLUMNAS) ==================== */
+.app-workspace {
+    flex: 1;
+    display: flex;
+    position: relative;
+    overflow: hidden;
+}
+
+/* 1. SIDEBAR IZQUIERDA: ELECTRODOS */
+.sidebar-electrodes {
+    width: 80px;
+    background-color: #0d1322;
+    border-right: 1px solid #1e293b;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+}
+
+.electrodes-pool {
     display: flex;
     flex-direction: column;
-    padding: 20px;
-    gap: 20px;
-    max-width: 1200px;
-    margin: 0 auto;
+    gap: 15px;
+}
+
+.electrode {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background-color: #1d4ed8;
+    color: #93c5fd;
+    border: 2px solid #3b82f6;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: grab;
+    user-select: none;
+    box-shadow: 0 0 10px rgba(37, 99, 235, 0.3);
+    transition: all 0.2s ease;
+}
+
+.electrode:hover {
+    transform: scale(1.1);
+    border-color: #60a5fa;
+}
+
+/* 2. ETAPA CENTRAL (TORSO) */
+.center-stage {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    background-color: #0a0f1d;
+}
+
+.stage-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     width: 100%;
 }
 
-.panel-section {
-    background-color: #1e293b;
-    border-radius: 12px;
-    padding: 20px;
-    border: 1px solid #334155;
+.instruction-text {
+    font-size: 0.95rem;
+    color: #cbd5e1;
+    margin-bottom: 10px;
+    font-weight: 400;
 }
 
-.patient-card {
+.torso-image-container {
+    position: relative;
+    width: 320px;
+    height: 380px;
+}
+
+.torso-svg {
+    width: 100%;
+    height: 100%;
+}
+
+/* ZONAS DE SOLTADO (PUNTOS ANATÓMICOS) */
+.dropzone {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    border: 2px dashed #0284c7;
+    border-radius: 50%;
+    background-color: rgba(15, 23, 42, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.dropzone.occupied {
+    border: 2px solid #00ff66;
+    background-color: rgba(0, 255, 102, 0.2);
+}
+
+.target-v1 { top: 40%; left: 42%; }
+.target-v2 { top: 40%; left: 51%; }
+.target-v3 { top: 47%; left: 47%; }
+.target-v4 { top: 54%; left: 44%; }
+.target-v5 { top: 53%; left: 56%; }
+.target-v6 { top: 51%; left: 66%; }
+
+/* 3. SIDEBAR DERECHA: ASISTENTE IA */
+.sidebar-ai {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    width: 300px;
+    z-index: 10;
+}
+
+.ai-card {
+    background-color: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+
+.ai-header {
+    background-color: #1e293b;
+    padding: 10px 15px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: #94a3b8;
+    letter-spacing: 0.5px;
+}
+
+.ai-body {
+    padding: 15px;
+}
+
+.sub-title {
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+.ai-diag {
+    color: #38bdf8;
+    font-size: 1.1rem;
+    margin: 5px 0;
+}
+
+.ai-conf {
+    color: #0ea5e9;
+    font-size: 0.85rem;
+    margin-bottom: 15px;
+}
+
+.btn-ai-accept {
+    width: 100%;
+    background-color: #10b981;
+    color: #022c22;
+    border: none;
+    padding: 10px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-bottom: 8px;
+}
+
+.btn-ai-manual {
+    width: 100%;
+    background-color: #1e293b;
+    color: #cbd5e1;
+    border: 1px solid #334155;
+    padding: 8px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+/* ==================== MONITOR ECG INFERIOR ==================== */
+.bottom-monitor {
+    background-color: #050811;
+    border-top: 1px solid #1e293b;
+    height: 180px;
+    display: flex;
+    flex-direction: column;
+}
+
+.monitor-bar-info {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 15px;
-    font-weight: 600;
-    color: #94a3b8;
+    padding: 6px 20px;
+    background-color: #0b1120;
+    font-size: 0.8rem;
+    color: #64748b;
+    border-bottom: 1px solid #1e293b;
 }
 
 .bpm-tag {
     color: #ef4444;
-    font-size: 1.1rem;
+    font-weight: bold;
 }
 
-/* CANVAS DE LA ONDA ECG */
 .canvas-wrapper {
-    background-color: #000000;
-    border: 2px solid #00ff66;
-    border-radius: 8px;
-    overflow: hidden;
-    height: 200px;
+    flex: 1;
     width: 100%;
+    position: relative;
+    background-color: #000;
 }
 
 #ecg-wave {
@@ -109,255 +286,51 @@ body {
     display: block;
 }
 
-/* ==================== PANEL DE CONTROL (NIVELES) ==================== */
-.controls-section {
+.monitor-footer-controls {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 15px;
+    background-color: #080d1a;
+}
+
+.btn-foot {
     background-color: #1e293b;
-    border-radius: 12px;
-    padding: 20px;
-    border: 1px solid #334155;
-}
-
-.control-panel {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-/* ==================== NIVEL 1: TORSO VECTORIAL SVG ==================== */
-.torso-image-container {
-    position: relative;
-    width: 320px;
-    height: 380px;
-    margin: 20px auto;
-    border-radius: 12px;
-    background-color: #0f172a;
-    border: 1px solid #334155;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
-}
-
-.torso-svg {
-    width: 100%;
-    height: 100%;
-}
-
-/* ZONAS DE SOLTADO (PUNTOS EN EL PECHO) */
-.dropzone {
-    position: absolute;
-    width: 32px;
-    height: 32px;
-    border: 2px dashed #38bdf8;
-    border-radius: 50%;
-    background-color: rgba(15, 23, 42, 0.7);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.dropzone:hover {
-    border-color: #00ff66;
-    transform: scale(1.15);
-}
-
-.dropzone.occupied {
-    border: 2px solid #00ff66;
-    background-color: rgba(0, 255, 102, 0.3);
-}
-
-/* POSICIONAMIENTO ANATÓMICO EXACTO EN LA FIGURA VECTORIAL */
-.target-v1 { top: 40%; left: 42%; }
-.target-v2 { top: 40%; left: 51%; }
-.target-v3 { top: 47%; left: 47%; }
-.target-v4 { top: 54%; left: 44%; }
-.target-v5 { top: 53%; left: 56%; }
-.target-v6 { top: 51%; left: 66%; }
-
-/* POOL DE ELECTRODOS ARRASTRABLES */
-.electrodes-pool {
-    display: flex;
-    gap: 12px;
-    margin-top: 15px;
-}
-
-.electrode {
-    width: 45px;
-    height: 45px;
-    border-radius: 50%;
-    background-color: #2563eb;
-    color: white;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: grab;
-    user-select: none;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-    transition: transform 0.15s ease;
-}
-
-.electrode:hover {
-    transform: scale(1.1);
-}
-
-/* ==================== NIVEL 2: PREDICCIÓN IA Y BOTONES ==================== */
-.ai-box {
-    background-color: #0f172a;
-    padding: 15px;
-    border-radius: 8px;
-    width: 100%;
-    max-width: 500px;
-    text-align: center;
-    margin-bottom: 20px;
-    border: 1px solid #334155;
-}
-
-.ai-diag {
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: #38bdf8;
-    margin: 10px 0;
-}
-
-.ai-conf {
-    font-size: 0.85rem;
     color: #94a3b8;
-}
-
-.action-buttons {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-
-/* ==================== BOTONES ESTÁNDAR ==================== */
-.btn-primary {
-    background-color: #2563eb;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 6px;
-    font-weight: 600;
+    border: 1px solid #334155;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 0.75rem;
     cursor: pointer;
 }
 
-.btn-primary:hover {
-    background-color: #1d4ed8;
-}
-
-.btn-secondary {
-    background-color: #475569;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 6px;
-    font-weight: 600;
-    cursor: pointer;
-}
-
-.btn-secondary:hover {
-    background-color: #334155;
-}
-
-.btn-info {
-    background-color: #0284c7;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 6px;
-    font-weight: 600;
-    cursor: pointer;
-}
-
-.btn-info:hover {
-    background-color: #0369a1;
-}
-
-/* ==================== NIVEL 3: ROMPECABEZAS ==================== */
-.puzzle-dropzone {
-    width: 100%;
-    min-height: 80px;
-    border: 2px dashed #475569;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    padding: 10px;
-    margin-bottom: 20px;
-}
-
-.puzzle-grid {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-
-.placeholder-text {
-    color: #64748b;
-    font-size: 0.9rem;
-}
-
-/* ==================== MODALES Y VENTANAS EMERGENTES ==================== */
+/* ==================== MODALES ==================== */
 .modal-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.75);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex; align-items: center; justify-content: center;
     z-index: 1000;
 }
 
 .modal-card {
-    background-color: #1e293b;
-    padding: 30px;
-    border-radius: 12px;
-    max-width: 500px;
-    width: 90%;
-    border: 1px solid #475569;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-}
-
-.modal-large {
-    max-width: 800px;
-}
-
-.select-full {
-    width: 100%;
-    padding: 10px;
-    margin: 15px 0;
-    border-radius: 6px;
     background-color: #0f172a;
+    padding: 25px;
+    border-radius: 10px;
+    max-width: 450px;
+    width: 90%;
+    border: 1px solid #334155;
+}
+
+.btn-primary {
+    background-color: #2563eb;
     color: white;
-    border: 1px solid #475569;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 15px;
 }
 
-.modal-actions {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-}
-
-.patologias-scroll {
-    max-height: 400px;
-    overflow-y: auto;
-    margin: 15px 0;
-}
-
-.text-center {
-    text-align: center;
-}
-
-/* CLASE UTILITARIA */
 .hidden {
     display: none !important;
 }
