@@ -1,3 +1,105 @@
+// ==================== SINTETIZADOR DE SONIDOS (WEB AUDIO API) ====================
+class SoundManager {
+    constructor() {
+        this.ctx = null;
+    }
+
+    init() {
+        if (!this.ctx) {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            this.ctx = new AudioCtx();
+        }
+        if (this.ctx.state === 'suspended') {
+            this.ctx.resume();
+        }
+    }
+
+    // Beep característico del monitor ECG (QRS)
+    playBeep(freq = 880, duration = 0.08) {
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+
+        gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start();
+        osc.stop(this.ctx.currentTime + duration);
+    }
+
+    // Sonido de Acierto / Respuesta Correcta
+    playSuccess() {
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(523.25, now); // C5
+        osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+        osc.frequency.setValueAtTime(783.99, now + 0.2); // G5
+
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start();
+        osc.stop(now + 0.4);
+    }
+
+    // Sonido de Error / Fallo / Alarma
+    playError() {
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(150, now);
+        osc.frequency.linearRampToValueAtTime(100, now + 0.3);
+
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start();
+        osc.stop(now + 0.3);
+    }
+
+    // Sonido al colocar un electrodo o pieza
+    playDrop() {
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(400, now);
+        osc.frequency.exponentialRampToValueAtTime(800, now + 0.08);
+
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start();
+        osc.stop(now + 0.08);
+    }
+}
+
+const audioFX = new SoundManager();
+
 // ==================== BASE DE DATOS DE RITMOS (27 RITMOS CON BPM EXACTOS) ====================
 const RITMOS_ECG = [
     { id: "sr", name: "Sinus rhythm", rate: 72, qrs: "Normal", p: "Presente", st: "Isoeléctrico", treat: "Ninguno (Ritmo Fisiológico Normal)", status: "Fisiológico", type: "sinusal" },
@@ -36,14 +138,13 @@ const MAX_ACIERTOS_NIVEL2 = 10;
 let electrodosColocados = 0;
 let casoActualN2 = null;
 
-// Lógica de dependencia y confusión de IA
-let usoSeguidoIA = 0;           // Cuántas veces seguidas confió en la IA
-let analisisManualesSeguidos = 0; // Cuántas veces analizó manualmente
-let indiceSesgoIA = 0;          // Porcentaje de dependencia (0% - 100%)
+let usoSeguidoIA = 0;
+let analisisManualesSeguidos = 0;
+let indiceSesgoIA = 0;
 
 let animacionCanvasId = null;
 
-// ==================== CASOS CLÍNICOS NIVEL 3 (ROMPECABEZAS VISUAL CON PISTAS DE CONTINUIDAD) ====================
+// ==================== CASOS CLÍNICOS NIVEL 3 ====================
 const CASOS_NIVEL3 = [
     {
         id: 1,
@@ -103,6 +204,9 @@ let ordenSeleccionadoN3 = [null, null, null, null];
 
 // ==================== INICIALIZACIÓN DE LA APLICACIÓN ====================
 window.addEventListener('DOMContentLoaded', () => {
+    // Inicializar el contexto de audio en cualquier clic o interacción inicial
+    document.body.addEventListener('click', () => audioFX.init(), { once: true });
+
     inicializarDragAndDropNivel1();
     poblarSelectDiagnosticos();
     poblarTablaPatologiasInfo();
@@ -118,6 +222,8 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 function cerrarModalNivel1() {
+    audioFX.init();
+    audioFX.playDrop();
     const modalN1 = document.getElementById('modal-nivel1-intro');
     if (modalN1) modalN1.classList.add('hidden');
 }
@@ -129,6 +235,7 @@ function inicializarDragAndDropNivel1() {
 
     electrodos.forEach(el => {
         el.addEventListener('dragstart', (e) => {
+            audioFX.init();
             e.dataTransfer.setData('text/plain', el.dataset.lead);
             el.style.opacity = '0.5';
         });
@@ -158,6 +265,7 @@ function inicializarDragAndDropNivel1() {
             if (leadDragged === targetZone) {
                 if (zona.classList.contains('placed')) return;
 
+                audioFX.playDrop(); // Sonido al encajar electrodo
                 zona.classList.add('placed');
                 zona.innerText = '✓';
 
@@ -176,12 +284,14 @@ function inicializarDragAndDropNivel1() {
                 }
 
                 if (electrodosColocados === 6) {
+                    audioFX.playSuccess(); // Sonido de nivel completado
                     setTimeout(() => {
                         const modalN2 = document.getElementById('modal-nivel2');
                         if (modalN2) modalN2.classList.remove('hidden');
                     }, 400);
                 }
             } else {
+                audioFX.playError(); // Sonido de equivocación
                 zona.style.borderColor = '#ef4444';
                 setTimeout(() => {
                     if (!zona.classList.contains('placed')) {
@@ -195,6 +305,8 @@ function inicializarDragAndDropNivel1() {
 
 // ==================== LÓGICA DEL NIVEL 2: ANÁLISIS DE ECG Y COMPORTAMIENTO DE IA ====================
 function comenzarNivel2() {
+    audioFX.init();
+    audioFX.playDrop();
     nivelActual = 2;
     aciertosNivel2 = 0;
     usoSeguidoIA = 0;
@@ -225,28 +337,20 @@ function cargarSiguienteCasoNivel2() {
         patientInfo.innerText = `Paciente: ID PAC-${Math.floor(Math.random() * 899 + 100)} (${Math.floor(Math.random() * 50 + 25)} años)`;
     }
 
-    // Corregido: Muestra explícitamente "BPM: (NÚMERO)"
     const bpmDisplay = document.getElementById('bpm-display');
     if (bpmDisplay) {
         bpmDisplay.innerText = `BPM: ${casoActualN2.rate}`;
     }
 
-    // REGLA DE COMPORTAMIENTO DE IA:
-    // Si confía 2 o más veces seguidas en la IA O si el índice de dependencia supera el 40%, la IA SE CONFUNDE (falla a propósito)
     let laIaSeConfunde = (usoSeguidoIA >= 2) || (indiceSesgoIA >= 40);
 
     let sugerenciaIA;
-    let confianzaIA;
 
     if (laIaSeConfunde) {
-        // La IA comete un error deliberado
         const ritmosIncorrectos = RITMOS_ECG.filter(r => r.name !== casoActualN2.name);
         sugerenciaIA = ritmosIncorrectos[Math.floor(Math.random() * ritmosIncorrectos.length)].name;
-        confianzaIA = Math.floor(Math.random() * 15 + 80); // Muestra alta confianza errónea para simular "alucinación"
     } else {
-        // La IA funciona correctamente
         sugerenciaIA = casoActualN2.name;
-        confianzaIA = Math.floor(Math.random() * 12 + 88);
     }
 
     const aiDiagText = document.getElementById('ai-diagnosis-text');
@@ -255,21 +359,21 @@ function cargarSiguienteCasoNivel2() {
 
     const aiConfText = document.getElementById('ai-confidence-text');
     if (aiConfText) {
-        aiConfText.innerText = ""; // Se limpia el texto para que permanezca oculto
+        aiConfText.innerText = "";
     }
-
-
-
 
     iniciarAnimacionECG(casoActualN2.id);
 }
 
 function tomarDecisionIA() {
+    audioFX.init();
     const sugerencia = document.getElementById('ai-diagnosis-text').dataset.sugerencia;
     evaluarRespuestaNivel2(sugerencia, true);
 }
 
 function abrirModalManual() {
+    audioFX.init();
+    audioFX.playDrop();
     document.getElementById('modal-manual').classList.remove('hidden');
 }
 
@@ -291,23 +395,22 @@ function evaluarRespuestaNivel2(diagnosticoPropuesto, provieneDeIA) {
     if (provieneDeIA) {
         usoSeguidoIA++;
         analisisManualesSeguidos = 0;
-        // Aumenta el índice de dependencia
         indiceSesgoIA = Math.min(100, indiceSesgoIA + 25);
     } else {
         analisisManualesSeguidos++;
-        usoSeguidoIA = 0; // Se resetea el contador de abuso de IA
-        
-        // Reducción paulatina de la dependencia al analizar manualmente a 3 o 4 pacientes
+        usoSeguidoIA = 0;
         indiceSesgoIA = Math.max(0, indiceSesgoIA - 30);
     }
 
     if (esCorrecto) {
+        audioFX.playSuccess(); // Sonido de acierto
         aciertosNivel2++;
         document.getElementById('res-status-title').innerText = "¡Diagnóstico Correcto! 🎉";
         document.getElementById('res-status-badge').innerText = "CORRECTO";
         document.getElementById('res-status-badge').style.background = "#10b981";
         document.getElementById('res-status-badge').style.color = "#000";
     } else {
+        audioFX.playError(); // Sonido de fallo
         document.getElementById('res-status-title').innerText = provieneDeIA ? "¡La IA te ha confundido! ⚠️" : "Diagnóstico Incorrecto ⚠️";
         document.getElementById('res-status-badge').innerText = "INCORRECTO";
         document.getElementById('res-status-badge').style.background = "#ef4444";
@@ -316,7 +419,6 @@ function evaluarRespuestaNivel2(diagnosticoPropuesto, provieneDeIA) {
 
     document.getElementById('score-badge').innerText = `🎯 Aciertos: ${aciertosNivel2} / ${MAX_ACIERTOS_NIVEL2}`;
     
-    // Actualizar badges de dependencia
     const txtBias = `Dependencia IA: ${indiceSesgoIA}%`;
     const biasDisplay = document.getElementById('bias-display');
     const biasFooter = document.getElementById('bias-info-footer');
@@ -331,9 +433,11 @@ function evaluarRespuestaNivel2(diagnosticoPropuesto, provieneDeIA) {
 }
 
 function siguienteCasoNivel2() {
+    audioFX.playDrop();
     document.getElementById('modal-resultado').classList.add('hidden');
 
     if (aciertosNivel2 >= MAX_ACIERTOS_NIVEL2) {
+        audioFX.playSuccess();
         setTimeout(() => {
             const modalN3Intro = document.getElementById('modal-nivel3-intro');
             if (modalN3Intro) modalN3Intro.classList.remove('hidden');
@@ -345,6 +449,8 @@ function siguienteCasoNivel2() {
 
 // ==================== LÓGICA DEL NIVEL 3: ROMPECABEZAS & TRATAMIENTO ====================
 function comenzarNivel3() {
+    audioFX.init();
+    audioFX.playDrop();
     nivelActual = 3;
     casoActualN3 = 0;
 
@@ -405,9 +511,11 @@ function cargarCasoNivel3(index) {
 }
 
 function colocarPiezaN3(pieza, elementoHTML) {
+    audioFX.init();
     const slotLibre = ordenSeleccionadoN3.findIndex(val => val === null);
 
     if (slotLibre !== -1) {
+        audioFX.playDrop();
         ordenSeleccionadoN3[slotLibre] = pieza.id;
 
         const slotDiv = document.querySelector(`.puzzle-slot[data-slot="${slotLibre}"]`);
@@ -429,6 +537,7 @@ function validarEnsambleN3() {
     const esCorrecto = ordenSeleccionadoN3.every((val, index) => val === index);
 
     if (esCorrecto) {
+        audioFX.playSuccess();
         const section = document.getElementById('n3-treatment-section');
         const containerOpciones = document.getElementById('n3-treatment-options');
         
@@ -447,6 +556,7 @@ function validarEnsambleN3() {
 
         if (section) section.classList.remove('hidden');
     } else {
+        audioFX.playError();
         alert("⚠️ La continuidad eléctrica o del ciclo fisiológico es incorrecta. Revisa los conectores y la forma de la señal.");
         cargarCasoNivel3(casoActualN3);
     }
@@ -456,6 +566,7 @@ function evaluarTratamientoN3(opcionSeleccionada) {
     const caso = CASOS_NIVEL3[casoActualN3];
 
     if (opcionSeleccionada === caso.tratamientoCorrecto) {
+        audioFX.playSuccess();
         casoActualN3++;
         if (casoActualN3 < CASOS_NIVEL3.length) {
             alert(`✅ ¡Excelente! Has completado la reconstrucción y conducta clínica para ${caso.patologia}. Pasamos al siguiente caso.`);
@@ -464,6 +575,7 @@ function evaluarTratamientoN3(opcionSeleccionada) {
             document.getElementById('modal-juego-completado').classList.remove('hidden');
         }
     } else {
+        audioFX.playError();
         alert("❌ Respuesta incorrecta. Revisa la patología y selecciona la conducta apropiada.");
     }
 }
@@ -472,7 +584,7 @@ function reiniciarDesdeNivel1() {
     location.reload();
 }
 
-// ==================== GENERADOR MATEMÁTICO DE ONDAS ECG (CANVAS) ====================
+// ==================== GENERADOR MATEMÁTICO ECG (CANVAS) CON BEEP SONORO ====================
 function ajustarTamanioCanvas() {
     const canvas = document.getElementById('ecg-wave');
     if (canvas && canvas.parentElement) {
@@ -495,6 +607,7 @@ function iniciarAnimacionECG(tipoRitmo) {
     const ctx = canvas.getContext('2d');
 
     let x = 0;
+    let picoDetectado = false; // Control de disparo del beep por cada ciclo
     const centerY = canvas.height / 2;
     const speed = 2.5;
 
@@ -512,6 +625,16 @@ function iniciarAnimacionECG(tipoRitmo) {
         }
 
         let yOffset = calcularEcuacionOnda(x, tipoRitmo, canvas.height);
+
+        // Disparar beep en el pico R del ECG
+        if (yOffset > canvas.height * 0.25) {
+            if (!picoDetectado) {
+                audioFX.playBeep(900, 0.06);
+                picoDetectado = true;
+            }
+        } else {
+            picoDetectado = false;
+        }
 
         ctx.strokeStyle = '#10b981';
         ctx.lineWidth = 2;
@@ -591,6 +714,8 @@ function poblarTablaPatologiasInfo() {
 }
 
 function abrirModal(tipo) {
+    audioFX.init();
+    audioFX.playDrop();
     if (tipo === 'patologias') {
         document.getElementById('modal-patologias-info').classList.remove('hidden');
     } else if (tipo === 'ajustes' || tipo === 'bias') {
