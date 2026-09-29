@@ -33,6 +33,7 @@ const RITMOS_ECG = [
 let nivelActual = 1;
 let aciertosNivel2 = 0;
 const MAX_ACIERTOS_NIVEL2 = 10;
+const MAX_ELECTRODOS_NIVEL1 = 10; // NUEVO: 6 precordiales + 4 periféricos
 let electrodosColocados = 0;
 let casoActualN2 = null;
 
@@ -49,7 +50,7 @@ let jugadorGenero = '';
 let horaInicioJuego = null;
 let intentosNivel2 = 0;
 
-// ==================== NUEVO: FLAGS DE PROGRESO PARA EL MAPA DE NIVELES ====================
+// ==================== FLAGS DE PROGRESO PARA EL MAPA DE NIVELES ====================
 let nivel1Terminado = false;
 let nivel2Terminado = false;
 let nivel3Terminado = false;
@@ -111,7 +112,6 @@ function detenerLatidoSonoro() {
     }
 }
 
-// NUEVO: alarma sonora para ritmos de "Emergencia" o "Paro Cardíaco"
 function reproducirAlarma() {
     try {
         const ctx = obtenerAudioCtx();
@@ -133,13 +133,12 @@ function reproducirAlarma() {
     } catch (e) { /* Audio no soportado en este navegador */ }
 }
 
-// Sonido de clic global: se activa en cualquier botón, electrodo o pieza de rompecabezas
 document.addEventListener('click', (e) => {
     const elementoClic = e.target.closest('button, .electrode-circle, .puzzle-piece');
     if (elementoClic) reproducirClic();
 });
 
-// ==================== NUEVO: MODO DOCENTE / EXPORTAR RESULTADOS A CSV ====================
+// ==================== MODO DOCENTE / EXPORTAR RESULTADOS A CSV ====================
 function exportarResultadosCSV() {
     try {
         const datos = JSON.parse(localStorage.getItem('ecg_leaderboard') || '[]');
@@ -166,14 +165,13 @@ function exportarResultadosCSV() {
     }
 }
 
-// Atajo de teclado oculto para el modo docente: Ctrl + Shift + E
 document.addEventListener('keydown', (e) => {
     if (e.ctrlKey && e.shiftKey && e.key.toUpperCase() === 'E') {
         exportarResultadosCSV();
     }
 });
 
-// ==================== NUEVO: PANTALLA DE BIENVENIDA Y MAPA DE NIVELES ====================
+// ==================== PANTALLA DE BIENVENIDA Y MAPA DE NIVELES ====================
 function iniciarJuegoDesdeSplash() {
     const modalSplash = document.getElementById('modal-splash');
     if (modalSplash) modalSplash.classList.add('hidden');
@@ -243,12 +241,10 @@ function seleccionarNodoMapa(n) {
         return;
     }
 
-    // estado === 'actual': si el Nivel 1 no ha comenzado, se abre su introducción
     if (n === 1 && electrodosColocados === 0) {
         const modalN1 = document.getElementById('modal-nivel1-intro');
         if (modalN1) modalN1.classList.remove('hidden');
     }
-    // Si el nivel ya está en curso, el mapa solo se cierra y el jugador continúa donde estaba.
 }
 
 // ==================== REGISTRO DE JUGADOR Y AVATAR ====================
@@ -285,7 +281,6 @@ function registrarJugador() {
     const modalRegistro = document.getElementById('modal-registro');
     if (modalRegistro) modalRegistro.classList.add('hidden');
 
-    // NUEVO: en vez de ir directo al Nivel 1, ahora se muestra el mapa de niveles
     abrirModalMapa();
 }
 
@@ -328,7 +323,6 @@ function mostrarPantallaFinal() {
 
     const leaderboard = guardarResultadoLocal(resultadoActual);
 
-    // NUEVO: tabla de clasificación ordenada por precisión y, en empate, por tiempo
     const clasificacion = [...leaderboard]
         .sort((a, b) => (b.precision !== a.precision) ? (b.precision - a.precision) : (a.tiempoMs - b.tiempoMs))
         .slice(0, 5);
@@ -345,7 +339,6 @@ function mostrarPantallaFinal() {
         </tr>`;
     });
 
-    // NUEVO: insignias/logros según el desempeño
     let insignias = '';
     if (precisionNivel2 === 100) insignias += '<span class="badge-logro">🎯 Precisión de Élite</span>';
     if (autonomiaIA >= 80) insignias += '<span class="badge-logro">🧠 Diagnosticador Autónomo</span>';
@@ -379,21 +372,18 @@ function guardarResultadoLocal(resultado) {
     } catch (e) {
         console.warn('No se pudo guardar el resultado localmente.', e);
     }
-
-    // OPCIONAL: envío a Firebase para tabla de posiciones en tiempo real del docente.
     // guardarEnFirebase(resultado);
-
     return datosPrevios;
 }
 
 // ==================== INICIALIZACIÓN DE LA APLICACIÓN ====================
 window.addEventListener('DOMContentLoaded', () => {
     inicializarDragAndDropNivel1();
+    inicializarDragAndDropNivel3(); // NUEVO: listeners de drop para el rompecabezas
     poblarSelectDiagnosticos();
     poblarTablaPatologiasInfo();
     ajustarTamanioCanvas();
 
-    // NUEVO: ahora se muestra primero la pantalla de bienvenida
     const modalSplash = document.getElementById('modal-splash');
     if (modalSplash) modalSplash.classList.remove('hidden');
 
@@ -408,7 +398,7 @@ function cerrarModalNivel1() {
     if (modalN1) modalN1.classList.add('hidden');
 }
 
-// ==================== LÓGICA DEL NIVEL 1: ELECTRODOS ====================
+// ==================== LÓGICA DEL NIVEL 1: ELECTRODOS (PRECORDIALES + PERIFÉRICOS) ====================
 function inicializarDragAndDropNivel1() {
     const electrodos = document.querySelectorAll('.electrode-circle');
     const zonasDrop = document.querySelectorAll('.dropzone-overlay');
@@ -458,11 +448,11 @@ function inicializarDragAndDropNivel1() {
 
                 const scoreBadge = document.getElementById('score-badge');
                 if (scoreBadge) {
-                    scoreBadge.textContent = `🎯 Nivel 1: ${electrodosColocados} / 6`;
+                    scoreBadge.textContent = `🎯 Nivel 1: ${electrodosColocados} / ${MAX_ELECTRODOS_NIVEL1}`;
                 }
 
-                if (electrodosColocados === 6) {
-                    nivel1Terminado = true; // NUEVO: marca el Nivel 1 como completado para el mapa
+                if (electrodosColocados === MAX_ELECTRODOS_NIVEL1) {
+                    nivel1Terminado = true;
                     setTimeout(() => {
                         const modalN2 = document.getElementById('modal-nivel2');
                         if (modalN2) modalN2.classList.remove('hidden');
@@ -544,7 +534,6 @@ function cargarSiguienteCasoNivel2() {
     iniciarAnimacionECG(casoActualN2.id);
     iniciarLatidoSonoro(casoActualN2.rate);
 
-    // NUEVO: alarma sonora adicional para ritmos de Emergencia o Paro Cardíaco
     if (casoActualN2.status === 'Emergencia' || casoActualN2.status === 'Paro Cardíaco') {
         reproducirAlarma();
     }
@@ -618,7 +607,7 @@ function siguienteCasoNivel2() {
     document.getElementById('modal-resultado').classList.add('hidden');
 
     if (aciertosNivel2 >= MAX_ACIERTOS_NIVEL2) {
-        nivel2Terminado = true; // NUEVO: marca el Nivel 2 como completado para el mapa
+        nivel2Terminado = true;
         setTimeout(() => {
             const modalN3Intro = document.getElementById('modal-nivel3-intro');
             if (modalN3Intro) modalN3Intro.classList.remove('hidden');
@@ -628,7 +617,7 @@ function siguienteCasoNivel2() {
     }
 }
 
-// ==================== LÓGICA DEL NIVEL 3: ROMPECABEZAS & TRATAMIENTO ====================
+// ==================== LÓGICA DEL NIVEL 3: ROMPECABEZAS POR ARRASTRE & TRATAMIENTO ====================
 function comenzarNivel3() {
     nivelActual = 3;
     casoActualN3 = 0;
@@ -659,14 +648,14 @@ function cargarCasoNivel3(index) {
 
     if (titleElem) titleElem.innerText = `CASO CLÍNICO ${index + 1} / 3: ${caso.patologia}`;
     if (descElem) {
-        descElem.innerHTML = `${caso.paciente}<br><small style="color:#38bdf8;">🧩 Pista de acople: Analiza el tipo de conector y la morfología del segmento para encajar el ciclo cardíaco continuo.</small>`;
+        descElem.innerHTML = `${caso.paciente}<br><small style="color:#38bdf8;">🧩 Arrastra cada pieza al recuadro correcto para fusionarla con el trazado.</small>`;
     }
     if (treatSec) treatSec.classList.add('hidden');
 
     const slots = document.querySelectorAll('.puzzle-slot');
     slots.forEach(slot => {
         slot.innerHTML = `<span class="slot-number">${parseInt(slot.dataset.slot) + 1}</span>`;
-        slot.classList.remove('filled');
+        slot.classList.remove('filled', 'drag-over');
     });
 
     const containerPiezas = document.getElementById('puzzle-pieces-container');
@@ -677,38 +666,71 @@ function cargarCasoNivel3(index) {
         piezasMezcladas.forEach(p => {
             const div = document.createElement('div');
             div.className = 'puzzle-piece';
+            div.draggable = true;
+            div.dataset.pieceId = p.id;
             div.style.background = '#1e293b';
             div.style.border = '1px solid #334155';
             div.style.padding = '10px';
             div.style.borderRadius = '8px';
-            div.style.cursor = 'pointer';
             div.innerHTML = `${p.svg}
                 <p style="font-size:0.75rem; color:#f8fafc; text-align:center; font-weight:bold; margin-top:4px;">${p.label}</p>
                 <p style="font-size:0.65rem; color:#38bdf8; text-align:center;">${p.hint}</p>`;
-            div.onclick = () => colocarPiezaN3(p, div);
+
+            div.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('text/plain', String(p.id));
+                div.style.opacity = '0.4';
+            });
+            div.addEventListener('dragend', () => {
+                div.style.opacity = '1';
+            });
+
             containerPiezas.appendChild(div);
         });
     }
 }
 
-function colocarPiezaN3(pieza, elementoHTML) {
-    const slotLibre = ordenSeleccionadoN3.findIndex(val => val === null);
+// NUEVO: listeners de drop para el área de fusión del rompecabezas (Nivel 3)
+function inicializarDragAndDropNivel3() {
+    const slots = document.querySelectorAll('.puzzle-slot');
 
-    if (slotLibre !== -1) {
-        ordenSeleccionadoN3[slotLibre] = pieza.id;
+    slots.forEach(slot => {
+        slot.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            if (!slot.classList.contains('filled')) {
+                slot.classList.add('drag-over');
+            }
+        });
 
-        const slotDiv = document.querySelector(`.puzzle-slot[data-slot="${slotLibre}"]`);
-        if (slotDiv) {
-            slotDiv.innerHTML = `${pieza.svg}`;
-            slotDiv.classList.add('filled');
-        }
+        slot.addEventListener('dragleave', () => {
+            slot.classList.remove('drag-over');
+        });
 
-        elementoHTML.style.visibility = 'hidden';
+        slot.addEventListener('drop', (e) => {
+            e.preventDefault();
+            slot.classList.remove('drag-over');
 
-        if (!ordenSeleccionadoN3.includes(null)) {
-            validarEnsambleN3();
-        }
-    }
+            if (slot.classList.contains('filled')) return;
+
+            const piezaId = parseInt(e.dataTransfer.getData('text/plain'));
+            const caso = CASOS_NIVEL3[casoActualN3];
+            const pieza = caso.piezas.find(p => p.id === piezaId);
+            if (!pieza) return;
+
+            const slotIndex = parseInt(slot.dataset.slot);
+            ordenSeleccionadoN3[slotIndex] = pieza.id;
+
+            // Fusión visual: la pieza reemplaza el número y el slot pierde el borde punteado
+            slot.innerHTML = pieza.svg;
+            slot.classList.add('filled');
+
+            const piezaEnBandeja = document.querySelector(`.puzzle-piece[data-piece-id="${piezaId}"]`);
+            if (piezaEnBandeja) piezaEnBandeja.style.visibility = 'hidden';
+
+            if (!ordenSeleccionadoN3.includes(null)) {
+                validarEnsambleN3();
+            }
+        });
+    });
 }
 
 function validarEnsambleN3() {
@@ -748,7 +770,7 @@ function evaluarTratamientoN3(opcionSeleccionada) {
             alert(`✅ ¡Excelente! Has completado la reconstrucción y conducta clínica para ${caso.patologia}. Pasamos al siguiente caso.`);
             cargarCasoNivel3(casoActualN3);
         } else {
-            nivel3Terminado = true; // NUEVO: marca el Nivel 3 como completado para el mapa
+            nivel3Terminado = true;
             mostrarPantallaFinal();
             document.getElementById('modal-juego-completado').classList.remove('hidden');
         }
