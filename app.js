@@ -849,7 +849,7 @@ function calcularEcuacionOnda(x, tipo, height) {
     const scale = height * 0.35;
     const cycle = (x % 140) / 140;
 
-    switch (tipo) {
+switch (tipo) {
         case 'afib':
             return (Math.sin(x * 0.3) * 0.1 + (Math.random() - 0.5) * 0.15) * scale + (cycle > 0.45 && cycle < 0.5 ? (Math.random() > 0.5 ? 0.8 : -0.2) : 0) * scale;
         case 'aflutter':
@@ -858,24 +858,182 @@ function calcularEcuacionOnda(x, tipo, height) {
             return Math.sin(x * 0.08) * scale * 0.95;
         case 'vfib':
             return (Math.sin(x * 0.12) * 0.5 + Math.cos(x * 0.25) * 0.4 + (Math.random() - 0.5) * 0.3) * scale;
-        case 'sb':
+        
+        // Bradicardia Sinusal
+        case 'sb': {
             const cycleSlow = (x % 240) / 240;
             if (cycleSlow > 0.1 && cycleSlow < 0.18) return Math.sin((cycleSlow - 0.1) * Math.PI / 0.08) * 0.15 * scale;
             if (cycleSlow > 0.38 && cycleSlow < 0.42) return (cycleSlow < 0.4 ? -0.15 : 0.9) * scale;
             return 0;
-        case 'st':
+        }
+        // Taquicardia Sinusal
+        case 'st': {
             const cycleFast = (x % 80) / 80;
             if (cycleFast > 0.38 && cycleFast < 0.44) return 0.85 * scale;
             return 0;
-        default:
-            if (cycle > 0.15 && cycle < 0.25) return Math.sin((cycle - 0.15) * Math.PI / 0.1) * 0.15 * scale;
-            if (cycle > 0.38 && cycle < 0.40) return -0.15 * scale;
-            if (cycle >= 0.40 && cycle < 0.43) return 0.95 * scale;
-            if (cycle >= 0.43 && cycle < 0.45) return -0.25 * scale;
-            if (cycle > 0.55 && cycle < 0.70) return Math.sin((cycle - 0.55) * Math.PI / 0.15) * 0.25 * scale;
+        }
+
+        // --- RESTO DE LOS 26 RITMOS ---
+        case 'sinus_arrhythmia': {
+            const varCycle = 140 + Math.sin(x * 0.01) * 40;
+            const cVar = (x % varCycle) / varCycle;
+            if (cVar > 0.12 && cVar < 0.22) return Math.sin((cVar - 0.12) * Math.PI / 0.1) * 0.12 * scale;
+            if (cVar >= 0.37 && cVar <= 0.43) return 0.98 * scale;
+            if (cVar > 0.52 && cVar < 0.72) return Math.sin((cVar - 0.52) * Math.PI / 0.2) * 0.22 * scale;
             return 0;
+        }
+        case 'sinus_exit_block': {
+            const drop = Math.floor(x / 140) % 3 === 0 ? 0 : 1;
+            if (!drop) return (Math.random() - 0.5) * 0.005 * scale;
+            if (cycle > 0.12 && cycle < 0.22) return Math.sin((cycle - 0.12) * Math.PI / 0.1) * 0.12 * scale;
+            if (cycle >= 0.37 && cycle <= 0.43) return 0.98 * scale;
+            if (cycle > 0.52 && cycle < 0.72) return Math.sin((cycle - 0.52) * Math.PI / 0.2) * 0.22 * scale;
+            return 0;
+        }
+        case 'sinus_arrest': {
+            const blockCycle = x % 600;
+            if (blockCycle > 300 && blockCycle < 550) return (Math.random() - 0.5) * 0.003 * scale;
+            if (cycle > 0.12 && cycle < 0.22) return Math.sin((cycle - 0.12) * Math.PI / 0.1) * 0.12 * scale;
+            if (cycle >= 0.37 && cycle <= 0.43) return 0.98 * scale;
+            if (cycle > 0.52 && cycle < 0.72) return Math.sin((cycle - 0.52) * Math.PI / 0.2) * 0.22 * scale;
+            return 0;
+        }
+        case 'pac':
+        case 'nsr_pac': {
+            const isPremature = Math.floor(x / 180) % 4 === 2;
+            const len = isPremature ? 100 : 140;
+            const c = (x % len) / len;
+            if (c > 0.1 && c < 0.2) return Math.sin((c - 0.1) * Math.PI / 0.1) * 0.15 * scale;
+            if (c >= 0.35 && c <= 0.42) return 0.9 * scale;
+            if (c > 0.5 && c < 0.7) return Math.sin((c - 0.5) * Math.PI / 0.2) * 0.2 * scale;
+            return 0;
+        }
+        case 'svt':
+        case 'supraventricular_tachycardia': {
+            const c = (x % 55) / 55;
+            if (c > 0.3 && c < 0.45) return 0.9 * scale;
+            if (c > 0.5 && c < 0.7) return -0.2 * scale;
+            return 0;
+        }
+        case 'paced_atrial': {
+            if (cycle > 0.08 && cycle < 0.12) return 0.7 * scale;
+            if (cycle > 0.15 && cycle < 0.25) return Math.sin((cycle - 0.15) * Math.PI / 0.1) * 0.12 * scale;
+            if (cycle >= 0.38 && cycle <= 0.44) return 0.95 * scale;
+            if (cycle > 0.52 && cycle < 0.7) return Math.sin((cycle - 0.52) * Math.PI / 0.18) * 0.2 * scale;
+            return 0;
+        }
+        case 'first_deg_av': {
+            if (cycle > 0.08 && cycle < 0.18) return Math.sin((cycle - 0.08) * Math.PI / 0.1) * 0.12 * scale;
+            if (cycle >= 0.48 && cycle <= 0.54) return 0.95 * scale;
+            if (cycle > 0.62 && cycle < 0.8) return Math.sin((cycle - 0.62) * Math.PI / 0.18) * 0.2 * scale;
+            return 0;
+        }
+        case 'second_deg_type1':
+        case 'mobitz_1': {
+            const phase = Math.floor(x / 140) % 4;
+            const prShift = phase * 0.04;
+            if (cycle > (0.1 + prShift) && cycle < (0.2 + prShift)) return 0.12 * scale;
+            if (cycle >= 0.42 && cycle <= 0.48) return 0.95 * scale;
+            return 0;
+        }
+        case 'second_deg_type2':
+        case 'mobitz_2': {
+            const dropped = Math.floor(x / 140) % 3 === 0;
+            if (dropped && cycle < 0.3) return Math.sin(x * 0.1) * 0.1 * scale;
+            if (cycle > 0.12 && cycle < 0.22) return 0.12 * scale;
+            if (cycle >= 0.38 && cycle <= 0.44) return 0.95 * scale;
+            return 0;
+        }
+        case 'second_deg_2_1': {
+            const isQrs = Math.floor(x / 140) % 2 === 0;
+            if (cycle > 0.12 && cycle < 0.22) return 0.12 * scale;
+            if (isQrs && cycle >= 0.38 && cycle <= 0.44) return 0.95 * scale;
+            return 0;
+        }
+        case 'third_deg_av':
+        case 'complete_block': {
+            const pCycle = (x % 90) / 90;
+            const qrsCycle = (x % 220) / 220;
+            let val = (Math.sin(pCycle * Math.PI * 2) > 0.7) ? 0.12 * scale : 0;
+            if (qrsCycle > 0.35 && qrsCycle < 0.48) val += 0.95 * scale;
+            return val;
+        }
+        case 'pjc':
+        case 'junctional_rhythm': {
+            if (cycle >= 0.38 && cycle <= 0.44) return 0.95 * scale;
+            if (cycle > 0.52 && cycle < 0.7) return Math.sin((cycle - 0.52) * Math.PI / 0.18) * 0.2 * scale;
+            return 0;
+        }
+        case 'accelerated_junctional': {
+            if (cycle >= 0.38 && cycle <= 0.44) return 0.95 * scale;
+            return 0;
+        }
+        case 'junctional_tachycardia': {
+            const c = (x % 70) / 70;
+            if (c >= 0.35 && c <= 0.45) return 0.95 * scale;
+            return 0;
+        }
+        case 'wandering_pacemaker': {
+            const pHeight = Math.sin(x * 0.02) * 0.1;
+            if (cycle > 0.1 && cycle < 0.2) return pHeight * scale;
+            if (cycle >= 0.38 && cycle <= 0.44) return 0.95 * scale;
+            return 0;
+        }
+        case 'pvc':
+        case 'nsr_pvc': {
+            const isPVC = Math.floor(x / 160) % 4 === 2;
+            if (isPVC) {
+                if (cycle > 0.3 && cycle < 0.55) return Math.sin((cycle - 0.3) * Math.PI / 0.25) * 1.1 * scale;
+                return 0;
+            }
+            if (cycle > 0.12 && cycle < 0.22) return 0.12 * scale;
+            if (cycle >= 0.37 && cycle <= 0.43) return 0.95 * scale;
+            if (cycle > 0.52 && cycle < 0.72) return 0.22 * scale;
+            return 0;
+        }
+        case 'ivr':
+        case 'idioventricular': {
+            const c = (x % 220) / 220;
+            if (c > 0.32 && c < 0.5) return Math.sin((c - 0.32) * Math.PI / 0.18) * 0.9 * scale;
+            if (c > 0.55 && c < 0.78) return -Math.sin((c - 0.55) * Math.PI / 0.23) * 0.3 * scale;
+            return 0;
+        }
+        case 'aivr':
+        case 'accelerated_idioventricular': {
+            const c = (x % 130) / 130;
+            if (c > 0.32 && c < 0.5) return Math.sin((c - 0.32) * Math.PI / 0.18) * 0.9 * scale;
+            if (c > 0.55 && c < 0.78) return -Math.sin((c - 0.55) * Math.PI / 0.23) * 0.3 * scale;
+            return 0;
+        }
+        case 'paced_ventricular': {
+            if (cycle > 0.08 && cycle < 0.12) return 0.8 * scale;
+            if (cycle > 0.35 && cycle < 0.55) return Math.sin((cycle - 0.35) * Math.PI / 0.2) * 1.0 * scale;
+            return 0;
+        }
+
+        // --- RITMO POR DEFECTO (Ritmo Sinusal Normal que ya tenías) ---
+        default:
+            // 1. Onda P: Pequeña elevación suave antes del complejo
+            if (cycle > 0.12 && cycle < 0.22) {
+                return Math.sin((cycle - 0.12) * Math.PI / 0.1) * 0.12 * scale;
+            }
+
+            // 2. Complejo QRS: Muy agudo, estrecho y profundo en su onda S
+            if (cycle >= 0.37 && cycle <= 0.43) {
+                const qrsPhase = (cycle - 0.37) / 0.06;
+                if (qrsPhase < 0.2) return -0.15 * scale; // Onda Q (pequeña caída inicial)
+                if (qrsPhase < 0.6) return  0.98 * scale; // Onda R (pico alto, delgado y dominante)
+                return -0.35 * scale;                      // Onda S (caída profunda antes de subir)
+            }
+
+            // 3. Onda T: Ancha, suave y redondeada posterior al QRS
+            if (cycle > 0.52 && cycle < 0.72) {
+                return Math.sin((cycle - 0.52) * Math.PI / 0.2) * 0.22 * scale;
+            }
+
+            // Línea de base isoeléctrica estable con mínimo ruido de fondo
+            return (Math.random() - 0.5) * 0.005 * scale;
     }
-}
 
 // ==================== UTILIDADES DE MODALES Y TABLAS ====================
 function poblarSelectDiagnosticos() {
