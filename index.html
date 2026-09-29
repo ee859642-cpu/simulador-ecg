@@ -23,7 +23,7 @@
 
         <div class="header-right">
             <span id="player-badge" class="player-badge"></span>
-            <span id="score-badge" class="badge-score">🎯 Nivel 1: 0 / 6</span>
+            <span id="score-badge" class="badge-score">🎯 Nivel 1: 0 / 10</span>
             <span id="bias-display" class="ia-dependency-text">Índice Dependencia IA: 0%</span>
         </div>
     </header>
@@ -41,27 +41,52 @@
                 <div class="electrode-circle electrode" draggable="true" data-lead="V4">V4</div>
                 <div class="electrode-circle electrode" draggable="true" data-lead="V5">V5</div>
                 <div class="electrode-circle electrode" draggable="true" data-lead="V6">V6</div>
+                <div class="electrode-circle electrode electrode-perif" draggable="true" data-lead="R">R</div>
+                <div class="electrode-circle electrode electrode-perif" draggable="true" data-lead="L">L</div>
+                <div class="electrode-circle electrode electrode-perif" draggable="true" data-lead="N">N</div>
+                <div class="electrode-circle electrode electrode-perif" draggable="true" data-lead="F">F</div>
             </aside>
 
             <!-- ÁREA CENTRAL: VISOR ANATÓMICO (SIN TEXTO EN TORAX) -->
             <section id="center-viewport" class="center-viewport">
-                <p id="instruction-text" class="instruction-banner">Arrastra los electrodos precordiales a su posición anatómica correcta:</p>
+                <p id="instruction-text" class="instruction-banner">Arrastra los electrodos precordiales y periféricos a su posición anatómica correcta:</p>
 
                 <div class="torso-wrapper">
-                    <!-- Silueta SVG Anatómica -->
-                    <svg class="torso-svg-container" viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Silueta SVG Anatómica de cuerpo completo -->
+                    <svg class="torso-svg-container" viewBox="0 0 200 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Cabeza -->
                         <path d="M100 20 C115 20 125 32 125 48 C125 64 115 76 100 76 C85 76 75 64 75 48 C75 32 85 20 100 20 Z" fill="#243044" stroke="#38bdf8" stroke-width="1.5"/>
+                        <!-- Brazo lado R (izquierda del espectador) -->
+                        <path d="M62 100 C40 112 24 142 19 180 C16 202 15 218 18 234" fill="none" stroke="#38bdf8" stroke-width="2"/>
+                        <ellipse cx="18" cy="240" rx="11" ry="13" fill="#162032" stroke="#38bdf8" stroke-width="2"/>
+                        <!-- Brazo lado L (derecha del espectador) -->
+                        <path d="M138 100 C160 112 176 142 181 180 C184 202 185 218 182 234" fill="none" stroke="#38bdf8" stroke-width="2"/>
+                        <ellipse cx="182" cy="240" rx="11" ry="13" fill="#162032" stroke="#38bdf8" stroke-width="2"/>
+                        <!-- Torso -->
                         <path d="M60 95 C60 85 80 80 100 80 C120 80 140 85 140 95 L155 170 C160 195 145 270 140 280 L60 280 C55 270 40 195 45 170 Z" fill="#162032" stroke="#38bdf8" stroke-width="2"/>
+                        <!-- Pierna lado N (izquierda del espectador) -->
+                        <path d="M66 278 C59 310 52 346 47 376" fill="none" stroke="#38bdf8" stroke-width="2"/>
+                        <ellipse cx="46" cy="382" rx="13" ry="9" fill="#162032" stroke="#38bdf8" stroke-width="2"/>
+                        <!-- Pierna lado F (derecha del espectador) -->
+                        <path d="M134 278 C141 310 148 346 153 376" fill="none" stroke="#38bdf8" stroke-width="2"/>
+                        <ellipse cx="154" cy="382" rx="13" ry="9" fill="#162032" stroke="#38bdf8" stroke-width="2"/>
+                        <!-- Líneas del torso -->
                         <path d="M75 110 Q100 125 125 110 M72 130 Q100 148 128 130 M70 150 Q100 170 130 150 M72 170 Q100 190 128 170" stroke="#243044" stroke-width="2" fill="none"/>
                     </svg>
 
-                    <!-- Puntos Anatómicos de Soltado (Puntos sin texto) -->
-                    <div class="dropzone-overlay dropzone" data-target="V1" style="top: 38%; left: 43%;" title="4º Espacio Intercostal Derecho"></div>
-                    <div class="dropzone-overlay dropzone" data-target="V2" style="top: 38%; left: 57%;" title="4º Espacio Intercostal Izquierdo"></div>
-                    <div class="dropzone-overlay dropzone" data-target="V3" style="top: 47%; left: 52%;" title="Entre V2 y V4"></div>
-                    <div class="dropzone-overlay dropzone" data-target="V4" style="top: 55%; left: 45%;" title="5º Espacio Intercostal Izquierdo Línea Medioclavicular"></div>
-                    <div class="dropzone-overlay dropzone" data-target="V5" style="top: 55%; left: 60%;" title="5º Espacio Intercostal Línea Axilar Anterior"></div>
-                    <div class="dropzone-overlay dropzone" data-target="V6" style="top: 55%; left: 72%;" title="5º Espacio Intercostal Línea Axilar Media"></div>
+                    <!-- Puntos Precordiales -->
+                    <div class="dropzone-overlay dropzone" data-target="V1" style="top: 28.5%; left: 43%;" title="4º Espacio Intercostal Derecho"></div>
+                    <div class="dropzone-overlay dropzone" data-target="V2" style="top: 28.5%; left: 57%;" title="4º Espacio Intercostal Izquierdo"></div>
+                    <div class="dropzone-overlay dropzone" data-target="V3" style="top: 35.25%; left: 52%;" title="Entre V2 y V4"></div>
+                    <div class="dropzone-overlay dropzone" data-target="V4" style="top: 41.25%; left: 45%;" title="5º Espacio Intercostal Izquierdo Línea Medioclavicular"></div>
+                    <div class="dropzone-overlay dropzone" data-target="V5" style="top: 41.25%; left: 60%;" title="5º Espacio Intercostal Línea Axilar Anterior"></div>
+                    <div class="dropzone-overlay dropzone" data-target="V6" style="top: 41.25%; left: 72%;" title="5º Espacio Intercostal Línea Axilar Media"></div>
+
+                    <!-- Puntos Periféricos -->
+                    <div class="dropzone-overlay dropzone dropzone-perif" data-target="R" style="top: 60%; left: 9%;" title="Muñeca / Brazo Derecho"></div>
+                    <div class="dropzone-overlay dropzone dropzone-perif" data-target="L" style="top: 60%; left: 91%;" title="Muñeca / Brazo Izquierdo"></div>
+                    <div class="dropzone-overlay dropzone dropzone-perif" data-target="N" style="top: 95.5%; left: 23%;" title="Tobillo Derecho (Neutro)"></div>
+                    <div class="dropzone-overlay dropzone dropzone-perif" data-target="F" style="top: 95.5%; left: 77%;" title="Tobillo Izquierdo"></div>
                 </div>
             </section>
         </div>
@@ -72,16 +97,16 @@
                 <h2 id="n3-patient-title" style="color: #38bdf8; margin-bottom: 5px;">CASO CLÍNICO DE NIVEL 3</h2>
                 <p id="n3-patient-desc" style="color: #94a3b8; margin-bottom: 20px;"></p>
                 
-                <!-- Slots de la onda -->
-                <div class="puzzle-slots-container" style="display: flex; gap: 10px; margin-bottom: 25px;">
+                <!-- Pista visual de la onda (slots que se fusionan al arrastrar) -->
+                <div class="puzzle-slots-container">
                     <div class="puzzle-slot" data-slot="0"></div>
                     <div class="puzzle-slot" data-slot="1"></div>
                     <div class="puzzle-slot" data-slot="2"></div>
                     <div class="puzzle-slot" data-slot="3"></div>
                 </div>
 
-                <!-- Piezas desordenadas -->
-                <div id="puzzle-pieces-container" style="display: flex; gap: 15px; margin-bottom: 25px;"></div>
+                <!-- Piezas arrastrables -->
+                <div id="puzzle-pieces-container" style="display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap;"></div>
 
                 <!-- Sección de Tratamiento -->
                 <div id="n3-treatment-section" class="hidden">
@@ -120,7 +145,7 @@
         </div>
     </footer>
 
-    <!-- NUEVO: PANTALLA DE BIENVENIDA (se muestra primero, antes del registro) -->
+    <!-- PANTALLA DE BIENVENIDA -->
     <div id="modal-splash" class="modal-overlay hidden">
         <div class="modal-content" style="text-align:center;">
             <h2 style="color:#38bdf8; margin-bottom: 10px;">🩺 Bienvenido, listo para tu trabajo</h2>
@@ -147,7 +172,7 @@
         </div>
     </div>
 
-    <!-- NUEVO: MAPA DE NIVELES -->
+    <!-- MAPA DE NIVELES -->
     <div id="modal-mapa-niveles" class="modal-overlay hidden">
         <div class="modal-content" style="max-width:560px;">
             <h2 style="color:#38bdf8; margin-bottom: 6px;">🗺️ Mapa de la Guardia</h2>
@@ -159,9 +184,9 @@
     <!-- MODALES DE CONTROL -->
     <div id="modal-nivel1-intro" class="modal-overlay hidden">
         <div class="modal-content">
-            <h2 style="color: #38bdf8; margin-bottom: 10px;">⚡ Nivel 1: Posicionamiento Precordial</h2>
+            <h2 style="color: #38bdf8; margin-bottom: 10px;">⚡ Nivel 1: Posicionamiento de Electrodos</h2>
             <p style="color: #94a3b8; font-size: 0.9rem; line-height: 1.4; margin-bottom: 15px;">
-                Arrastra los 6 electrodos precordiales (V1 a V6) hasta su ubicación anatómica correcta en el torso.
+                Arrastra los 10 electrodos: los 6 precordiales (V1 a V6) y los 4 periféricos (R, L, N, F) hasta su ubicación anatómica correcta.
             </p>
             <button class="btn-ai-confirm" onclick="cerrarModalNivel1()">Comenzar Nivel 1</button>
         </div>
@@ -213,7 +238,7 @@
         </div>
     </div>
 
-    <!-- MODAL FINAL: AVATAR, MENSAJE POR GÉNERO, ESTADÍSTICAS, INSIGNIAS Y CLASIFICACIÓN -->
+    <!-- MODAL FINAL -->
     <div id="modal-juego-completado" class="modal-overlay hidden">
         <div class="modal-content">
             <div id="final-player-badge" class="player-badge" style="font-size: 1rem; margin-bottom: 8px;"></div>
@@ -223,7 +248,7 @@
         </div>
     </div>
 
-    <!-- OPCIONAL: Firebase para tabla de posiciones en tiempo real (leaderboard del docente). -->
+    <!-- OPCIONAL: Firebase para tabla de posiciones en tiempo real -->
     <!--
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
