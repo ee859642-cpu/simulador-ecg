@@ -1010,6 +1010,7 @@ switch (tipo) {
             if (cycle > 0.35 && cycle < 0.55) return Math.sin((cycle - 0.35) * Math.PI / 0.2) * 1.0 * scale;
             return 0;
         }
+}
 
         // --- RITMO POR DEFECTO (Ritmo Sinusal Normal que ya tenías) ---
         default:
