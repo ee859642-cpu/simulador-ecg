@@ -309,6 +309,12 @@ function mostrarPantallaFinal() {
         finalTitulo.innerText = `🏆 ¡Felicidades ${nombreMostrado}, eres tod${terminacion} un${terminacion} ${tituloAvatar}!`;
     }
 
+    // NUEVO: el mascote "presenta" el resultado con una frase que resume el desempeño
+    const mascotFinalMsg = document.getElementById('mascot-final-msg');
+    if (mascotFinalMsg) {
+        mascotFinalMsg.innerText = `👋 ¡Turno finalizado, ${nombreMostrado}! Lograste ${precisionNivel2}% de precisión en ${tiempoFormateado}. Aquí tienes tu reporte completo:`;
+    }
+
     const resultadoActual = {
         nombre: nombreMostrado,
         genero: jugadorGenero,
@@ -794,28 +800,26 @@ function detenerAnimacionCanvas() {
     }
 }
 
+// ==================== CORREGIDO: se limpia con clearRect (transparente) en vez de
+// rellenar con un color sólido y dibujar líneas propias. Así la cuadrícula CSS de
+// .canvas-wrapper queda siempre visible de fondo, tanto delante como detrás del trazo. ====================
 function iniciarAnimacionECG(tipoRitmo) {
     detenerAnimacionCanvas();
     const canvas = document.getElementById('ecg-wave');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
 
+    // Limpia todo el lienzo al iniciar un caso nuevo, para no arrastrar el trazo del caso anterior
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
     let x = 0;
     const centerY = canvas.height / 2;
     const speed = 2.5;
 
     function dibujarFrame() {
-        ctx.fillStyle = '#051109';
-        ctx.fillRect(x, 0, speed + 2, canvas.height);
-
-        ctx.strokeStyle = 'rgba(0, 255, 102, 0.15)';
-        ctx.lineWidth = 0.5;
-        for (let y = 0; y < canvas.height; y += 15) {
-            ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.lineTo(x + speed + 2, y);
-            ctx.stroke();
-        }
+        // Borra (transparenta) solo la franja que se va a redibujar; la cuadrícula CSS
+        // de fondo se sigue viendo a través de esa zona transparente.
+        ctx.clearRect(x, 0, speed + 2, canvas.height);
 
         let yOffset = calcularEcuacionOnda(x, tipoRitmo, canvas.height);
 
@@ -832,7 +836,10 @@ function iniciarAnimacionECG(tipoRitmo) {
         ctx.shadowBlur = 0;
 
         x += speed;
-        if (x >= canvas.width) x = 0;
+        if (x >= canvas.width) {
+            x = 0;
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // reinicia el barrido limpio
+        }
 
         animacionCanvasId = requestAnimationFrame(dibujarFrame);
     }
@@ -868,7 +875,7 @@ function calcularEcuacionOnda(x, tipo, height) {
         }
         case 's_block': { // Sinus Exit Block
             const drop = Math.floor(x / 140) % 3 === 0;
-            if (drop) return (Math.random() - 0.5) * 0.005 * scale;
+            if (drop) return 0;
             if (cycle > 0.12 && cycle < 0.22) return Math.sin((cycle - 0.12) * Math.PI / 0.1) * 0.12 * scale;
             if (cycle >= 0.37 && cycle <= 0.43) return 0.98 * scale;
             if (cycle > 0.52 && cycle < 0.72) return Math.sin((cycle - 0.52) * Math.PI / 0.2) * 0.22 * scale;
@@ -876,7 +883,7 @@ function calcularEcuacionOnda(x, tipo, height) {
         }
         case 's_arrest': { // Sinus Arrest
             const blockCycle = x % 600;
-            if (blockCycle > 300 && blockCycle < 550) return (Math.random() - 0.5) * 0.003 * scale;
+            if (blockCycle > 300 && blockCycle < 550) return 0;
             if (cycle > 0.12 && cycle < 0.22) return Math.sin((cycle - 0.12) * Math.PI / 0.1) * 0.12 * scale;
             if (cycle >= 0.37 && cycle <= 0.43) return 0.98 * scale;
             if (cycle > 0.52 && cycle < 0.72) return Math.sin((cycle - 0.52) * Math.PI / 0.2) * 0.22 * scale;
@@ -1017,7 +1024,7 @@ function calcularEcuacionOnda(x, tipo, height) {
             if (cycle > 0.52 && cycle < 0.72) {
                 return Math.sin((cycle - 0.52) * Math.PI / 0.2) * 0.22 * scale;
             }
-            return (Math.random() - 0.5) * 0.005 * scale;
+            return 0;
     }
 }
 
@@ -1063,8 +1070,6 @@ const CASOS_NIVEL3 = [
         id: 1,
         paciente: "Paciente masculino de 68 años con palpitaciones, mareos y pulso irregularmente irregular.",
         patologia: "Atrial Fibrillallation",
-        // Morfología ajustada: línea de base fibrilatoria fina e irregular ("ondas f"), sin onda P,
-        // con complejos QRS estrechos apareciendo a intervalos irregulares (irregularmente irregular), como en el PDF.
         piezas: [
             { id: 0, label: "Inicio: Línea de base fibrilatoria (ondas f), sin QRS aún", hint: "Conector: Borde Izquierdo", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 Q8,17 16,22 Q24,17 32,21 Q40,16 48,23 Q56,17 64,20 Q72,18 80,22 Q88,17 96,20 L100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
             { id: 1, label: "QRS irregular #1 sobre línea fibrilatoria", hint: "Conector: Empalme con línea fibrilatoria previa", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 Q8,17 16,21 L22,20 L26,7 L30,33 L34,20 Q42,18 50,22 Q58,17 66,20 Q74,18 82,21 Q90,17 96,20 L100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
@@ -1099,8 +1104,6 @@ const CASOS_NIVEL3 = [
         id: 3,
         paciente: "Paciente masculino de 60 años con antecedente de miocardiopatía que presenta taquicardia sostenida de QRS ancho y presíncope.",
         patologia: "Ventricular tachycardia(VTach)",
-        // Morfología ajustada: complejos anchos, monomórficos (todos idénticos) y regulares,
-        // como el trazado ondulante y de gran amplitud del PDF (VT rate 210).
         piezas: [
             { id: 0, label: "Inicio: Complejo Ancho Monomórfico #1", hint: "Conector: Borde Izquierdo", svg: '<svg viewBox="0 0 100 40"><path d="M0,30 Q15,-8 30,30 Q45,58 60,30 L100,30" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
             { id: 1, label: "Ciclo Intermedio: Complejo Ancho Monomórfico #2", hint: "Conector: Continuidad #1-#2", svg: '<svg viewBox="0 0 100 40"><path d="M0,30 Q15,-8 30,30 Q45,58 60,30 L100,30" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
