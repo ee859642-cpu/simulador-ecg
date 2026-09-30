@@ -60,10 +60,9 @@ function obtenerAudioCtx() {
     if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     }
-    // CORREGIDO: algunos navegadores suspenden automáticamente el AudioContext
-    // tras un periodo sin sonido audible (los latidos son muy cortos y con pausas
-    // largas entre sí). Si eso pasa, cualquier sonido posterior queda en silencio
-    // hasta que se reanude explícitamente. Lo reanudamos en cada uso.
+    // Algunos navegadores suspenden automáticamente el AudioContext tras un periodo
+    // sin sonido audible (los latidos son cortos y con pausas largas entre sí).
+    // Si eso pasa, cualquier sonido posterior queda en silencio hasta reanudarlo.
     if (audioCtx.state === 'suspended') {
         audioCtx.resume().catch(() => { /* se reintentará en el próximo sonido */ });
     }
@@ -316,7 +315,6 @@ function mostrarPantallaFinal() {
         finalTitulo.innerText = `🏆 ¡Felicidades ${nombreMostrado}, eres tod${terminacion} un${terminacion} ${tituloAvatar}!`;
     }
 
-    // NUEVO: el mascote "presenta" el resultado con una frase que resume el desempeño
     const mascotFinalMsg = document.getElementById('mascot-final-msg');
     if (mascotFinalMsg) {
         mascotFinalMsg.innerText = `👋 ¡Turno finalizado, ${nombreMostrado}! Lograste ${precisionNivel2}% de precisión en ${tiempoFormateado}. Aquí tienes tu reporte completo:`;
@@ -807,45 +805,50 @@ function detenerAnimacionCanvas() {
     }
 }
 
-// ==================== CORREGIDO: se limpia con clearRect (transparente) en vez de
-// rellenar con un color sólido y dibujar líneas propias. Así la cuadrícula CSS de
-// .canvas-wrapper queda siempre visible de fondo, tanto delante como detrás del trazo. ====================
+// ==================== ANIMACIÓN DEL TRAZO ECG ====================
 function iniciarAnimacionECG(tipoRitmo) {
     detenerAnimacionCanvas();
     const canvas = document.getElementById('ecg-wave');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
-
-    // Limpia todo el lienzo al iniciar un caso nuevo, para no arrastrar el trazo del caso anterior
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     let x = 0;
     const centerY = canvas.height / 2;
     const speed = 2.5;
+    const SUBPASOS = 5; // 0.5 px por muestra
+    let prevX = 0;
+    let prevY = centerY - calcularEcuacionOnda(0, tipoRitmo, canvas.height);
 
     function dibujarFrame() {
-        // Borra (transparenta) solo la franja que se va a redibujar; la cuadrícula CSS
-        // de fondo se sigue viendo a través de esa zona transparente.
-        ctx.clearRect(x, 0, speed + 2, canvas.height);
-
-        let yOffset = calcularEcuacionOnda(x, tipoRitmo, canvas.height);
-
         ctx.strokeStyle = '#10b981';
         ctx.lineWidth = 2;
+        ctx.lineJoin = 'round';
         ctx.shadowColor = '#10b981';
         ctx.shadowBlur = 8;
 
         ctx.beginPath();
-        ctx.moveTo(x, centerY);
-        ctx.lineTo(x + speed, centerY - yOffset);
+        ctx.moveTo(prevX, prevY);
+        for (let i = 1; i <= SUBPASOS; i++) {
+            const xs = x + (speed * i) / SUBPASOS;
+            const ys = centerY - calcularEcuacionOnda(xs, tipoRitmo, canvas.height);
+            ctx.lineTo(xs, ys);
+            prevX = xs;
+            prevY = ys;
+        }
         ctx.stroke();
-
         ctx.shadowBlur = 0;
 
         x += speed;
+
+        // Borra una franja pequeña por delante del trazo (efecto monitor de barrido)
+        ctx.clearRect(x + 1, 0, 14, canvas.height);
+
         if (x >= canvas.width) {
             x = 0;
-            ctx.clearRect(0, 0, canvas.width, canvas.height); // reinicia el barrido limpio
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            prevX = 0;
+            prevY = centerY - calcularEcuacionOnda(0, tipoRitmo, canvas.height);
         }
 
         animacionCanvasId = requestAnimationFrame(dibujarFrame);
@@ -854,185 +857,245 @@ function iniciarAnimacionECG(tipoRitmo) {
     dibujarFrame();
 }
 
-// ==================== FUNCIÓN CORREGIDA: 27 RITMOS, SIN DUPLICADOS, IDS CORRECTOS ====================
-function calcularEcuacionOnda(x, tipo, height) {
-    const scale = height * 0.35;
-    const cycle = (x % 140) / 140;
+// ==================== GENERADOR DE ONDAS ECG POR MORFOLOGÍA (P-Q-R-S-T) ====================
+const PX_POR_SEG = 150;
+const LARGO_TRAZO = 4500;
+const cacheRitmosECG = {};
+
+const gauss = (t, mu, sigma, amp) => amp * Math.exp(-((t - mu) * (t - mu)) / (2 * sigma * sigma));
+const cicloPx = (bpm) => (60 / bpm) * PX_POR_SEG;
+
+function morfologia(o = {}) {
+    const d = Object.assign({
+        pa: 0.14, pr: 26, ps: 4.2,
+        qa: -0.12, ra: 1.0, sa: -0.25, rw: 2.0,
+        ta: 0.30, tt: 40, tw: 9,
+        extra: []
+    }, o);
+    const c = [];
+    if (d.pa) c.push([-d.pr, d.ps, d.pa]);
+    if (d.qa) c.push([-d.rw * 2.4, d.rw * 0.7, d.qa]);
+    c.push([0, d.rw, d.ra]);
+    if (d.sa) c.push([d.rw * 2.4, d.rw * 0.9, d.sa]);
+    if (d.ta) c.push([d.tt, d.tw, d.ta]);
+    return c.concat(d.extra);
+}
+
+const ANCHO = { qa: 0, sa: 0, pa: 0, rw: 6.5, ra: 1.0, ta: -0.40, tt: 50, tw: 12 };
+
+function crearRitmo(tipo) {
+    const latidos = [];
+    const latido = (pos, o) => latidos.push({ pos, comps: morfologia(o) });
+    const soloP = (pos, amp = 0.14) => latidos.push({ pos, comps: [[0, 4.2, amp]] });
+    let extra = null;
+
+    const secuencia = (intervalos, inicio, fn) => {
+        let pos = inicio, k = 0;
+        while (pos < LARGO_TRAZO) {
+            fn(pos, k);
+            pos += intervalos[k % intervalos.length];
+            k++;
+        }
+    };
 
     switch (tipo) {
-        // ---------- FAMILIA SINUSAL ----------
-        case 'sb': { // Bradicardia Sinusal
-            const c = (x % 240) / 240;
-            if (c > 0.1 && c < 0.18) return Math.sin((c - 0.1) * Math.PI / 0.08) * 0.15 * scale;
-            if (c > 0.38 && c < 0.42) return (c < 0.4 ? -0.15 : 0.9) * scale;
-            return 0;
+        case 'sb': {
+            const L = cicloPx(54);
+            secuencia([L], 50, (p) => latido(p, { pr: 30, tt: 46, tw: 10 }));
+            break;
         }
-        case 'st': { // Taquicardia Sinusal
-            const c = (x % 80) / 80;
-            if (c > 0.38 && c < 0.44) return 0.85 * scale;
-            return 0;
+        case 'st': {
+            const L = cicloPx(138);
+            secuencia([L], 30, (p) => latido(p, { pr: 19, pa: 0.12, ps: 3.2, tt: 27, tw: 6.5, ta: 0.26 }));
+            break;
         }
-        case 'sa': { // Sinus Arrhythmia
-            const varCycle = 140 + Math.sin(x * 0.01) * 40;
-            const c = (x % varCycle) / varCycle;
-            if (c > 0.12 && c < 0.22) return Math.sin((c - 0.12) * Math.PI / 0.1) * 0.12 * scale;
-            if (c >= 0.37 && c <= 0.43) return 0.98 * scale;
-            if (c > 0.52 && c < 0.72) return Math.sin((c - 0.52) * Math.PI / 0.2) * 0.22 * scale;
-            return 0;
+        case 'sa': {
+            const L = cicloPx(78);
+            const ints = []; for (let i = 0; i < 40; i++) ints.push(L + Math.sin(i * 0.75) * L * 0.28);
+            secuencia(ints, 50, (p) => latido(p));
+            break;
         }
-        case 's_block': { // Sinus Exit Block
-            const drop = Math.floor(x / 140) % 3 === 0;
-            if (drop) return 0;
-            if (cycle > 0.12 && cycle < 0.22) return Math.sin((cycle - 0.12) * Math.PI / 0.1) * 0.12 * scale;
-            if (cycle >= 0.37 && cycle <= 0.43) return 0.98 * scale;
-            if (cycle > 0.52 && cycle < 0.72) return Math.sin((cycle - 0.52) * Math.PI / 0.2) * 0.22 * scale;
-            return 0;
+        case 's_block': {
+            const L = cicloPx(75);
+            secuencia([L], 50, (p, k) => { if (k % 4 !== 3) latido(p); });
+            break;
         }
-        case 's_arrest': { // Sinus Arrest
-            const blockCycle = x % 600;
-            if (blockCycle > 300 && blockCycle < 550) return 0;
-            if (cycle > 0.12 && cycle < 0.22) return Math.sin((cycle - 0.12) * Math.PI / 0.1) * 0.12 * scale;
-            if (cycle >= 0.37 && cycle <= 0.43) return 0.98 * scale;
-            if (cycle > 0.52 && cycle < 0.72) return Math.sin((cycle - 0.52) * Math.PI / 0.2) * 0.22 * scale;
-            return 0;
+        case 's_arrest': {
+            const L = cicloPx(70);
+            secuencia([L, L, L, L, L * 2.9], 50, (p) => latido(p));
+            break;
         }
-        case 'pac': { // NSR with PAC
-            const isPremature = Math.floor(x / 180) % 4 === 2;
-            const len = isPremature ? 100 : 140;
-            const c = (x % len) / len;
-            if (c > 0.1 && c < 0.2) return Math.sin((c - 0.1) * Math.PI / 0.1) * 0.15 * scale;
-            if (c >= 0.35 && c <= 0.42) return 0.9 * scale;
-            if (c > 0.5 && c < 0.7) return Math.sin((c - 0.5) * Math.PI / 0.2) * 0.2 * scale;
-            return 0;
+        case 'pac': {
+            const L = cicloPx(84);
+            secuencia([L, L, L * 0.68, L * 1.3], 50, (p, k) => {
+                if (k % 4 === 2) latido(p, { pa: -0.10, pr: 17, ta: 0.34, tt: 38 });
+                else latido(p);
+            });
+            break;
         }
 
-        // ---------- FAMILIA AURICULAR ----------
-        case 'svt': { // Supraventricular Tachycardia
-            const c = (x % 55) / 55;
-            if (c > 0.3 && c < 0.45) return 0.9 * scale;
-            if (c > 0.5 && c < 0.7) return -0.2 * scale;
-            return 0;
+        case 'svt': {
+            const L = cicloPx(180);
+            secuencia([L], 30, (p) => latido(p, { pa: 0, sa: -0.3, rw: 1.7, ta: 0.14, tt: 21, tw: 5.5,
+                extra: [[10, 6, -0.12]] }));
+            break;
         }
-        case 'afib': // Atrial Fibrillation
-            return (Math.sin(x * 0.3) * 0.1 + (Math.random() - 0.5) * 0.15) * scale + (cycle > 0.45 && cycle < 0.5 ? (Math.random() > 0.5 ? 0.8 : -0.2) : 0) * scale;
-        case 'aflutter': // Atrial Flutter
-            return (Math.sin(x * 0.2) * 0.25 + (cycle > 0.48 && cycle < 0.52 ? 0.9 : 0)) * scale;
-        case 'paced_a': { // Paced Atrial rhythm
-            if (cycle > 0.08 && cycle < 0.12) return 0.7 * scale;
-            if (cycle > 0.15 && cycle < 0.25) return Math.sin((cycle - 0.15) * Math.PI / 0.1) * 0.12 * scale;
-            if (cycle >= 0.38 && cycle <= 0.44) return 0.95 * scale;
-            if (cycle > 0.52 && cycle < 0.7) return Math.sin((cycle - 0.52) * Math.PI / 0.18) * 0.2 * scale;
-            return 0;
+        case 'afib': {
+            const ints = []; for (let i = 0; i < 60; i++) ints.push(62 + 62 * (0.5 + 0.5 * Math.sin(i * 2.399 + Math.sin(i * 1.7) * 2)));
+            secuencia(ints, 60, (p) => latido(p, { pa: 0, ta: 0.14, tt: 34, tw: 8 }));
+            extra = (x) => 0.055 * Math.sin(x * 0.47) + 0.045 * Math.sin(x * 0.91 + 1.3) + 0.03 * Math.sin(x * 1.63 + 0.4);
+            break;
         }
-        case 'wandering': { // Wandering Pacemaker
-            const pHeight = Math.sin(x * 0.02) * 0.1;
-            if (cycle > 0.1 && cycle < 0.2) return pHeight * scale;
-            if (cycle >= 0.38 && cycle <= 0.44) return 0.95 * scale;
-            return 0;
+        case 'aflutter': {
+            const L = cicloPx(75);
+            secuencia([L], 50, (p) => latido(p, { pa: 0, ta: 0, sa: -0.15 }));
+            extra = (x) => {
+                const f = (x % 30) / 30;
+                return f < 0.85 ? 0.12 - 0.32 * (f / 0.85) : -0.20 + 0.32 * ((f - 0.85) / 0.15);
+            };
+            break;
         }
-
-        // ---------- BLOQUEOS AV ----------
-        case 'avb1': { // NSR with 1st Degree AV Block
-            if (cycle > 0.08 && cycle < 0.18) return Math.sin((cycle - 0.08) * Math.PI / 0.1) * 0.12 * scale;
-            if (cycle >= 0.48 && cycle <= 0.54) return 0.95 * scale;
-            if (cycle > 0.62 && cycle < 0.8) return Math.sin((cycle - 0.62) * Math.PI / 0.18) * 0.2 * scale;
-            return 0;
+        case 'paced_a': {
+            const L = cicloPx(60);
+            secuencia([L], 60, (p) => latido(p, { pr: 24, pa: 0.16, extra: [[-38, 0.7, 0.65], [-37, 0.7, -0.12]] }));
+            break;
         }
-        case 'avb2_1': { // 2nd Degree AV Block Type I (Wenckebach)
-            const phase = Math.floor(x / 140) % 4;
-            const prShift = phase * 0.04;
-            if (cycle > (0.1 + prShift) && cycle < (0.2 + prShift)) return 0.12 * scale;
-            if (cycle >= 0.42 && cycle <= 0.48) return 0.95 * scale;
-            return 0;
-        }
-        case 'avb2_2': { // 2nd Degree AV Block Type II
-            const dropped = Math.floor(x / 140) % 3 === 0;
-            if (dropped && cycle < 0.3) return Math.sin(x * 0.1) * 0.1 * scale;
-            if (cycle > 0.12 && cycle < 0.22) return 0.12 * scale;
-            if (cycle >= 0.38 && cycle <= 0.44) return 0.95 * scale;
-            return 0;
-        }
-        case 'avb2_21': { // 2nd Degree AV Block 2:1
-            const isQrs = Math.floor(x / 140) % 2 === 0;
-            if (cycle > 0.12 && cycle < 0.22) return 0.12 * scale;
-            if (isQrs && cycle >= 0.38 && cycle <= 0.44) return 0.95 * scale;
-            return 0;
-        }
-        case 'avb3': { // 3rd Degree AV Block (disociación completa)
-            const pCycle = (x % 90) / 90;
-            const qrsCycle = (x % 220) / 220;
-            let val = (Math.sin(pCycle * Math.PI * 2) > 0.7) ? 0.12 * scale : 0;
-            if (qrsCycle > 0.35 && qrsCycle < 0.48) val += 0.95 * scale;
-            return val;
+        case 'wandering': {
+            const L = cicloPx(78);
+            const pas = [0.16, 0.09, -0.06, 0.13, 0.05, -0.09];
+            const prs = [28, 22, 15, 26, 18, 13];
+            secuencia([L * 1.0, L * 0.94, L * 1.06, L * 0.97, L * 1.04, L], 50, (p, k) =>
+                latido(p, { pa: pas[k % 6], pr: prs[k % 6] }));
+            break;
         }
 
-        // ---------- FAMILIA NODAL / UNIÓN ----------
-        case 'pjc':
-        case 'j_rhythm': { // PJC y Junctional Rhythm
-            if (cycle >= 0.38 && cycle <= 0.44) return 0.95 * scale;
-            if (cycle > 0.52 && cycle < 0.7) return Math.sin((cycle - 0.52) * Math.PI / 0.18) * 0.2 * scale;
-            return 0;
+        case 'avb1': {
+            const L = cicloPx(74);
+            secuencia([L], 70, (p) => latido(p, { pr: 46, pa: 0.15 }));
+            break;
         }
-        case 'acc_junct': { // Accelerated Junctional
-            if (cycle >= 0.38 && cycle <= 0.44) return 0.95 * scale;
-            return 0;
+        case 'avb2_1': {
+            const PP = 100, prs = [24, 38, 54, null];
+            secuencia([PP], 40, (p, k) => {
+                const pr = prs[k % 4];
+                soloP(p);
+                if (pr) latido(p + pr, { pa: 0 });
+            });
+            break;
         }
-        case 'j_tach': { // Junctional Tachycardia
-            const c = (x % 70) / 70;
-            if (c >= 0.35 && c <= 0.45) return 0.95 * scale;
-            return 0;
+        case 'avb2_2': {
+            const PP = 95;
+            secuencia([PP], 40, (p, k) => {
+                soloP(p);
+                if (k % 3 !== 2) latido(p + 30, { pa: 0, rw: 3, qa: -0.08, ta: 0.25 });
+            });
+            break;
         }
-
-        // ---------- FAMILIA VENTRICULAR ----------
-        case 'pvc': { // NSR with PVC
-            const isPVC = Math.floor(x / 160) % 4 === 2;
-            if (isPVC) {
-                if (cycle > 0.3 && cycle < 0.55) return Math.sin((cycle - 0.3) * Math.PI / 0.25) * 1.1 * scale;
-                return 0;
-            }
-            if (cycle > 0.12 && cycle < 0.22) return 0.12 * scale;
-            if (cycle >= 0.37 && cycle <= 0.43) return 0.95 * scale;
-            if (cycle > 0.52 && cycle < 0.72) return 0.22 * scale;
-            return 0;
+        case 'avb2_21': {
+            const PP = 118;
+            secuencia([PP], 40, (p, k) => {
+                soloP(p);
+                if (k % 2 === 0) latido(p + 30, { pa: 0, rw: 3 });
+            });
+            break;
         }
-        case 'idiov': { // Idioventricular Rhythm
-            const c = (x % 220) / 220;
-            if (c > 0.32 && c < 0.5) return Math.sin((c - 0.32) * Math.PI / 0.18) * 0.9 * scale;
-            if (c > 0.55 && c < 0.78) return -Math.sin((c - 0.55) * Math.PI / 0.23) * 0.3 * scale;
-            return 0;
-        }
-        case 'acc_idiov': { // Accelerated Idioventricular Rhythm
-            const c = (x % 130) / 130;
-            if (c > 0.32 && c < 0.5) return Math.sin((c - 0.32) * Math.PI / 0.18) * 0.9 * scale;
-            if (c > 0.55 && c < 0.78) return -Math.sin((c - 0.55) * Math.PI / 0.23) * 0.3 * scale;
-            return 0;
-        }
-        case 'vt_mono': // Ventricular Tachycardia
-            return Math.sin(x * 0.08) * scale * 0.95;
-        case 'vfib': // Ventricular Fibrillation
-            return (Math.sin(x * 0.12) * 0.5 + Math.cos(x * 0.25) * 0.4 + (Math.random() - 0.5) * 0.3) * scale;
-        case 'paced_v': { // Paced Ventricular Rhythm
-            if (cycle > 0.08 && cycle < 0.12) return 0.8 * scale;
-            if (cycle > 0.35 && cycle < 0.55) return Math.sin((cycle - 0.35) * Math.PI / 0.2) * 1.0 * scale;
-            return 0;
+        case 'avb3': {
+            secuencia([75], 20, (p) => soloP(p));
+            secuencia([cicloPx(36)], 100, (p) => latido(p, ANCHO));
+            break;
         }
 
-        // ---------- RITMO SINUSAL NORMAL (default: 'sr' y cualquier caso no listado) ----------
-        default:
-            if (cycle > 0.12 && cycle < 0.22) {
-                return Math.sin((cycle - 0.12) * Math.PI / 0.1) * 0.12 * scale;
-            }
-            if (cycle >= 0.37 && cycle <= 0.43) {
-                const qrsPhase = (cycle - 0.37) / 0.06;
-                if (qrsPhase < 0.2) return -0.15 * scale;
-                if (qrsPhase < 0.6) return 0.98 * scale;
-                return -0.35 * scale;
-            }
-            if (cycle > 0.52 && cycle < 0.72) {
-                return Math.sin((cycle - 0.52) * Math.PI / 0.2) * 0.22 * scale;
-            }
-            return 0;
+        case 'pjc': {
+            const L = cicloPx(84);
+            secuencia([L, L, L * 0.7, L * 1.3], 50, (p, k) => {
+                if (k % 4 === 2) latido(p, { pa: 0, extra: [[15, 4, -0.10]] });
+                else latido(p);
+            });
+            break;
+        }
+        case 'j_rhythm': {
+            const L = cicloPx(48);
+            secuencia([L], 60, (p) => latido(p, { pa: 0, extra: [[14, 4, -0.10]] }));
+            break;
+        }
+        case 'acc_junct': {
+            const L = cicloPx(82);
+            secuencia([L], 50, (p) => latido(p, { pa: -0.10, pr: 13, ps: 3.5 }));
+            break;
+        }
+        case 'j_tach': {
+            const L = cicloPx(186);
+            secuencia([L], 30, (p) => latido(p, { pa: 0, rw: 1.6, ta: 0.14, tt: 19, tw: 5, extra: [[10, 4, -0.08]] }));
+            break;
+        }
+
+        case 'pvc': {
+            const L = cicloPx(68);
+            secuencia([L, L, L * 0.6, L * 1.4], 50, (p, k) => {
+                if (k % 4 === 2) latido(p, Object.assign({}, ANCHO, { ra: 1.25, rw: 7.5, ta: -0.5, tt: 56, tw: 14 }));
+                else latido(p);
+            });
+            break;
+        }
+        case 'idiov': {
+            secuencia([cicloPx(36)], 90, (p) => latido(p, Object.assign({}, ANCHO, { ra: 0.9, rw: 7, tt: 58, tw: 14 })));
+            break;
+        }
+        case 'acc_idiov': {
+            secuencia([cicloPx(84)], 60, (p) => latido(p, Object.assign({}, ANCHO, { ra: 0.9, rw: 6, tt: 46, tw: 11 })));
+            break;
+        }
+        case 'vt_mono': {
+            const L = cicloPx(210);
+            secuencia([L], 20, (p) => latido(p, { pa: 0, qa: 0, sa: 0, ta: 0, rw: 8, ra: 1.0,
+                extra: [[L * 0.5, 8, -0.85]] }));
+            break;
+        }
+        case 'vfib': {
+            extra = (x) => {
+                const env = 0.55 + 0.45 * Math.sin(x * 0.011 + 1);
+                return env * (0.45 * Math.sin(x * 0.12) + 0.35 * Math.cos(x * 0.25 + 0.6)
+                    + 0.25 * Math.sin(x * 0.41 + 2.1) + 0.15 * Math.sin(x * 0.77));
+            };
+            break;
+        }
+        case 'paced_v': {
+            const L = cicloPx(80);
+            secuencia([L], 60, (p) => latido(p, {
+                pa: 0, qa: 0, sa: 0,
+                ra: -1.0, rw: 5.5,
+                ta: 0.42, tt: 38, tw: 12,
+                extra: [[-11, 0.7, 0.55], [-10, 0.6, -0.12]]
+            }));
+            break;
+        }
+
+        default: {
+            const L = cicloPx(72);
+            secuencia([L], 50, (p) => latido(p));
+        }
     }
+    latidos.sort((a, b) => a.pos - b.pos);
+    return { latidos, extra };
+}
+
+function calcularEcuacionOnda(x, tipo, height) {
+    const scale = height * 0.35;
+    if (!cacheRitmosECG[tipo]) cacheRitmosECG[tipo] = crearRitmo(tipo);
+    const { latidos, extra } = cacheRitmosECG[tipo];
+
+    let y = 0;
+    for (let i = 0; i < latidos.length; i++) {
+        const t = x - latidos[i].pos;
+        if (t < -90) break;
+        if (t > 110) continue;
+        const c = latidos[i].comps;
+        for (let j = 0; j < c.length; j++) y += gauss(t, c[j][0], c[j][1], c[j][2]);
+    }
+    if (extra) y += extra(x);
+
+    y = Math.max(-1.35, Math.min(1.35, y));
+    return y * scale;
 }
 
 // ==================== UTILIDADES DE MODALES Y TABLAS ====================
