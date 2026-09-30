@@ -60,12 +60,8 @@ function obtenerAudioCtx() {
     if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     }
-    // Algunos navegadores suspenden automáticamente el AudioContext tras un periodo
-    // sin sonido audible (los latidos son cortos y con pausas largas entre sí).
-    // Si eso pasa, cualquier sonido posterior queda en silencio hasta reanudarlo.
-    if (audioCtx.state === 'suspended') {
-        audioCtx.resume().catch(() => { /* se reintentará en el próximo sonido */ });
-    }
+    // Los navegadores dejan el audio "suspendido" hasta que hay interacción: se reactiva siempre
+    if (audioCtx.state === 'suspended') audioCtx.resume();
     return audioCtx;
 }
 
@@ -136,10 +132,34 @@ function reproducirAlarma() {
     } catch (e) { /* Audio no soportado */ }
 }
 
+// CORREGIDO: los electrodos se ARRASTRAN, y un arrastre no dispara 'click'. Se usa 'pointerdown'
+// (se dispara al tocar/presionar, también al iniciar un arrastre). El 'click' solo cubre el teclado.
+const SELECTOR_SONIDO = 'button, .electrode-circle, .puzzle-piece';
+document.addEventListener('pointerdown', (e) => {
+    if (e.target.closest && e.target.closest(SELECTOR_SONIDO)) reproducirClic();
+}, true);
 document.addEventListener('click', (e) => {
-    const elementoClic = e.target.closest('button, .electrode-circle, .puzzle-piece');
-    if (elementoClic) reproducirClic();
+    if (e.detail === 0 && e.target.closest && e.target.closest(SELECTOR_SONIDO)) reproducirClic(); // Enter/Espacio
 });
+
+function tono(freq, inicioS, durS, tipo = 'sine', vol = 0.15) {
+    try {
+        const ctx = obtenerAudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = tipo;
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + inicioS);
+        gain.gain.setValueAtTime(vol, ctx.currentTime + inicioS);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + inicioS + durS);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(ctx.currentTime + inicioS);
+        osc.stop(ctx.currentTime + inicioS + durS);
+    } catch (e) { /* Audio no soportado */ }
+}
+function reproducirAcierto() { tono(660, 0, 0.12); tono(990, 0.1, 0.18); }          // "ding" ascendente
+function reproducirError() { tono(200, 0, 0.22, 'sawtooth', 0.12); }                 // zumbido grave
+
 
 // ==================== MODO DOCENTE / EXPORTAR RESULTADOS A CSV ====================
 function exportarResultadosCSV() {
@@ -315,6 +335,7 @@ function mostrarPantallaFinal() {
         finalTitulo.innerText = `🏆 ¡Felicidades ${nombreMostrado}, eres tod${terminacion} un${terminacion} ${tituloAvatar}!`;
     }
 
+    // NUEVO: el mascote "presenta" el resultado con una frase que resume el desempeño
     const mascotFinalMsg = document.getElementById('mascot-final-msg');
     if (mascotFinalMsg) {
         mascotFinalMsg.innerText = `👋 ¡Turno finalizado, ${nombreMostrado}! Lograste ${precisionNivel2}% de precisión en ${tiempoFormateado}. Aquí tienes tu reporte completo:`;
@@ -329,30 +350,9 @@ function mostrarPantallaFinal() {
         fecha: new Date().toISOString()
     };
 
-    const leaderboard = guardarResultadoLocal(resultadoActual);
-
-    const clasificacion = [...leaderboard]
-        .sort((a, b) => (b.precision !== a.precision) ? (b.precision - a.precision) : (a.tiempoMs - b.tiempoMs))
-        .slice(0, 5);
-
-    let filasTabla = '';
-    clasificacion.forEach((r, i) => {
-        const avatarFila = r.genero === 'femenino' ? '👩‍⚕️' : '🧑‍⚕️';
-        const esJugadorActual = (r.fecha === resultadoActual.fecha && r.nombre === resultadoActual.nombre);
-        filasTabla += `<tr class="${esJugadorActual ? 'fila-jugador-actual' : ''}">
-            <td>${i + 1}</td>
-            <td>${avatarFila} ${r.nombre}</td>
-            <td>${r.precision}%</td>
-            <td>${Math.floor(r.tiempoMs / 60000)}m ${Math.floor((r.tiempoMs % 60000) / 1000)}s</td>
-        </tr>`;
-    });
-
     let insignias = '';
     if (precisionNivel2 === 100) insignias += '<span class="badge-logro">🎯 Precisión de Élite</span>';
     if (autonomiaIA >= 80) insignias += '<span class="badge-logro">🧠 Diagnosticador Autónomo</span>';
-    if (clasificacion.length > 0 && clasificacion[0].nombre === resultadoActual.nombre && clasificacion[0].fecha === resultadoActual.fecha) {
-        insignias += '<span class="badge-logro">🥇 Primer Lugar</span>';
-    }
 
     const finalStats = document.getElementById('final-stats');
     if (finalStats) {
@@ -360,14 +360,107 @@ function mostrarPantallaFinal() {
             <p>⏱ Tiempo total: <strong>${tiempoFormateado}</strong></p>
             <p>🎯 Precisión diagnóstica: <strong>${precisionNivel2}%</strong></p>
             <p>🧠 Autonomía frente al sesgo de la IA: <strong>${autonomiaIA}%</strong></p>
-            <div class="badges-container">${insignias}</div>
-            <h4 style="margin-top:14px; color:#38bdf8;">🏆 Tabla de Clasificación (Top 5)</h4>
-            <table class="leaderboard-table">
-                <thead><tr><th>#</th><th>Jugador</th><th>Precisión</th><th>Tiempo</th></tr></thead>
-                <tbody>${filasTabla}</tbody>
-            </table>
+            <div class="badges-container" id="final-badges">${insignias}</div>
+            <h4 style="margin-top:14px; color:#38bdf8;">🏆 Tabla de Clasificación</h4>
+            <div id="leaderboard-box"><p style="opacity:.7;">⏳ Cargando clasificación...</p></div>
         `;
     }
+
+    // Guarda el resultado (local + nube) y pinta la clasificación global
+    guardarYObtenerRanking(resultadoActual).then(({ lista, global }) => {
+        renderizarClasificacion(lista, resultadoActual, global);
+    });
+}
+
+// ==================== TABLA DE CLASIFICACIÓN COMPARTIDA (FIREBASE REALTIME DATABASE) ====================
+// 1) Crea un proyecto en https://console.firebase.google.com  ->  Build -> Realtime Database -> Create database
+// 2) Pestaña "Rules" y pega:  { "rules": { "ranking": { ".read": true, ".write": true } } }
+// 3) Copia la URL de la base (ej: https://ecg-juego-default-rtdb.firebaseio.com) aquí abajo.
+// Si se deja vacío, la tabla funciona solo en este dispositivo (localStorage).
+const FIREBASE_DB_URL = "";
+
+const escaparHTML = (t) => String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const formatoTiempo = (ms) => `${Math.floor(ms / 60000)}m ${Math.floor((ms % 60000) / 1000)}s`;
+
+// Orden: mayor precisión primero; en empate, menor tiempo
+function ordenarRanking(lista) {
+    return [...lista].sort((a, b) =>
+        (b.precision !== a.precision) ? (b.precision - a.precision) : (a.tiempoMs - b.tiempoMs));
+}
+
+async function guardarYObtenerRanking(resultado) {
+    const local = guardarResultadoLocal(resultado);
+    if (!FIREBASE_DB_URL) return { lista: local, global: false };
+    try {
+        const base = FIREBASE_DB_URL.replace(/\/$/, '');
+        await fetch(`${base}/ranking.json`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(resultado)
+        });
+        const resp = await fetch(`${base}/ranking.json`);
+        const datos = await resp.json();
+        const lista = datos ? Object.values(datos) : [];
+        return { lista, global: true };
+    } catch (e) {
+        console.warn('Sin conexión a la nube, se usa la tabla local.', e);
+        return { lista: local, global: false };
+    }
+}
+
+function renderizarClasificacion(lista, actual, global) {
+    const box = document.getElementById('leaderboard-box');
+    if (!box) return;
+    const orden = ordenarRanking(lista);
+    const esActual = (r) => r.fecha === actual.fecha && r.nombre === actual.nombre;
+    const pos = orden.findIndex(esActual) + 1;
+
+    let filas = '';
+    orden.slice(0, 10).forEach((r, i) => {
+        const medalla = ['🥇', '🥈', '🥉'][i] || (i + 1);
+        const av = r.genero === 'femenino' ? '👩‍⚕️' : '🧑‍⚕️';
+        filas += `<tr class="${esActual(r) ? 'fila-jugador-actual' : ''}">
+            <td>${medalla}</td><td>${av} ${escaparHTML(r.nombre)}</td>
+            <td>${r.precision}%</td><td>${formatoTiempo(r.tiempoMs)}</td></tr>`;
+    });
+    // Si el jugador quedó fuera del Top 10, se muestra su fila al final
+    if (pos > 10) {
+        filas += `<tr><td colspan="4" style="text-align:center;">···</td></tr>
+            <tr class="fila-jugador-actual"><td>${pos}</td><td>${escaparHTML(actual.nombre)}</td>
+            <td>${actual.precision}%</td><td>${formatoTiempo(actual.tiempoMs)}</td></tr>`;
+    }
+
+    box.innerHTML = `
+        <p>📍 Tu posición: <strong>#${pos}</strong> de ${orden.length} jugadores
+        ${global ? '🌐' : '<span style="opacity:.7;">(solo este dispositivo)</span>'}</p>
+        <table class="leaderboard-table">
+            <thead><tr><th>#</th><th>Jugador</th><th>Precisión</th><th>Tiempo</th></tr></thead>
+            <tbody>${filas}</tbody>
+        </table>
+        <button class="btn-header" style="margin-top:8px;" onclick="actualizarClasificacion()">🔄 Actualizar tabla</button>`;
+
+    if (pos === 1) {
+        const b = document.getElementById('final-badges');
+        if (b) b.insertAdjacentHTML('beforeend', '<span class="badge-logro">🥇 Primer Lugar</span>');
+    }
+    window._ultimoResultado = actual;
+}
+
+// Botón para que los jugadores vean cómo quedaron los demás sin volver a guardar
+async function actualizarClasificacion() {
+    const actual = window._ultimoResultado;
+    if (!actual) return;
+    let lista = [], global = false;
+    if (FIREBASE_DB_URL) {
+        try {
+            const r = await fetch(`${FIREBASE_DB_URL.replace(/\/$/, '')}/ranking.json`);
+            const d = await r.json();
+            lista = d ? Object.values(d) : [];
+            global = true;
+        } catch (e) { /* cae a local */ }
+    }
+    if (!global) lista = JSON.parse(localStorage.getItem('ecg_leaderboard') || '[]');
+    renderizarClasificacion(lista, actual, global);
 }
 
 function guardarResultadoLocal(resultado) {
@@ -380,7 +473,6 @@ function guardarResultadoLocal(resultado) {
     } catch (e) {
         console.warn('No se pudo guardar el resultado localmente.', e);
     }
-    // guardarEnFirebase(resultado);
     return datosPrevios;
 }
 
@@ -444,6 +536,7 @@ function inicializarDragAndDropNivel1() {
 
                 zona.classList.add('placed');
                 zona.innerText = '✓';
+                reproducirAcierto();
 
                 const originalEl = document.querySelector(`.electrode-circle[data-lead="${leadDragged}"]`);
                 if (originalEl) {
@@ -467,6 +560,7 @@ function inicializarDragAndDropNivel1() {
                     }, 400);
                 }
             } else {
+                reproducirError();
                 zona.style.borderColor = '#ef4444';
                 setTimeout(() => {
                     if (!zona.classList.contains('placed')) {
@@ -582,6 +676,8 @@ function evaluarRespuestaNivel2(diagnosticoPropuesto, provieneDeIA) {
         usoSeguidoIA = 0;
         indiceSesgoIA = Math.max(0, indiceSesgoIA - 30);
     }
+
+    if (esCorrecto) { reproducirAcierto(); } else { reproducirError(); }
 
     if (esCorrecto) {
         aciertosNivel2++;
@@ -806,6 +902,9 @@ function detenerAnimacionCanvas() {
 }
 
 // ==================== ANIMACIÓN DEL TRAZO ECG ====================
+// CORRECCIÓN 1: el trazo ahora une cada punto con el ANTERIOR (antes partía siempre de la
+// línea base, por eso se veían "picos rellenos") y se submuestrea para que los complejos
+// estrechos y los spikes de marcapasos no se pierdan entre frames.
 function iniciarAnimacionECG(tipoRitmo) {
     detenerAnimacionCanvas();
     const canvas = document.getElementById('ecg-wave');
@@ -858,18 +957,23 @@ function iniciarAnimacionECG(tipoRitmo) {
 }
 
 // ==================== GENERADOR DE ONDAS ECG POR MORFOLOGÍA (P-Q-R-S-T) ====================
+// CORRECCIÓN 2: cada latido se construye como suma de gaussianas (P, Q, R, S, T, spike),
+// con amplitud POSITIVA o NEGATIVA. Así existen las deflexiones por debajo de la línea base
+// (S, QS, T invertida, QRS ancho negativo, etc.).
+// Escala horizontal: 150 px = 1 segundo  ->  longitud de un ciclo (px) = 9000 / BPM.
 const PX_POR_SEG = 150;
-const LARGO_TRAZO = 4500;
+const LARGO_TRAZO = 4500;              // px de patrón precalculado (cubre pantallas anchas)
 const cacheRitmosECG = {};
 
 const gauss = (t, mu, sigma, amp) => amp * Math.exp(-((t - mu) * (t - mu)) / (2 * sigma * sigma));
 const cicloPx = (bpm) => (60 / bpm) * PX_POR_SEG;
 
+// Devuelve las componentes [centro, sigma, amplitud] de un latido, relativas al pico R (t = 0)
 function morfologia(o = {}) {
     const d = Object.assign({
-        pa: 0.14, pr: 26, ps: 4.2,
-        qa: -0.12, ra: 1.0, sa: -0.25, rw: 2.0,
-        ta: 0.30, tt: 40, tw: 9,
+        pa: 0.14, pr: 26, ps: 4.2,           // onda P (amplitud, distancia a R, ancho)
+        qa: -0.12, ra: 1.0, sa: -0.25, rw: 2.0, // complejo QRS
+        ta: 0.30, tt: 40, tw: 9,             // onda T (amplitud, posición, ancho)
         extra: []
     }, o);
     const c = [];
@@ -881,14 +985,16 @@ function morfologia(o = {}) {
     return c.concat(d.extra);
 }
 
+// Preajustes de QRS ancho (origen ventricular): QRS ancho + T discordante (invertida)
 const ANCHO = { qa: 0, sa: 0, pa: 0, rw: 6.5, ra: 1.0, ta: -0.40, tt: 50, tw: 12 };
 
 function crearRitmo(tipo) {
-    const latidos = [];
+    const latidos = []; // {pos, comps}
     const latido = (pos, o) => latidos.push({ pos, comps: morfologia(o) });
     const soloP = (pos, amp = 0.14) => latidos.push({ pos, comps: [[0, 4.2, amp]] });
     let extra = null;
 
+    // Genera latidos con intervalos dados (array que se repite) hasta cubrir el trazo
     const secuencia = (intervalos, inicio, fn) => {
         let pos = inicio, k = 0;
         while (pos < LARGO_TRAZO) {
@@ -899,6 +1005,7 @@ function crearRitmo(tipo) {
     };
 
     switch (tipo) {
+        // ---------- SINUSAL ----------
         case 'sb': {
             const L = cicloPx(54);
             secuencia([L], 50, (p) => latido(p, { pr: 30, tt: 46, tw: 10 }));
@@ -915,17 +1022,17 @@ function crearRitmo(tipo) {
             secuencia(ints, 50, (p) => latido(p));
             break;
         }
-        case 's_block': {
+        case 's_block': { // bloqueo de salida: desaparece un ciclo completo (P-QRS-T) periódicamente
             const L = cicloPx(75);
             secuencia([L], 50, (p, k) => { if (k % 4 !== 3) latido(p); });
             break;
         }
-        case 's_arrest': {
+        case 's_arrest': { // pausa prolongada, NO múltiplo del ciclo base
             const L = cicloPx(70);
             secuencia([L, L, L, L, L * 2.9], 50, (p) => latido(p));
             break;
         }
-        case 'pac': {
+        case 'pac': { // PAC: latido prematuro con P invertida/distinta
             const L = cicloPx(84);
             secuencia([L, L, L * 0.68, L * 1.3], 50, (p, k) => {
                 if (k % 4 === 2) latido(p, { pa: -0.10, pr: 17, ta: 0.34, tt: 38 });
@@ -934,19 +1041,20 @@ function crearRitmo(tipo) {
             break;
         }
 
+        // ---------- AURICULAR ----------
         case 'svt': {
             const L = cicloPx(180);
             secuencia([L], 30, (p) => latido(p, { pa: 0, sa: -0.3, rw: 1.7, ta: 0.14, tt: 21, tw: 5.5,
-                extra: [[10, 6, -0.12]] }));
+                extra: [[10, 6, -0.12]] })); // leve infradesnivel del ST
             break;
         }
-        case 'afib': {
+        case 'afib': { // R-R irregularmente irregular, sin P, línea base fibrilatoria
             const ints = []; for (let i = 0; i < 60; i++) ints.push(62 + 62 * (0.5 + 0.5 * Math.sin(i * 2.399 + Math.sin(i * 1.7) * 2)));
             secuencia(ints, 60, (p) => latido(p, { pa: 0, ta: 0.14, tt: 34, tw: 8 }));
             extra = (x) => 0.055 * Math.sin(x * 0.47) + 0.045 * Math.sin(x * 0.91 + 1.3) + 0.03 * Math.sin(x * 1.63 + 0.4);
             break;
         }
-        case 'aflutter': {
+        case 'aflutter': { // ondas F en "dientes de sierra", conducción 4:1
             const L = cicloPx(75);
             secuencia([L], 50, (p) => latido(p, { pa: 0, ta: 0, sa: -0.15 }));
             extra = (x) => {
@@ -955,12 +1063,12 @@ function crearRitmo(tipo) {
             };
             break;
         }
-        case 'paced_a': {
+        case 'paced_a': { // spike de marcapasos -> P -> QRS normal
             const L = cicloPx(60);
             secuencia([L], 60, (p) => latido(p, { pr: 24, pa: 0.16, extra: [[-38, 0.7, 0.65], [-37, 0.7, -0.12]] }));
             break;
         }
-        case 'wandering': {
+        case 'wandering': { // P de morfología y PR variables
             const L = cicloPx(78);
             const pas = [0.16, 0.09, -0.06, 0.13, 0.05, -0.09];
             const prs = [28, 22, 15, 26, 18, 13];
@@ -969,12 +1077,13 @@ function crearRitmo(tipo) {
             break;
         }
 
+        // ---------- BLOQUEOS AV ----------
         case 'avb1': {
             const L = cicloPx(74);
             secuencia([L], 70, (p) => latido(p, { pr: 46, pa: 0.15 }));
             break;
         }
-        case 'avb2_1': {
+        case 'avb2_1': { // Wenckebach: PR se alarga hasta que una P no conduce
             const PP = 100, prs = [24, 38, 54, null];
             secuencia([PP], 40, (p, k) => {
                 const pr = prs[k % 4];
@@ -983,7 +1092,7 @@ function crearRitmo(tipo) {
             });
             break;
         }
-        case 'avb2_2': {
+        case 'avb2_2': { // Mobitz II: PR constante, una P bloqueada de cada 3
             const PP = 95;
             secuencia([PP], 40, (p, k) => {
                 soloP(p);
@@ -991,7 +1100,7 @@ function crearRitmo(tipo) {
             });
             break;
         }
-        case 'avb2_21': {
+        case 'avb2_21': { // conducción 2:1 (P-P constante, una P sí y otra no)
             const PP = 118;
             secuencia([PP], 40, (p, k) => {
                 soloP(p);
@@ -999,16 +1108,17 @@ function crearRitmo(tipo) {
             });
             break;
         }
-        case 'avb3': {
+        case 'avb3': { // disociación AV completa + escape ventricular ancho
             secuencia([75], 20, (p) => soloP(p));
             secuencia([cicloPx(36)], 100, (p) => latido(p, ANCHO));
             break;
         }
 
+        // ---------- NODAL ----------
         case 'pjc': {
             const L = cicloPx(84);
             secuencia([L, L, L * 0.7, L * 1.3], 50, (p, k) => {
-                if (k % 4 === 2) latido(p, { pa: 0, extra: [[15, 4, -0.10]] });
+                if (k % 4 === 2) latido(p, { pa: 0, extra: [[15, 4, -0.10]] }); // P retrógrada tras QRS
                 else latido(p);
             });
             break;
@@ -1029,6 +1139,7 @@ function crearRitmo(tipo) {
             break;
         }
 
+        // ---------- VENTRICULAR ----------
         case 'pvc': {
             const L = cicloPx(68);
             secuencia([L, L, L * 0.6, L * 1.4], 50, (p, k) => {
@@ -1045,13 +1156,13 @@ function crearRitmo(tipo) {
             secuencia([cicloPx(84)], 60, (p) => latido(p, Object.assign({}, ANCHO, { ra: 0.9, rw: 6, tt: 46, tw: 11 })));
             break;
         }
-        case 'vt_mono': {
+        case 'vt_mono': { // QRS anchos monomorfos, casi sinusoidales
             const L = cicloPx(210);
             secuencia([L], 20, (p) => latido(p, { pa: 0, qa: 0, sa: 0, ta: 0, rw: 8, ra: 1.0,
                 extra: [[L * 0.5, 8, -0.85]] }));
             break;
         }
-        case 'vfib': {
+        case 'vfib': { // caos sin QRS identificable
             extra = (x) => {
                 const env = 0.55 + 0.45 * Math.sin(x * 0.011 + 1);
                 return env * (0.45 * Math.sin(x * 0.12) + 0.35 * Math.cos(x * 0.25 + 0.6)
@@ -1059,17 +1170,18 @@ function crearRitmo(tipo) {
             };
             break;
         }
-        case 'paced_v': {
+        case 'paced_v': { // spike -> QRS ancho NEGATIVO -> T positiva (discordante)
             const L = cicloPx(80);
             secuencia([L], 60, (p) => latido(p, {
                 pa: 0, qa: 0, sa: 0,
-                ra: -1.0, rw: 5.5,
-                ta: 0.42, tt: 38, tw: 12,
-                extra: [[-11, 0.7, 0.55], [-10, 0.6, -0.12]]
+                ra: -1.0, rw: 5.5,                 // deflexión profunda HACIA ABAJO
+                ta: 0.42, tt: 38, tw: 12,          // T positiva, ancha
+                extra: [[-11, 0.7, 0.55], [-10, 0.6, -0.12]] // spike de marcapasos
             }));
             break;
         }
 
+        // ---------- RITMO SINUSAL NORMAL ('sr') ----------
         default: {
             const L = cicloPx(72);
             secuencia([L], 50, (p) => latido(p));
@@ -1087,13 +1199,14 @@ function calcularEcuacionOnda(x, tipo, height) {
     let y = 0;
     for (let i = 0; i < latidos.length; i++) {
         const t = x - latidos[i].pos;
-        if (t < -90) break;
+        if (t < -90) break;          // latidos ordenados: los siguientes quedan más lejos
         if (t > 110) continue;
         const c = latidos[i].comps;
         for (let j = 0; j < c.length; j++) y += gauss(t, c[j][0], c[j][1], c[j][2]);
     }
     if (extra) y += extra(x);
 
+    // Limita para que nunca se salga del canvas (ni por arriba ni por abajo)
     y = Math.max(-1.35, Math.min(1.35, y));
     return y * scale;
 }
