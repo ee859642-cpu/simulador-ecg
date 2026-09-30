@@ -33,24 +33,21 @@ const RITMOS_ECG = [
 let nivelActual = 1;
 let aciertosNivel2 = 0;
 const MAX_ACIERTOS_NIVEL2 = 10;
-const MAX_ELECTRODOS_NIVEL1 = 10; // NUEVO: 6 precordiales + 4 periféricos
+const MAX_ELECTRODOS_NIVEL1 = 10; // 6 precordiales + 4 periféricos
 let electrodosColocados = 0;
 let casoActualN2 = null;
 
-// Lógica de dependencia y confusión de IA
 let usoSeguidoIA = 0;
 let analisisManualesSeguidos = 0;
 let indiceSesgoIA = 0;
 
 let animacionCanvasId = null;
 
-// ==================== ESTADO DE JUGADOR, TIEMPO Y ESTADÍSTICAS ====================
 let jugadorNombre = '';
 let jugadorGenero = '';
 let horaInicioJuego = null;
 let intentosNivel2 = 0;
 
-// ==================== FLAGS DE PROGRESO PARA EL MAPA DE NIVELES ====================
 let nivel1Terminado = false;
 let nivel2Terminado = false;
 let nivel3Terminado = false;
@@ -79,7 +76,7 @@ function reproducirClic() {
         gain.connect(ctx.destination);
         osc.start();
         osc.stop(ctx.currentTime + 0.08);
-    } catch (e) { /* Audio no soportado en este navegador */ }
+    } catch (e) { /* Audio no soportado */ }
 }
 
 function reproducirLatido() {
@@ -95,7 +92,7 @@ function reproducirLatido() {
         gain.connect(ctx.destination);
         osc.start();
         osc.stop(ctx.currentTime + 0.12);
-    } catch (e) { /* Audio no soportado en este navegador */ }
+    } catch (e) { /* Audio no soportado */ }
 }
 
 function iniciarLatidoSonoro(bpm) {
@@ -130,7 +127,7 @@ function reproducirAlarma() {
                 osc.stop(ctx.currentTime + 0.15);
             }, i * 180);
         });
-    } catch (e) { /* Audio no soportado en este navegador */ }
+    } catch (e) { /* Audio no soportado */ }
 }
 
 document.addEventListener('click', (e) => {
@@ -379,7 +376,7 @@ function guardarResultadoLocal(resultado) {
 // ==================== INICIALIZACIÓN DE LA APLICACIÓN ====================
 window.addEventListener('DOMContentLoaded', () => {
     inicializarDragAndDropNivel1();
-    inicializarDragAndDropNivel3(); // NUEVO: listeners de drop para el rompecabezas
+    inicializarDragAndDropNivel3();
     poblarSelectDiagnosticos();
     poblarTablaPatologiasInfo();
     ajustarTamanioCanvas();
@@ -689,7 +686,6 @@ function cargarCasoNivel3(index) {
     }
 }
 
-// NUEVO: listeners de drop para el área de fusión del rompecabezas (Nivel 3)
 function inicializarDragAndDropNivel3() {
     const slots = document.querySelectorAll('.puzzle-slot');
 
@@ -719,7 +715,6 @@ function inicializarDragAndDropNivel3() {
             const slotIndex = parseInt(slot.dataset.slot);
             ordenSeleccionadoN3[slotIndex] = pieza.id;
 
-            // Fusión visual: la pieza reemplaza el número y el slot pierde el borde punteado
             slot.innerHTML = pieza.svg;
             slot.classList.add('filled');
 
@@ -845,35 +840,184 @@ function iniciarAnimacionECG(tipoRitmo) {
     dibujarFrame();
 }
 
+// ==================== FUNCIÓN CORREGIDA: 27 RITMOS, SIN DUPLICADOS, IDS CORRECTOS ====================
 function calcularEcuacionOnda(x, tipo, height) {
     const scale = height * 0.35;
     const cycle = (x % 140) / 140;
 
     switch (tipo) {
-        case 'afib':
+        // ---------- FAMILIA SINUSAL ----------
+        case 'sb': { // Bradicardia Sinusal
+            const c = (x % 240) / 240;
+            if (c > 0.1 && c < 0.18) return Math.sin((c - 0.1) * Math.PI / 0.08) * 0.15 * scale;
+            if (c > 0.38 && c < 0.42) return (c < 0.4 ? -0.15 : 0.9) * scale;
+            return 0;
+        }
+        case 'st': { // Taquicardia Sinusal
+            const c = (x % 80) / 80;
+            if (c > 0.38 && c < 0.44) return 0.85 * scale;
+            return 0;
+        }
+        case 'sa': { // Sinus Arrhythmia
+            const varCycle = 140 + Math.sin(x * 0.01) * 40;
+            const c = (x % varCycle) / varCycle;
+            if (c > 0.12 && c < 0.22) return Math.sin((c - 0.12) * Math.PI / 0.1) * 0.12 * scale;
+            if (c >= 0.37 && c <= 0.43) return 0.98 * scale;
+            if (c > 0.52 && c < 0.72) return Math.sin((c - 0.52) * Math.PI / 0.2) * 0.22 * scale;
+            return 0;
+        }
+        case 's_block': { // Sinus Exit Block
+            const drop = Math.floor(x / 140) % 3 === 0;
+            if (drop) return (Math.random() - 0.5) * 0.005 * scale;
+            if (cycle > 0.12 && cycle < 0.22) return Math.sin((cycle - 0.12) * Math.PI / 0.1) * 0.12 * scale;
+            if (cycle >= 0.37 && cycle <= 0.43) return 0.98 * scale;
+            if (cycle > 0.52 && cycle < 0.72) return Math.sin((cycle - 0.52) * Math.PI / 0.2) * 0.22 * scale;
+            return 0;
+        }
+        case 's_arrest': { // Sinus Arrest
+            const blockCycle = x % 600;
+            if (blockCycle > 300 && blockCycle < 550) return (Math.random() - 0.5) * 0.003 * scale;
+            if (cycle > 0.12 && cycle < 0.22) return Math.sin((cycle - 0.12) * Math.PI / 0.1) * 0.12 * scale;
+            if (cycle >= 0.37 && cycle <= 0.43) return 0.98 * scale;
+            if (cycle > 0.52 && cycle < 0.72) return Math.sin((cycle - 0.52) * Math.PI / 0.2) * 0.22 * scale;
+            return 0;
+        }
+        case 'pac': { // NSR with PAC
+            const isPremature = Math.floor(x / 180) % 4 === 2;
+            const len = isPremature ? 100 : 140;
+            const c = (x % len) / len;
+            if (c > 0.1 && c < 0.2) return Math.sin((c - 0.1) * Math.PI / 0.1) * 0.15 * scale;
+            if (c >= 0.35 && c <= 0.42) return 0.9 * scale;
+            if (c > 0.5 && c < 0.7) return Math.sin((c - 0.5) * Math.PI / 0.2) * 0.2 * scale;
+            return 0;
+        }
+
+        // ---------- FAMILIA AURICULAR ----------
+        case 'svt': { // Supraventricular Tachycardia
+            const c = (x % 55) / 55;
+            if (c > 0.3 && c < 0.45) return 0.9 * scale;
+            if (c > 0.5 && c < 0.7) return -0.2 * scale;
+            return 0;
+        }
+        case 'afib': // Atrial Fibrillation
             return (Math.sin(x * 0.3) * 0.1 + (Math.random() - 0.5) * 0.15) * scale + (cycle > 0.45 && cycle < 0.5 ? (Math.random() > 0.5 ? 0.8 : -0.2) : 0) * scale;
-        case 'aflutter':
+        case 'aflutter': // Atrial Flutter
             return (Math.sin(x * 0.2) * 0.25 + (cycle > 0.48 && cycle < 0.52 ? 0.9 : 0)) * scale;
-        case 'vt_mono':
+        case 'paced_a': { // Paced Atrial rhythm
+            if (cycle > 0.08 && cycle < 0.12) return 0.7 * scale;
+            if (cycle > 0.15 && cycle < 0.25) return Math.sin((cycle - 0.15) * Math.PI / 0.1) * 0.12 * scale;
+            if (cycle >= 0.38 && cycle <= 0.44) return 0.95 * scale;
+            if (cycle > 0.52 && cycle < 0.7) return Math.sin((cycle - 0.52) * Math.PI / 0.18) * 0.2 * scale;
+            return 0;
+        }
+        case 'wandering': { // Wandering Pacemaker
+            const pHeight = Math.sin(x * 0.02) * 0.1;
+            if (cycle > 0.1 && cycle < 0.2) return pHeight * scale;
+            if (cycle >= 0.38 && cycle <= 0.44) return 0.95 * scale;
+            return 0;
+        }
+
+        // ---------- BLOQUEOS AV ----------
+        case 'avb1': { // NSR with 1st Degree AV Block
+            if (cycle > 0.08 && cycle < 0.18) return Math.sin((cycle - 0.08) * Math.PI / 0.1) * 0.12 * scale;
+            if (cycle >= 0.48 && cycle <= 0.54) return 0.95 * scale;
+            if (cycle > 0.62 && cycle < 0.8) return Math.sin((cycle - 0.62) * Math.PI / 0.18) * 0.2 * scale;
+            return 0;
+        }
+        case 'avb2_1': { // 2nd Degree AV Block Type I (Wenckebach)
+            const phase = Math.floor(x / 140) % 4;
+            const prShift = phase * 0.04;
+            if (cycle > (0.1 + prShift) && cycle < (0.2 + prShift)) return 0.12 * scale;
+            if (cycle >= 0.42 && cycle <= 0.48) return 0.95 * scale;
+            return 0;
+        }
+        case 'avb2_2': { // 2nd Degree AV Block Type II
+            const dropped = Math.floor(x / 140) % 3 === 0;
+            if (dropped && cycle < 0.3) return Math.sin(x * 0.1) * 0.1 * scale;
+            if (cycle > 0.12 && cycle < 0.22) return 0.12 * scale;
+            if (cycle >= 0.38 && cycle <= 0.44) return 0.95 * scale;
+            return 0;
+        }
+        case 'avb2_21': { // 2nd Degree AV Block 2:1
+            const isQrs = Math.floor(x / 140) % 2 === 0;
+            if (cycle > 0.12 && cycle < 0.22) return 0.12 * scale;
+            if (isQrs && cycle >= 0.38 && cycle <= 0.44) return 0.95 * scale;
+            return 0;
+        }
+        case 'avb3': { // 3rd Degree AV Block (disociación completa)
+            const pCycle = (x % 90) / 90;
+            const qrsCycle = (x % 220) / 220;
+            let val = (Math.sin(pCycle * Math.PI * 2) > 0.7) ? 0.12 * scale : 0;
+            if (qrsCycle > 0.35 && qrsCycle < 0.48) val += 0.95 * scale;
+            return val;
+        }
+
+        // ---------- FAMILIA NODAL / UNIÓN ----------
+        case 'pjc':
+        case 'j_rhythm': { // PJC y Junctional Rhythm
+            if (cycle >= 0.38 && cycle <= 0.44) return 0.95 * scale;
+            if (cycle > 0.52 && cycle < 0.7) return Math.sin((cycle - 0.52) * Math.PI / 0.18) * 0.2 * scale;
+            return 0;
+        }
+        case 'acc_junct': { // Accelerated Junctional
+            if (cycle >= 0.38 && cycle <= 0.44) return 0.95 * scale;
+            return 0;
+        }
+        case 'j_tach': { // Junctional Tachycardia
+            const c = (x % 70) / 70;
+            if (c >= 0.35 && c <= 0.45) return 0.95 * scale;
+            return 0;
+        }
+
+        // ---------- FAMILIA VENTRICULAR ----------
+        case 'pvc': { // NSR with PVC
+            const isPVC = Math.floor(x / 160) % 4 === 2;
+            if (isPVC) {
+                if (cycle > 0.3 && cycle < 0.55) return Math.sin((cycle - 0.3) * Math.PI / 0.25) * 1.1 * scale;
+                return 0;
+            }
+            if (cycle > 0.12 && cycle < 0.22) return 0.12 * scale;
+            if (cycle >= 0.37 && cycle <= 0.43) return 0.95 * scale;
+            if (cycle > 0.52 && cycle < 0.72) return 0.22 * scale;
+            return 0;
+        }
+        case 'idiov': { // Idioventricular Rhythm
+            const c = (x % 220) / 220;
+            if (c > 0.32 && c < 0.5) return Math.sin((c - 0.32) * Math.PI / 0.18) * 0.9 * scale;
+            if (c > 0.55 && c < 0.78) return -Math.sin((c - 0.55) * Math.PI / 0.23) * 0.3 * scale;
+            return 0;
+        }
+        case 'acc_idiov': { // Accelerated Idioventricular Rhythm
+            const c = (x % 130) / 130;
+            if (c > 0.32 && c < 0.5) return Math.sin((c - 0.32) * Math.PI / 0.18) * 0.9 * scale;
+            if (c > 0.55 && c < 0.78) return -Math.sin((c - 0.55) * Math.PI / 0.23) * 0.3 * scale;
+            return 0;
+        }
+        case 'vt_mono': // Ventricular Tachycardia
             return Math.sin(x * 0.08) * scale * 0.95;
-        case 'vfib':
+        case 'vfib': // Ventricular Fibrillation
             return (Math.sin(x * 0.12) * 0.5 + Math.cos(x * 0.25) * 0.4 + (Math.random() - 0.5) * 0.3) * scale;
-        case 'sb':
-            const cycleSlow = (x % 240) / 240;
-            if (cycleSlow > 0.1 && cycleSlow < 0.18) return Math.sin((cycleSlow - 0.1) * Math.PI / 0.08) * 0.15 * scale;
-            if (cycleSlow > 0.38 && cycleSlow < 0.42) return (cycleSlow < 0.4 ? -0.15 : 0.9) * scale;
+        case 'paced_v': { // Paced Ventricular Rhythm
+            if (cycle > 0.08 && cycle < 0.12) return 0.8 * scale;
+            if (cycle > 0.35 && cycle < 0.55) return Math.sin((cycle - 0.35) * Math.PI / 0.2) * 1.0 * scale;
             return 0;
-        case 'st':
-            const cycleFast = (x % 80) / 80;
-            if (cycleFast > 0.38 && cycleFast < 0.44) return 0.85 * scale;
-            return 0;
+        }
+
+        // ---------- RITMO SINUSAL NORMAL (default: 'sr' y cualquier caso no listado) ----------
         default:
-            if (cycle > 0.15 && cycle < 0.25) return Math.sin((cycle - 0.15) * Math.PI / 0.1) * 0.15 * scale;
-            if (cycle > 0.38 && cycle < 0.40) return -0.15 * scale;
-            if (cycle >= 0.40 && cycle < 0.43) return 0.95 * scale;
-            if (cycle >= 0.43 && cycle < 0.45) return -0.25 * scale;
-            if (cycle > 0.55 && cycle < 0.70) return Math.sin((cycle - 0.55) * Math.PI / 0.15) * 0.25 * scale;
-            return 0;
+            if (cycle > 0.12 && cycle < 0.22) {
+                return Math.sin((cycle - 0.12) * Math.PI / 0.1) * 0.12 * scale;
+            }
+            if (cycle >= 0.37 && cycle <= 0.43) {
+                const qrsPhase = (cycle - 0.37) / 0.06;
+                if (qrsPhase < 0.2) return -0.15 * scale;
+                if (qrsPhase < 0.6) return 0.98 * scale;
+                return -0.35 * scale;
+            }
+            if (cycle > 0.52 && cycle < 0.72) {
+                return Math.sin((cycle - 0.52) * Math.PI / 0.2) * 0.22 * scale;
+            }
+            return (Math.random() - 0.5) * 0.005 * scale;
     }
 }
 
@@ -913,17 +1057,19 @@ function cerrarModalInfoPatologias() {
     document.getElementById('modal-patologias-info').classList.add('hidden');
 }
 
-// ==================== CASOS CLÍNICOS NIVEL 3 (ROMPECABEZAS VISUAL CON PISTAS DE CONTINUIDAD) ====================
+// ==================== CASOS CLÍNICOS NIVEL 3 (SVG AJUSTADOS A LA MORFOLOGÍA DEL PDF DE REFERENCIA) ====================
 const CASOS_NIVEL3 = [
     {
         id: 1,
         paciente: "Paciente masculino de 68 años con palpitaciones, mareos y pulso irregularmente irregular.",
         patologia: "Atrial Fibrillallation",
+        // Morfología ajustada: línea de base fibrilatoria fina e irregular ("ondas f"), sin onda P,
+        // con complejos QRS estrechos apareciendo a intervalos irregulares (irregularmente irregular), como en el PDF.
         piezas: [
-            { id: 0, label: "Inicio (Línea plana): Ondas f caóticas iniciales", hint: "Conector: Borde Izquierdo", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 Q10,15 20,25 T40,20 T60,25 T80,18 L100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
-            { id: 1, label: "Despolarización Ventricular #1", hint: "Conector: Empalme con línea plana previa", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 L20,20 L25,35 L30,5 L35,25 L40,20 L100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
-            { id: 2, label: "Pausa Inter-R-R Irregular", hint: "Conector: Salida de QRS anterior", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 Q15,23 30,17 T60,22 L100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
-            { id: 3, label: "Despolarización Ventricular #2", hint: "Conector: Borde Derecho / Salida", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 L50,20 L55,35 L60,5 L65,25 L70,20 L100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' }
+            { id: 0, label: "Inicio: Línea de base fibrilatoria (ondas f), sin QRS aún", hint: "Conector: Borde Izquierdo", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 Q8,17 16,22 Q24,17 32,21 Q40,16 48,23 Q56,17 64,20 Q72,18 80,22 Q88,17 96,20 L100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
+            { id: 1, label: "QRS irregular #1 sobre línea fibrilatoria", hint: "Conector: Empalme con línea fibrilatoria previa", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 Q8,17 16,21 L22,20 L26,7 L30,33 L34,20 Q42,18 50,22 Q58,17 66,20 Q74,18 82,21 Q90,17 96,20 L100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
+            { id: 2, label: "Pausa Inter-R-R irregular con QRS temprano", hint: "Conector: Salida de QRS anterior", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 L6,20 L10,8 L14,32 L18,20 Q26,17 34,22 Q42,16 50,21 Q58,18 66,22 Q74,17 82,20 Q90,18 96,21 L100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
+            { id: 3, label: "QRS irregular #2 (cierre del ciclo)", hint: "Conector: Borde Derecho / Salida", svg: '<svg viewBox="0 0 100 40"><path d="M0,20 Q8,18 16,21 Q24,17 32,20 Q40,18 48,22 L52,20 L56,8 L60,32 L64,20 Q72,17 80,21 Q88,18 96,20 L100,20" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' }
         ],
         tratamientoCorrecto: 1,
         opcionesTratamiento: [
@@ -953,11 +1099,13 @@ const CASOS_NIVEL3 = [
         id: 3,
         paciente: "Paciente masculino de 60 años con antecedente de miocardiopatía que presenta taquicardia sostenida de QRS ancho y presíncope.",
         patologia: "Ventricular tachycardia(VTach)",
+        // Morfología ajustada: complejos anchos, monomórficos (todos idénticos) y regulares,
+        // como el trazado ondulante y de gran amplitud del PDF (VT rate 210).
         piezas: [
-            { id: 0, label: "Inicio: Onda Ancha Monomórfica V1", hint: "Conector: Borde Izquierdo", svg: '<svg viewBox="0 0 100 40"><path d="M0,30 Q25,0 50,30 L100,30" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
-            { id: 1, label: "Ciclo Intermedio: Onda Ancha Monomórfica V2", hint: "Conector: Continuidad V1-V2", svg: '<svg viewBox="0 0 100 40"><path d="M0,30 Q25,0 50,30 L100,30" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
-            { id: 2, label: "Ciclo Intermedio: Onda Ancha Monomórfica V3", hint: "Conector: Continuidad V2-V3", svg: '<svg viewBox="0 0 100 40"><path d="M0,30 Q25,0 50,30 L100,30" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
-            { id: 3, label: "Final del Trazado: Onda Ancha Monomórfica V4", hint: "Conector: Borde Derecho / Final", svg: '<svg viewBox="0 0 100 40"><path d="M0,30 Q25,0 50,30 L100,30" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' }
+            { id: 0, label: "Inicio: Complejo Ancho Monomórfico #1", hint: "Conector: Borde Izquierdo", svg: '<svg viewBox="0 0 100 40"><path d="M0,30 Q15,-8 30,30 Q45,58 60,30 L100,30" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
+            { id: 1, label: "Ciclo Intermedio: Complejo Ancho Monomórfico #2", hint: "Conector: Continuidad #1-#2", svg: '<svg viewBox="0 0 100 40"><path d="M0,30 Q15,-8 30,30 Q45,58 60,30 L100,30" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
+            { id: 2, label: "Ciclo Intermedio: Complejo Ancho Monomórfico #3", hint: "Conector: Continuidad #2-#3", svg: '<svg viewBox="0 0 100 40"><path d="M0,30 Q15,-8 30,30 Q45,58 60,30 L100,30" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' },
+            { id: 3, label: "Final del Trazado: Complejo Ancho Monomórfico #4", hint: "Conector: Borde Derecho / Final", svg: '<svg viewBox="0 0 100 40"><path d="M0,30 Q15,-8 30,30 Q45,58 60,30 L100,30" stroke="#00ff66" fill="none" stroke-width="2"/></svg>' }
         ],
         tratamientoCorrecto: 2,
         opcionesTratamiento: [
