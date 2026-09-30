@@ -53,65 +53,41 @@
 
                 <div class="torso-wrapper">
                     <!-- Silueta SVG Anatómica de cuerpo completo -->
-                    <svg class="torso-svg-container" viewBox="0 0 200 400" xmlns="http://www.w3.org/2000/svg">
-                        <!-- Pierna lado RL (izquierda del espectador) -->
-                        <path d="M88 268 C80 300 72 330 66 358 C64 366 63 372 63 378" fill="none" stroke="#38bdf8" stroke-width="17" stroke-linecap="round"/>
-                        <ellipse cx="60" cy="386" rx="15" ry="10" fill="#1c2a40" stroke="#38bdf8" stroke-width="2"/>
-                        <!-- Pierna lado LL (derecha del espectador) -->
-                        <path d="M112 268 C120 300 128 330 134 358 C136 366 137 372 137 378" fill="none" stroke="#38bdf8" stroke-width="17" stroke-linecap="round"/>
-                        <ellipse cx="140" cy="386" rx="15" ry="10" fill="#1c2a40" stroke="#38bdf8" stroke-width="2"/>
-
-                        <!-- Torso: hombros, pecho, cintura y cadera definidos -->
-                        <path d="M72 96
-                                 C72 84 84 76 100 76
-                                 C116 76 128 84 128 96
-                                 L142 112
-                                 C150 128 150 150 146 172
-                                 C142 196 136 218 130 240
-                                 C128 254 126 264 122 272
-                                 L78 272
-                                 C74 264 72 254 70 240
-                                 C64 218 58 196 54 172
-                                 C50 150 50 128 58 112
-                                 Z"
-                              fill="#1c2a40" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round"/>
-
-                        <!-- Cuello -->
-                        <path d="M90 62 L90 78 Q100 84 110 78 L110 62 Z" fill="#1c2a40" stroke="#38bdf8" stroke-width="2"/>
-
-                        <!-- Brazo lado RA (izquierda del espectador): hombro -> codo -> muñeca, con leve afinado -->
-                        <path d="M68 100 C50 108 36 124 28 148" fill="none" stroke="#38bdf8" stroke-width="19" stroke-linecap="round"/>
-                        <path d="M28 148 C20 172 16 198 18 222" fill="none" stroke="#38bdf8" stroke-width="14" stroke-linecap="round"/>
-                        <ellipse cx="19" cy="234" rx="12" ry="14" fill="#1c2a40" stroke="#38bdf8" stroke-width="2"/>
-
-                        <!-- Brazo lado LA (derecha del espectador) -->
-                        <path d="M132 100 C150 108 164 124 172 148" fill="none" stroke="#38bdf8" stroke-width="19" stroke-linecap="round"/>
-                        <path d="M172 148 C180 172 184 198 182 222" fill="none" stroke="#38bdf8" stroke-width="14" stroke-linecap="round"/>
-                        <ellipse cx="181" cy="234" rx="12" ry="14" fill="#1c2a40" stroke="#38bdf8" stroke-width="2"/>
-
-                        <!-- Cabeza -->
-                        <ellipse cx="100" cy="42" rx="26" ry="29" fill="#1c2a40" stroke="#38bdf8" stroke-width="2"/>
-
-                        <!-- Líneas de referencia torácica (pectorales/costillas, decorativas) -->
-                        <path d="M78 118 Q100 130 122 118 M74 138 Q100 154 126 138 M70 158 Q100 176 130 158 M72 178 Q100 196 128 178"
-                              stroke="#2a3a55" stroke-width="2" fill="none"/>
-                        <!-- Línea media esternal -->
-                        <path d="M100 100 L100 200" stroke="#2a3a55" stroke-width="1.5" fill="none"/>
+                    <svg class="torso-svg-container" viewBox="0 0 260 400" preserveAspectRatio="none" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="gradCuerpo" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0" stop-color="#1c2b44"/>
+                                <stop offset="1" stop-color="#121b2c"/>
+                            </linearGradient>
+                        </defs>
+                        <!-- Silueta humana de cuerpo completo (brazos ligeramente separados, manos y pies) -->
+                        <path d="M130.0 47.0 C132.2 47.5 140.7 46.5 143.0 50.0 C145.3 53.5 140.8 63.5 144.0 68.0 C147.2 72.5 155.0 74.7 162.0 77.0 C169.0 79.3 179.3 79.8 186.0 82.0 C192.7 84.2 198.3 86.3 202.0 90.0 C205.7 93.7 206.0 97.0 208.0 104.0 C210.0 111.0 212.0 122.0 214.0 132.0 C216.0 142.0 218.2 153.3 220.0 164.0 C221.8 174.7 223.5 185.3 225.0 196.0 C226.5 206.7 227.5 219.7 229.0 228.0 C230.5 236.3 232.7 240.3 234.0 246.0 C235.3 251.7 236.8 257.3 237.0 262.0 C237.2 266.7 236.5 271.3 235.0 274.0 C233.5 276.7 230.2 278.7 228.0 278.0 C225.8 277.3 223.5 274.0 222.0 270.0 C220.5 266.0 220.0 260.7 219.0 254.0 C218.0 247.3 217.2 239.7 216.0 230.0 C214.8 220.3 213.5 206.7 212.0 196.0 C210.5 185.3 209.0 176.3 207.0 166.0 C205.0 155.7 202.3 142.3 200.0 134.0 C197.7 125.7 194.3 113.3 193.0 116.0 C191.7 118.7 192.5 138.0 192.0 150.0 C191.5 162.0 191.8 176.7 190.0 188.0 C188.2 199.3 182.0 208.7 181.0 218.0 C180.0 227.3 183.0 235.0 184.0 244.0 C185.0 253.0 187.8 260.3 187.0 272.0 C186.2 283.7 180.8 302.2 179.0 314.0 C177.2 325.8 178.0 333.7 176.0 343.0 C174.0 352.3 167.7 363.2 167.0 370.0 C166.3 376.8 169.7 380.2 172.0 384.0 C174.3 387.8 179.8 390.5 181.0 393.0 C182.2 395.5 182.5 397.8 179.0 399.0 C175.5 400.2 165.3 400.3 160.0 400.0 C154.7 399.7 149.2 399.0 147.0 397.0 C144.8 395.0 146.2 392.5 147.0 388.0 C147.8 383.5 152.3 377.5 152.0 370.0 C151.7 362.5 146.3 352.3 145.0 343.0 C143.7 333.7 145.5 325.8 144.0 314.0 C142.5 302.2 138.3 282.7 136.0 272.0 C133.7 261.3 131.0 253.7 130.0 250.0 L130.0 250.0 C129.0 253.7 126.3 261.3 124.0 272.0 C121.7 282.7 117.5 302.2 116.0 314.0 C114.5 325.8 116.3 333.7 115.0 343.0 C113.7 352.3 108.3 362.5 108.0 370.0 C107.7 377.5 112.2 383.5 113.0 388.0 C113.8 392.5 115.2 395.0 113.0 397.0 C110.8 399.0 105.3 399.7 100.0 400.0 C94.7 400.3 84.5 400.2 81.0 399.0 C77.5 397.8 77.8 395.5 79.0 393.0 C80.2 390.5 85.7 387.8 88.0 384.0 C90.3 380.2 93.7 376.8 93.0 370.0 C92.3 363.2 86.0 352.3 84.0 343.0 C82.0 333.7 82.8 325.8 81.0 314.0 C79.2 302.2 73.8 283.7 73.0 272.0 C72.2 260.3 75.0 253.0 76.0 244.0 C77.0 235.0 80.0 227.3 79.0 218.0 C78.0 208.7 71.8 199.3 70.0 188.0 C68.2 176.7 68.5 162.0 68.0 150.0 C67.5 138.0 68.3 118.7 67.0 116.0 C65.7 113.3 62.3 125.7 60.0 134.0 C57.7 142.3 55.0 155.7 53.0 166.0 C51.0 176.3 49.5 185.3 48.0 196.0 C46.5 206.7 45.2 220.3 44.0 230.0 C42.8 239.7 42.0 247.3 41.0 254.0 C40.0 260.7 39.5 266.0 38.0 270.0 C36.5 274.0 34.2 277.3 32.0 278.0 C29.8 278.7 26.5 276.7 25.0 274.0 C23.5 271.3 22.8 266.7 23.0 262.0 C23.2 257.3 24.7 251.7 26.0 246.0 C27.3 240.3 29.5 236.3 31.0 228.0 C32.5 219.7 33.5 206.7 35.0 196.0 C36.5 185.3 38.2 174.7 40.0 164.0 C41.8 153.3 44.0 142.0 46.0 132.0 C48.0 122.0 50.0 111.0 52.0 104.0 C54.0 97.0 54.3 93.7 58.0 90.0 C61.7 86.3 67.3 84.2 74.0 82.0 C80.7 79.8 91.0 79.3 98.0 77.0 C105.0 74.7 112.8 72.5 116.0 68.0 C119.2 63.5 114.7 53.5 117.0 50.0 C119.3 46.5 127.8 47.5 130.0 47.0 Z" fill="url(#gradCuerpo)" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round"/>
+                        <!-- Orejas y cabeza -->
+                        <ellipse cx="112" cy="36" rx="3.5" ry="7" fill="#1c2b44" stroke="#38bdf8" stroke-width="1.5"/>
+                        <ellipse cx="148" cy="36" rx="3.5" ry="7" fill="#1c2b44" stroke="#38bdf8" stroke-width="1.5"/>
+                        <ellipse cx="130" cy="32" rx="18.5" ry="24" fill="#1c2b44" stroke="#38bdf8" stroke-width="2"/>
+                        <!-- Detalles anatómicos sutiles: clavículas, esternón, ombligo, pelvis, rodillas -->
+                        <path d="M118 76 Q100 80 80 88 M142 76 Q160 80 180 88" stroke="#2f4a6b" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+                        <path d="M130 84 L130 178" stroke="#2f4a6b" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+                        <path d="M130 178 L122 196 M130 178 L138 196" stroke="#2f4a6b" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+                        <circle cx="130" cy="226" r="1.8" fill="#2f4a6b"/>
+                        <path d="M84 246 Q130 262 176 246" stroke="#2f4a6b" stroke-width="1.4" fill="none"/>
+                        <path d="M98 318 Q102 326 106 318 M154 318 Q158 326 162 318" stroke="#2f4a6b" stroke-width="1.2" fill="none"/>
                     </svg>
 
                     <!-- Puntos Precordiales -->
-                    <div class="dropzone-overlay dropzone" data-target="V1" style="top: 28.5%; left: 43%;" title="4º Espacio Intercostal Derecho"></div>
-                    <div class="dropzone-overlay dropzone" data-target="V2" style="top: 28.5%; left: 57%;" title="4º Espacio Intercostal Izquierdo"></div>
-                    <div class="dropzone-overlay dropzone" data-target="V3" style="top: 35.25%; left: 56%;" title="Entre V2 y V4"></div>
-                    <div class="dropzone-overlay dropzone" data-target="V4" style="top: 41.25%; left: 50%;" title="5º Espacio Intercostal Izquierdo Línea Medioclavicular"></div>
-                    <div class="dropzone-overlay dropzone" data-target="V5" style="top: 41.25%; left: 65%;" title="5º Espacio Intercostal Línea Axilar Anterior"></div>
-                    <div class="dropzone-overlay dropzone" data-target="V6" style="top: 41.25%; left: 77%;" title="5º Espacio Intercostal Línea Axilar Media"></div>
+                    <div class="dropzone-overlay dropzone" data-target="V1" style="top: 32.5%; left: 45.4%;" title="4º Espacio Intercostal Derecho"></div>
+                    <div class="dropzone-overlay dropzone" data-target="V2" style="top: 32.5%; left: 54.6%;" title="4º Espacio Intercostal Izquierdo"></div>
+                    <div class="dropzone-overlay dropzone" data-target="V3" style="top: 36.5%; left: 58.5%;" title="Entre V2 y V4"></div>
+                    <div class="dropzone-overlay dropzone" data-target="V4" style="top: 40.5%; left: 62.3%;" title="5º Espacio Intercostal Izquierdo Línea Medioclavicular"></div>
+                    <div class="dropzone-overlay dropzone" data-target="V5" style="top: 44.5%; left: 66.5%;" title="5º Espacio Intercostal Línea Axilar Anterior"></div>
+                    <div class="dropzone-overlay dropzone" data-target="V6" style="top: 48.5%; left: 70.0%;" title="5º Espacio Intercostal Línea Axilar Media"></div>
 
                     <!-- Puntos Periféricos -->
-                    <div class="dropzone-overlay dropzone dropzone-perif" data-target="RA" style="top: 60%; left: 9%;" title="Muñeca / Brazo Derecho"></div>
-                    <div class="dropzone-overlay dropzone dropzone-perif" data-target="LA" style="top: 60%; left: 91%;" title="Muñeca / Brazo Izquierdo"></div>
-                    <div class="dropzone-overlay dropzone dropzone-perif" data-target="RL" style="top: 95.5%; left: 23%;" title="Tobillo Derecho"></div>
-                    <div class="dropzone-overlay dropzone dropzone-perif" data-target="LL" style="top: 95.5%; left: 77%;" title="Tobillo Izquierdo"></div>
+                    <div class="dropzone-overlay dropzone dropzone-perif" data-target="RA" style="top: 58.5%; left: 14.6%;" title="Muñeca / Brazo Derecho"></div>
+                    <div class="dropzone-overlay dropzone dropzone-perif" data-target="LA" style="top: 58.5%; left: 85.4%;" title="Muñeca / Brazo Izquierdo"></div>
+                    <div class="dropzone-overlay dropzone dropzone-perif" data-target="RL" style="top: 93%; left: 38.5%;" title="Tobillo Derecho"></div>
+                    <div class="dropzone-overlay dropzone dropzone-perif" data-target="LL" style="top: 93%; left: 61.5%;" title="Tobillo Izquierdo"></div>
                 </div>
             </section>
         </div>
