@@ -41,10 +41,10 @@
                 <div class="electrode-circle electrode" draggable="true" data-lead="V4">V4</div>
                 <div class="electrode-circle electrode" draggable="true" data-lead="V5">V5</div>
                 <div class="electrode-circle electrode" draggable="true" data-lead="V6">V6</div>
-                <div class="electrode-circle electrode electrode-perif" draggable="true" data-lead="R">R</div>
-                <div class="electrode-circle electrode electrode-perif" draggable="true" data-lead="L">L</div>
-                <div class="electrode-circle electrode electrode-perif" draggable="true" data-lead="N">N</div>
-                <div class="electrode-circle electrode electrode-perif" draggable="true" data-lead="F">F</div>
+                <div class="electrode-circle electrode electrode-perif" draggable="true" data-lead="RA">RA</div>
+                <div class="electrode-circle electrode electrode-perif" draggable="true" data-lead="LA">LA</div>
+                <div class="electrode-circle electrode electrode-perif" draggable="true" data-lead="RL">RL</div>
+                <div class="electrode-circle electrode electrode-perif" draggable="true" data-lead="LL">LL</div>
             </aside>
 
             <!-- ÁREA CENTRAL: VISOR ANATÓMICO (SIN TEXTO EN TORAX) -->
@@ -56,18 +56,18 @@
                     <svg class="torso-svg-container" viewBox="0 0 200 400" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <!-- Cabeza -->
                         <path d="M100 20 C115 20 125 32 125 48 C125 64 115 76 100 76 C85 76 75 64 75 48 C75 32 85 20 100 20 Z" fill="#243044" stroke="#38bdf8" stroke-width="1.5"/>
-                        <!-- Brazo lado R (izquierda del espectador) -->
+                        <!-- Brazo lado RA (izquierda del espectador) -->
                         <path d="M62 100 C40 112 24 142 19 180 C16 202 15 218 18 234" fill="none" stroke="#38bdf8" stroke-width="2"/>
                         <ellipse cx="18" cy="240" rx="11" ry="13" fill="#162032" stroke="#38bdf8" stroke-width="2"/>
-                        <!-- Brazo lado L (derecha del espectador) -->
+                        <!-- Brazo lado LA (derecha del espectador) -->
                         <path d="M138 100 C160 112 176 142 181 180 C184 202 185 218 182 234" fill="none" stroke="#38bdf8" stroke-width="2"/>
                         <ellipse cx="182" cy="240" rx="11" ry="13" fill="#162032" stroke="#38bdf8" stroke-width="2"/>
                         <!-- Torso -->
                         <path d="M60 95 C60 85 80 80 100 80 C120 80 140 85 140 95 L155 170 C160 195 145 270 140 280 L60 280 C55 270 40 195 45 170 Z" fill="#162032" stroke="#38bdf8" stroke-width="2"/>
-                        <!-- Pierna lado N (izquierda del espectador) -->
+                        <!-- Pierna lado RL (izquierda del espectador) -->
                         <path d="M66 278 C59 310 52 346 47 376" fill="none" stroke="#38bdf8" stroke-width="2"/>
                         <ellipse cx="46" cy="382" rx="13" ry="9" fill="#162032" stroke="#38bdf8" stroke-width="2"/>
-                        <!-- Pierna lado F (derecha del espectador) -->
+                        <!-- Pierna lado LL (derecha del espectador) -->
                         <path d="M134 278 C141 310 148 346 153 376" fill="none" stroke="#38bdf8" stroke-width="2"/>
                         <ellipse cx="154" cy="382" rx="13" ry="9" fill="#162032" stroke="#38bdf8" stroke-width="2"/>
                         <!-- Líneas del torso -->
@@ -83,10 +83,10 @@
                     <div class="dropzone-overlay dropzone" data-target="V6" style="top: 41.25%; left: 72%;" title="5º Espacio Intercostal Línea Axilar Media"></div>
 
                     <!-- Puntos Periféricos -->
-                    <div class="dropzone-overlay dropzone dropzone-perif" data-target="R" style="top: 60%; left: 9%;" title="Muñeca / Brazo Derecho"></div>
-                    <div class="dropzone-overlay dropzone dropzone-perif" data-target="L" style="top: 60%; left: 91%;" title="Muñeca / Brazo Izquierdo"></div>
-                    <div class="dropzone-overlay dropzone dropzone-perif" data-target="N" style="top: 95.5%; left: 23%;" title="Tobillo Derecho (Neutro)"></div>
-                    <div class="dropzone-overlay dropzone dropzone-perif" data-target="F" style="top: 95.5%; left: 77%;" title="Tobillo Izquierdo"></div>
+                    <div class="dropzone-overlay dropzone dropzone-perif" data-target="RA" style="top: 60%; left: 9%;" title="Muñeca / Brazo Derecho"></div>
+                    <div class="dropzone-overlay dropzone dropzone-perif" data-target="LA" style="top: 60%; left: 91%;" title="Muñeca / Brazo Izquierdo"></div>
+                    <div class="dropzone-overlay dropzone dropzone-perif" data-target="RL" style="top: 95.5%; left: 23%;" title="Tobillo Derecho"></div>
+                    <div class="dropzone-overlay dropzone dropzone-perif" data-target="LL" style="top: 95.5%; left: 77%;" title="Tobillo Izquierdo"></div>
                 </div>
             </section>
         </div>
@@ -148,7 +148,12 @@
     <!-- PANTALLA DE BIENVENIDA -->
     <div id="modal-splash" class="modal-overlay hidden">
         <div class="modal-content" style="text-align:center;">
-            <h2 style="color:#38bdf8; margin-bottom: 10px;">🩺 Bienvenido, listo para tu trabajo</h2>
+            <div class="mascot-wrap">
+                <div class="mascot-img"></div>
+                <div class="mascot-visor-glow"></div>
+            </div>
+            <div class="mascot-bubble">👋 ¡Hola! Soy tu guía en esta guardia. Bienvenido al Simulador Clínico de ECG y Diagnóstico.</div>
+            <h2 style="color:#38bdf8; margin: 14px 0 6px;">🩺 Bienvenido, listo para tu trabajo</h2>
             <p style="color:#94a3b8; font-size:0.9rem; margin-bottom:20px;">Simulador Clínico de ECG y Diagnóstico</p>
             <button class="btn-ai-confirm" onclick="iniciarJuegoDesdeSplash()">▶ Start</button>
         </div>
@@ -184,9 +189,14 @@
     <!-- MODALES DE CONTROL -->
     <div id="modal-nivel1-intro" class="modal-overlay hidden">
         <div class="modal-content">
-            <h2 style="color: #38bdf8; margin-bottom: 10px;">⚡ Nivel 1: Posicionamiento de Electrodos</h2>
+            <div class="mascot-wrap mascot-wrap-sm">
+                <div class="mascot-img"></div>
+                <div class="mascot-visor-glow"></div>
+            </div>
+            <div class="mascot-bubble">👋 ¡Empecemos! Coloca los 10 electrodos en su lugar correcto.</div>
+            <h2 style="color: #38bdf8; margin: 14px 0 10px;">⚡ Nivel 1: Posicionamiento de Electrodos</h2>
             <p style="color: #94a3b8; font-size: 0.9rem; line-height: 1.4; margin-bottom: 15px;">
-                Arrastra los 10 electrodos: los 6 precordiales (V1 a V6) y los 4 periféricos (R, L, N, F) hasta su ubicación anatómica correcta.
+                Arrastra los 10 electrodos: los 6 precordiales (V1 a V6) y los 4 periféricos (RA, LA, RL, LL) hasta su ubicación anatómica correcta.
             </p>
             <button class="btn-ai-confirm" onclick="cerrarModalNivel1()">Comenzar Nivel 1</button>
         </div>
@@ -194,7 +204,12 @@
 
     <div id="modal-nivel2" class="modal-overlay hidden">
         <div class="modal-content">
-            <h2 style="color: #10b981; margin-bottom: 10px;">🎉 Nivel 1 Completado</h2>
+            <div class="mascot-wrap mascot-wrap-sm">
+                <div class="mascot-img"></div>
+                <div class="mascot-visor-glow"></div>
+            </div>
+            <div class="mascot-bubble">👋 ¡Bien hecho con los electrodos! Ahora toca diagnosticar.</div>
+            <h2 style="color: #10b981; margin: 14px 0 10px;">🎉 Nivel 1 Completado</h2>
             <p style="color: #94a3b8; margin-bottom: 15px;">Ahora pasarás al Nivel 2: Diagnóstico de Ondas e Interpretación Asistida por IA.</p>
             <button class="btn-ai-confirm" onclick="comenzarNivel2()">Iniciar Nivel 2</button>
         </div>
@@ -202,7 +217,12 @@
 
     <div id="modal-nivel3-intro" class="modal-overlay hidden">
         <div class="modal-content">
-            <h2 style="color: #f59e0b; margin-bottom: 10px;">🧩 ¡Nivel 2 Superado!</h2>
+            <div class="mascot-wrap mascot-wrap-sm">
+                <div class="mascot-img"></div>
+                <div class="mascot-visor-glow"></div>
+            </div>
+            <div class="mascot-bubble">👋 ¡Último tramo! Reconstruye la onda y elige el tratamiento correcto.</div>
+            <h2 style="color: #f59e0b; margin: 14px 0 10px;">🧩 ¡Nivel 2 Superado!</h2>
             <p style="color: #94a3b8; margin-bottom: 15px;">Avanzando al Nivel 3: Ensamble de Ondas ECG y Conducta Terapéutica.</p>
             <button class="btn-ai-confirm" onclick="comenzarNivel3()">Iniciar Nivel 3</button>
         </div>
@@ -241,7 +261,12 @@
     <!-- MODAL FINAL -->
     <div id="modal-juego-completado" class="modal-overlay hidden">
         <div class="modal-content">
-            <div id="final-player-badge" class="player-badge" style="font-size: 1rem; margin-bottom: 8px;"></div>
+            <div class="mascot-wrap mascot-wrap-sm">
+                <div class="mascot-img"></div>
+                <div class="mascot-visor-glow"></div>
+            </div>
+            <div id="mascot-final-msg" class="mascot-bubble">👋 ¡Turno finalizado! Aquí tienes tu reporte.</div>
+            <div id="final-player-badge" class="player-badge" style="font-size: 1rem; margin: 10px 0 4px;"></div>
             <h2 id="final-congrats-title" style="color: #10b981; margin-bottom: 10px;">🏆 ¡Simulación Finalizada!</h2>
             <div id="final-stats" class="final-stats"></div>
             <button class="btn-ai-confirm" style="margin-top: 15px;" onclick="reiniciarDesdeNivel1()">Reiniciar Simulador</button>
